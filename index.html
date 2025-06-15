@@ -44,7 +44,7 @@
         }
 
         .hero {
-            height: 100vh;
+            padding: 60px 0 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -82,9 +82,9 @@
         }
 
         .hero-title {
-            font-size: 64px;
+            font-size: 48px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             background: linear-gradient(135deg, #fff 0%, #999 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -92,13 +92,13 @@
         }
 
         .hero-subtitle {
-            font-size: 24px;
+            font-size: 20px;
             color: #999;
-            margin-bottom: 40px;
+            margin-bottom: 0;
         }
 
         .games-section {
-            padding: 80px 0;
+            padding: 40px 0 80px;
             position: relative;
             overflow: hidden;
         }
@@ -549,13 +549,6 @@
 
         // Resize handler
         window.addEventListener('resize', updateCarousel);
-
-        // Add parallax effect to hero
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const hero = document.querySelector('.hero');
-            hero.style.transform = `translateY(${scrolled * 0.5}px)`;
-        });
     </script>
 </body>
 </html>
