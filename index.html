@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #141414;
+            color: #e5e5e5;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .header {
+            padding: 20px 50px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: background 0.3s;
+        }
+
+        .header.scrolled {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #e50914 0%, #b00711 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at center top, #2a2a2a 0%, #141414 50%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.01) 10px,
+                rgba(255, 255, 255, 0.01) 20px
+            );
+            animation: drift 20s linear infinite;
+        }
+
+        @keyframes drift {
+            to {
+                transform: translate(20px, 20px);
+            }
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 64px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff 0%, #999 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-subtitle {
+            font-size: 24px;
+            color: #999;
+            margin-bottom: 40px;
+        }
+
+        .games-section {
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-title {
+            font-size: 28px;
+            margin-bottom: 30px;
+            font-weight: normal;
+            padding: 0 50px;
+        }
+
+        .carousel-container {
+            position: relative;
+            height: 400px;
+            display: flex;
+            align-items: center;
+        }
+
+        .games-carousel {
+            display: flex;
+            gap: 40px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0 50px;
+        }
+
+        .game-card {
+            position: relative;
+            min-width: 400px;
+            height: 300px;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #1a1a1a;
+            opacity: 0.4;
+            transform: scale(0.85);
+        }
+
+        .game-card.active {
+            opacity: 1;
+            transform: scale(1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .game-card.adjacent {
+            opacity: 0.7;
+            transform: scale(0.9);
+        }
+
+        .game-thumbnail {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+        }
+
+        .game-icon {
+            font-size: 80px;
+            opacity: 0.3;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .game-card:hover .game-icon {
+            opacity: 0.5;
+            transform: scale(1.1);
+        }
+
+        .tetris-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .breakout-icon {
+            background: linear-gradient(135deg, #666 0%, #999 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .game-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 30px;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .game-card.active .game-info {
+            opacity: 1;
+        }
+
+        .game-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .game-description {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 15px;
+        }
+
+        .play-button {
+            background: #e50914;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .play-button:hover {
+            background: #f40612;
+        }
+
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-left: 8px solid white;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+
+        .coming-soon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid #444;
+        }
+
+        .carousel-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .control-hint {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .key-icon {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .nav-dots {
+            display: flex;
+            gap: 10px;
+            margin: 0 30px;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s;
+        }
+
+        .nav-dot.active {
+            width: 24px;
+            border-radius: 4px;
+            background: #e50914;
+        }
+
+        .footer {
+            padding: 50px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #333;
+            margin-top: 100px;
+        }
+
+        .game-card.unavailable {
+            cursor: not-allowed;
+        }
+        
+        .game-card.unavailable .game-thumbnail {
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .hero-title {
+                font-size: 48px;
+            }
+
+            .hero-subtitle {
+                font-size: 18px;
+            }
+
+            .games-section {
+                padding: 40px 20px;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header" id="header">
+        <div class="logo">ARCADE</div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Classic Games Collection</h1>
+            <p class="hero-subtitle">Play timeless arcade games with a modern twist</p>
+        </div>
+    </section>
+
+    <section class="games-section">
+        <h2 class="section-title">Available Games</h2>
+        <div class="carousel-container">
+            <div class="games-carousel" id="gamesCarousel">
+                <div class="game-card" data-game="tetris.html">
+                <div class="game-thumbnail">
+                    <div class="game-icon tetris-icon">▦</div>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Tetris</h3>
+                    <p class="game-description">The classic block-stacking puzzle game</p>
+                    <button class="play-button">
+                        <span class="play-icon"></span>
+                        Play Now
+                    </button>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="breakout.html">
+                <div class="game-thumbnail">
+                    <div class="game-icon breakout-icon">▬</div>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Breakout</h3>
+                    <p class="game-description">Smash through bricks with precision and skill</p>
+                    <button class="play-button">
+                        <span class="play-icon"></span>
+                        Play Now
+                    </button>
+                </div>
+            </div>
+
+            <div class="game-card" data-game="frogger.html">
+                <div class="game-thumbnail">
+                    <div class="game-icon" style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🐸</div>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Frogger</h3>
+                    <p class="game-description">Cross roads and rivers to reach safety</p>
+                    <button class="play-button">
+                        <span class="play-icon"></span>
+                        Play Now
+                    </button>
+                </div>
+            </div>
+
+            <div class="game-card unavailable">
+                <div class="game-thumbnail">
+                    <div class="game-icon" style="color: #444;">◎</div>
+                </div>
+                <span class="coming-soon">Coming Soon</span>
+                <div class="game-info">
+                    <h3 class="game-title">Pac-Man</h3>
+                    <p class="game-description">Navigate mazes and avoid ghosts</p>
+                </div>
+            </div>
+
+            <div class="game-card unavailable">
+                <div class="game-thumbnail">
+                    <div class="game-icon" style="color: #444;">▲</div>
+                </div>
+                <span class="coming-soon">Coming Soon</span>
+                <div class="game-info">
+                    <h3 class="game-title">Asteroids</h3>
+                    <p class="game-description">Blast asteroids in deep space</p>
+                </div>
+            </div>
+
+            <div class="game-card unavailable">
+                <div class="game-thumbnail">
+                    <div class="game-icon" style="color: #444;">✦</div>
+                </div>
+                <span class="coming-soon">Coming Soon</span>
+                <div class="game-info">
+                    <h3 class="game-title">Space Invaders</h3>
+                    <p class="game-description">Defend Earth from alien invasion</p>
+                </div>
+            </div>
+            </div>
+            <div class="carousel-controls">
+                <div class="control-hint">
+                    <span class="key-icon">←</span>
+                    <span>Previous</span>
+                </div>
+                <div class="nav-dots" id="navDots"></div>
+                <div class="control-hint">
+                    <span>Next</span>
+                    <span class="key-icon">→</span>
+                </div>
+                <div class="control-hint" style="margin-left: 20px;">
+                    <span class="key-icon">Enter</span>
+                    <span>Play</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2025 Arcade Collection. Built with HTML5 Canvas.</p>
+    </footer>
+
+    <script>
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Carousel functionality
+        const carousel = document.getElementById('gamesCarousel');
+        const cards = carousel.querySelectorAll('.game-card');
+        const navDotsContainer = document.getElementById('navDots');
+        let currentIndex = 0;
+
+        // Create navigation dots
+        cards.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'nav-dot';
+            if (index === 0) dot.classList.add('active');
+            navDotsContainer.appendChild(dot);
+        });
+
+        const navDots = navDotsContainer.querySelectorAll('.nav-dot');
+
+        function updateCarousel() {
+            // Calculate offset to center the active card
+            const cardWidth = 400;
+            const gap = 40;
+            const viewportWidth = window.innerWidth;
+            const offset = (viewportWidth / 2) - (cardWidth / 2) - currentIndex * (cardWidth + gap);
+            
+            carousel.style.transform = `translateX(${offset}px)`;
+
+            // Update card states
+            cards.forEach((card, index) => {
+                card.classList.remove('active', 'adjacent');
+                if (index === currentIndex) {
+                    card.classList.add('active');
+                } else if (Math.abs(index - currentIndex) === 1) {
+                    card.classList.add('adjacent');
+                }
+            });
+
+            // Update navigation dots
+            navDots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+            });
+        }
+
+        function navigateCarousel(direction) {
+            if (direction === 'next' && currentIndex < cards.length - 1) {
+                currentIndex++;
+            } else if (direction === 'prev' && currentIndex > 0) {
+                currentIndex--;
+            }
+            updateCarousel();
+        }
+
+        function launchCurrentGame() {
+            const activeCard = cards[currentIndex];
+            const gameUrl = activeCard.getAttribute('data-game');
+            if (gameUrl && !activeCard.classList.contains('unavailable')) {
+                window.location.href = gameUrl;
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    navigateCarousel('prev');
+                    break;
+                case 'ArrowRight':
+                    navigateCarousel('next');
+                    break;
+                case 'Enter':
+                    launchCurrentGame();
+                    break;
+            }
+        });
+
+        // Mouse click on cards
+        cards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                if (index === currentIndex) {
+                    launchCurrentGame();
+                } else {
+                    currentIndex = index;
+                    updateCarousel();
+                }
+            });
+        });
+
+        // Initialize carousel
+        updateCarousel();
+
+        // Resize handler
+        window.addEventListener('resize', updateCarousel);
+
+        // Add parallax effect to hero
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero');
+            hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+        });
+    </script>
+</body>
+</html>

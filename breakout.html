@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Breakout</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .game-container {
+            position: relative;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8),
+                        inset 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+
+        #canvas {
+            border: 2px solid #333;
+            border-radius: 10px;
+            background: #0f0f0f;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-info {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .score, .lives {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .game-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .overlay-title {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #666 0%, #999 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .overlay-message {
+            font-size: 20px;
+            margin-bottom: 30px;
+            color: #888;
+        }
+
+        .play-button {
+            background: linear-gradient(135deg, #444 0%, #666 100%);
+            color: #e0e0e0;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.6);
+            background: linear-gradient(135deg, #555 0%, #777 100%);
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .speed-selection {
+            margin: 30px 0;
+        }
+
+        .speed-label {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #999;
+        }
+
+        .speed-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .speed-button {
+            background: linear-gradient(135deg, #333 0%, #444 100%);
+            color: #e0e0e0;
+            border: 2px solid #555;
+            padding: 10px 20px;
+            font-size: 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 75px;
+        }
+
+        .speed-button:hover {
+            background: linear-gradient(135deg, #444 0%, #555 100%);
+            border-color: #666;
+            transform: translateY(-2px);
+        }
+
+        .speed-button.selected {
+            background: linear-gradient(135deg, #555 0%, #777 100%);
+            border-color: #888;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="canvas" width="800" height="600"></canvas>
+        <div class="game-info">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="lives">Lives: <span id="lives">3</span></div>
+        </div>
+        <div class="game-overlay" id="startScreen">
+            <h1 class="overlay-title">Breakout</h1>
+            <p class="overlay-message">Move your mouse to control the paddle</p>
+            <div class="speed-selection">
+                <p class="speed-label">Select Speed:</p>
+                <div class="speed-buttons">
+                    <button class="speed-button" onclick="setSpeed(0.8)">Beginner</button>
+                    <button class="speed-button" onclick="setSpeed(1.2)">Casual</button>
+                    <button class="speed-button" onclick="setSpeed(1.5)">Easy</button>
+                    <button class="speed-button" onclick="setSpeed(2)">Normal</button>
+                    <button class="speed-button" onclick="setSpeed(3)">Hard</button>
+                </div>
+            </div>
+            <button class="play-button" onclick="startGame()">Start Game</button>
+        </div>
+        <div class="game-overlay" id="gameOverScreen">
+            <h1 class="overlay-title">Game Over</h1>
+            <p class="overlay-message">Final Score: <span id="finalScore">0</span></p>
+            <button class="play-button" onclick="resetGame()">Play Again</button>
+        </div>
+        <div class="instructions">Move mouse to control paddle</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let ballSpeed = 2; // Default to normal speed
+        let ball = {
+            x: canvas.width / 2,
+            y: canvas.height - 100,
+            dx: ballSpeed,
+            dy: -ballSpeed,
+            radius: 8,
+            trail: []
+        };
+
+        let paddle = {
+            width: 200,
+            height: 15,
+            x: canvas.width / 2 - 100,
+            y: canvas.height - 30
+        };
+
+        let bricks = [];
+        const brickRowCount = 6;
+        const brickColumnCount = 10;
+        const brickWidth = 70;
+        const brickHeight = 25;
+        const brickPadding = 5;
+        const brickOffsetTop = 80;
+        const brickOffsetLeft = 35;
+
+        let score = 0;
+        let lives = 3;
+        let gameRunning = false;
+        let particles = [];
+        let powerUps = [];
+
+        const brickColors = ['#666', '#777', '#888', '#999', '#aaa', '#bbb'];
+
+        function initBricks() {
+            bricks = [];
+            for (let r = 0; r < brickRowCount; r++) {
+                bricks[r] = [];
+                for (let c = 0; c < brickColumnCount; c++) {
+                    bricks[r][c] = { 
+                        x: 0, 
+                        y: 0, 
+                        status: 1,
+                        color: brickColors[r],
+                        points: (brickRowCount - r) * 10
+                    };
+                }
+            }
+        }
+
+        function drawBall() {
+            ball.trail.forEach((pos, index) => {
+                ctx.globalAlpha = index / ball.trail.length * 0.5;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, ball.radius * (index / ball.trail.length), 0, Math.PI * 2);
+                ctx.fillStyle = '#ff6666';
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            const gradient = ctx.createRadialGradient(ball.x - 3, ball.y - 3, 0, ball.x, ball.y, ball.radius);
+            gradient.addColorStop(0, '#ff9999');
+            gradient.addColorStop(1, '#cc0000');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 100, 100, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, 7);
+            const gradient = ctx.createLinearGradient(paddle.x, paddle.y, paddle.x, paddle.y + paddle.height);
+            gradient.addColorStop(0, '#4080ff');
+            gradient.addColorStop(0.5, '#2060e0');
+            gradient.addColorStop(1, '#1040c0');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.roundRect(paddle.x, paddle.y, paddle.width, 3, 1);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawBricks() {
+            for (let r = 0; r < brickRowCount; r++) {
+                for (let c = 0; c < brickColumnCount; c++) {
+                    if (bricks[r][c].status === 1) {
+                        const brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
+                        const brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
+                        bricks[r][c].x = brickX;
+                        bricks[r][c].y = brickY;
+
+                        ctx.beginPath();
+                        ctx.roundRect(brickX, brickY, brickWidth, brickHeight, 3);
+                        const gradient = ctx.createLinearGradient(brickX, brickY, brickX, brickY + brickHeight);
+                        gradient.addColorStop(0, bricks[r][c].color);
+                        gradient.addColorStop(1, '#333');
+                        ctx.fillStyle = gradient;
+                        ctx.fill();
+                        ctx.closePath();
+
+                        ctx.beginPath();
+                        ctx.roundRect(brickX, brickY, brickWidth, 2, 1);
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    dx: (Math.random() - 0.5) * 8,
+                    dy: (Math.random() - 0.5) * 8,
+                    size: Math.random() * 3 + 1,
+                    color: color,
+                    life: 1
+                });
+            }
+        }
+
+        function updateParticles() {
+            particles = particles.filter(particle => {
+                particle.x += particle.dx;
+                particle.y += particle.dy;
+                particle.dy += 0.2;
+                particle.life -= 0.02;
+
+                if (particle.life > 0) {
+                    ctx.globalAlpha = particle.life;
+                    ctx.fillStyle = particle.color;
+                    ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+                    ctx.globalAlpha = 1;
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        function collisionDetection() {
+            for (let r = 0; r < brickRowCount; r++) {
+                for (let c = 0; c < brickColumnCount; c++) {
+                    const b = bricks[r][c];
+                    if (b.status === 1) {
+                        if (ball.x + ball.radius > b.x && 
+                            ball.x - ball.radius < b.x + brickWidth && 
+                            ball.y + ball.radius > b.y && 
+                            ball.y - ball.radius < b.y + brickHeight) {
+                            
+                            ball.dy = -ball.dy;
+                            b.status = 0;
+                            score += b.points;
+                            updateScore();
+                            createParticles(b.x + brickWidth / 2, b.y + brickHeight / 2, b.color);
+
+                            if (score === getTotalPossibleScore()) {
+                                gameWon();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function getTotalPossibleScore() {
+            let total = 0;
+            for (let r = 0; r < brickRowCount; r++) {
+                total += (brickRowCount - r) * 10 * brickColumnCount;
+            }
+            return total;
+        }
+
+        function updateBall() {
+            ball.trail.push({ x: ball.x, y: ball.y });
+            if (ball.trail.length > 10) {
+                ball.trail.shift();
+            }
+
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+                ball.dx = -ball.dx;
+            }
+            if (ball.y - ball.radius < 0) {
+                ball.dy = -ball.dy;
+            }
+
+            if (ball.y + ball.radius > paddle.y && 
+                ball.y - ball.radius < paddle.y + paddle.height &&
+                ball.x > paddle.x && 
+                ball.x < paddle.x + paddle.width) {
+                
+                let hitPos = (ball.x - paddle.x) / paddle.width;
+                ball.dx = ballSpeed * 4 * (hitPos - 0.5);
+                ball.dy = -Math.abs(ball.dy);
+                
+                createParticles(ball.x, paddle.y, '#888');
+            }
+
+            if (ball.y - ball.radius > canvas.height) {
+                lives--;
+                updateLives();
+                if (lives === 0) {
+                    gameOver();
+                } else {
+                    resetBall();
+                }
+            }
+        }
+
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height - 100;
+            ball.dx = ballSpeed;
+            ball.dy = -ballSpeed;
+            ball.trail = [];
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(15, 15, 15, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (gameRunning) {
+                drawBricks();
+                drawBall();
+                drawPaddle();
+                updateParticles();
+                collisionDetection();
+                updateBall();
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+
+        function updateLives() {
+            document.getElementById('lives').textContent = lives;
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (gameRunning) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                paddle.x = mouseX - paddle.width / 2;
+                
+                if (paddle.x < 0) paddle.x = 0;
+                if (paddle.x + paddle.width > canvas.width) {
+                    paddle.x = canvas.width - paddle.width;
+                }
+            }
+        });
+
+        function setSpeed(speed) {
+            ballSpeed = speed;
+            document.querySelectorAll('.speed-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').classList.remove('active');
+            gameRunning = true;
+            initBricks();
+            resetBall();
+            score = 0;
+            lives = 3;
+            updateScore();
+            updateLives();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverScreen').classList.add('active');
+        }
+
+        function gameWon() {
+            gameRunning = false;
+            document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'You Win!';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverScreen').classList.add('active');
+        }
+
+        function resetGame() {
+            document.getElementById('gameOverScreen').classList.remove('active');
+            document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'Game Over';
+            startGame();
+        }
+
+        if (!ctx.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+
+        document.getElementById('startScreen').classList.add('active');
+        document.querySelectorAll('.speed-button')[3].classList.add('selected');
+        draw();
+    </script>
+</body>
+</html>

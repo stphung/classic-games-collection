@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Frogger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-board {
+            position: relative;
+        }
+
+        #canvas {
+            border: 2px solid #333;
+            border-radius: 10px;
+            background: #0f0f0f;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            width: 600px;
+            height: 750px;
+        }
+
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 200px;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-box h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+        }
+
+        .info-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .lives-display {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .life-icon {
+            width: 20px;
+            height: 20px;
+            background: #4CAF50;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .controls {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #999;
+        }
+
+        .controls-key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+            font-family: monospace;
+            color: #fff;
+        }
+
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .game-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .overlay-title {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .overlay-message {
+            font-size: 20px;
+            margin-bottom: 30px;
+            color: #888;
+        }
+
+        .play-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(76, 175, 80, 0.4);
+        }
+        .speed-control {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .speed-control label {
+            display: block;
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .speed-slider {
+            width: 150px;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #4CAF50;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .speed-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #4CAF50;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .speed-value {
+            color: #fff;
+            font-size: 16px;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .mute-control {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .mute-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            color: #999;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .mute-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #4CAF50;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-board">
+            <canvas id="canvas" width="600" height="750"></canvas>
+            <div class="game-overlay" id="startScreen">
+                <h1 class="overlay-title">Frogger</h1>
+                <p class="overlay-message">Help the frog cross the road and river!</p>
+                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
+                    <button class="play-button" onclick="startGame(false)">1 Player</button>
+                    <button class="play-button" onclick="startGame(true)">2 Players</button>
+                </div>
+                <div style="margin-top: 20px; font-size: 14px; color: #666;">
+                    <p>Player 1: Arrow Keys (Green Frog)</p>
+                    <p>Player 2: WASD Keys (Orange Frog)</p>
+                </div>
+            </div>
+            <div class="game-overlay" id="gameOverScreen">
+                <h1 class="overlay-title">Game Over</h1>
+                <p class="overlay-message">Final Score: <span id="finalScore">0</span></p>
+                <button class="play-button" onclick="resetGame()">Play Again</button>
+            </div>
+        </div>
+        <div class="info-panel">
+            <div class="info-box">
+                <h3>Score</h3>
+                <div class="info-value" id="score">0</div>
+                <div class="info-value" id="score2" style="color: #FF9800; display: none;">0</div>
+            </div>
+            <div class="info-box">
+                <h3>Level</h3>
+                <div class="info-value" id="level">1</div>
+            </div>
+            <div class="info-box">
+                <h3 id="livesTitle">Lives</h3>
+                <div class="lives-display" id="livesDisplay"></div>
+            </div>
+            <div class="info-box">
+                <h3>Time</h3>
+                <div class="info-value" id="time">30</div>
+            </div>
+            <div class="info-box">
+                <h3>Controls</h3>
+                <div class="controls">
+                    <div><span class="controls-key">↑↓←→</span> Move</div>
+                    <div><span class="controls-key">Space</span> Pause</div>
+                </div>
+            </div>
+        </div>
+        <div class="speed-control">
+            <label>Game Speed</label>
+            <input type="range" class="speed-slider" id="speedSlider" min="0.2" max="2" step="0.1" value="1">
+            <div class="speed-value" id="speedValue">1.0x</div>
+            <div class="mute-control">
+                <label class="mute-label">
+                    <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
+                    Mute Background Music
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Initialize Web Audio API for retro music
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let musicPlaying = false;
+        let musicInterval;
+        
+        // Create retro music synthesizer
+        function playNote(frequency, duration, startTime) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'square'; // Retro 8-bit sound
+            oscillator.frequency.setValueAtTime(frequency, startTime);
+            
+            gainNode.gain.setValueAtTime(0.1, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+        }
+        
+        // Frogger theme melody
+        const melody = [
+            { note: 392, duration: 0.2 }, // G4
+            { note: 440, duration: 0.2 }, // A4
+            { note: 523, duration: 0.2 }, // C5
+            { note: 440, duration: 0.2 }, // A4
+            { note: 392, duration: 0.4 }, // G4
+            { note: 349, duration: 0.2 }, // F4
+            { note: 330, duration: 0.2 }, // E4
+            { note: 349, duration: 0.4 }, // F4
+            
+            { note: 392, duration: 0.2 }, // G4
+            { note: 440, duration: 0.2 }, // A4
+            { note: 523, duration: 0.2 }, // C5
+            { note: 440, duration: 0.2 }, // A4
+            { note: 392, duration: 0.4 }, // G4
+            { note: 523, duration: 0.2 }, // C5
+            { note: 494, duration: 0.2 }, // B4
+            { note: 440, duration: 0.4 }, // A4
+        ];
+        
+        // Bass line
+        const bassLine = [
+            { note: 131, duration: 0.4 }, // C3
+            { note: 131, duration: 0.4 }, // C3
+            { note: 175, duration: 0.4 }, // F3
+            { note: 175, duration: 0.4 }, // F3
+            { note: 131, duration: 0.4 }, // C3
+            { note: 131, duration: 0.4 }, // C3
+            { note: 196, duration: 0.4 }, // G3
+            { note: 196, duration: 0.4 }, // G3
+        ];
+        
+        function playMusic() {
+            if (!musicPlaying || audioContext.state === 'suspended') return;
+            
+            const now = audioContext.currentTime;
+            
+            // Play melody
+            let melodyTime = 0;
+            melody.forEach(note => {
+                playNote(note.note, note.duration, now + melodyTime);
+                melodyTime += note.duration;
+            });
+            
+            // Play bass
+            let bassTime = 0;
+            bassLine.forEach(note => {
+                playNote(note.note / 2, note.duration, now + bassTime);
+                bassTime += note.duration;
+            });
+        }
+        
+        function startMusic() {
+            if (musicMuted) return;
+            
+            // Stop any existing music first
+            stopMusic();
+            
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            musicPlaying = true;
+            playMusic();
+            musicInterval = setInterval(playMusic, 3200); // Loop every 3.2 seconds
+        }
+        
+        function stopMusic() {
+            musicPlaying = false;
+            if (musicInterval) {
+                clearInterval(musicInterval);
+            }
+        }
+        
+        // Sound Effects
+        function playSoundEffect(type) {
+            // Sound effects always play regardless of music mute state
+            const now = audioContext.currentTime;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            switch(type) {
+                case 'hop':
+                    // Quick hop sound
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(400, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.15, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.1);
+                    break;
+                    
+                case 'crash':
+                    // Car crash sound - noise burst
+                    const bufferSize = audioContext.sampleRate * 0.3;
+                    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() - 0.5) * 2;
+                    }
+                    const noiseSource = audioContext.createBufferSource();
+                    noiseSource.buffer = buffer;
+                    
+                    const noiseGain = audioContext.createGain();
+                    noiseGain.gain.setValueAtTime(0.3, now);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    
+                    noiseSource.connect(noiseGain);
+                    noiseGain.connect(audioContext.destination);
+                    noiseSource.start(now);
+                    break;
+                    
+                case 'splash':
+                    // Water splash sound - more prominent
+                    // Create white noise
+                    const splashBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.5, audioContext.sampleRate);
+                    const splashData = splashBuffer.getChannelData(0);
+                    for (let i = 0; i < splashBuffer.length; i++) {
+                        splashData[i] = (Math.random() - 0.5) * 2;
+                    }
+                    const splashSource = audioContext.createBufferSource();
+                    splashSource.buffer = splashBuffer;
+                    
+                    // Add filter for water-like sound
+                    const splashFilter = audioContext.createBiquadFilter();
+                    splashFilter.type = 'bandpass';
+                    splashFilter.frequency.setValueAtTime(1500, now);
+                    splashFilter.frequency.exponentialRampToValueAtTime(400, now + 0.3);
+                    splashFilter.Q.value = 2;
+                    
+                    // Add initial "plop" sound
+                    const plopOsc = audioContext.createOscillator();
+                    plopOsc.type = 'sine';
+                    plopOsc.frequency.setValueAtTime(200, now);
+                    plopOsc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+                    
+                    const plopGain = audioContext.createGain();
+                    plopGain.gain.setValueAtTime(0.4, now);
+                    plopGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    
+                    const splashGain = audioContext.createGain();
+                    splashGain.gain.setValueAtTime(0.5, now);
+                    splashGain.gain.linearRampToValueAtTime(0.3, now + 0.1);
+                    splashGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    
+                    // Connect the plop
+                    plopOsc.connect(plopGain);
+                    plopGain.connect(audioContext.destination);
+                    plopOsc.start(now);
+                    plopOsc.stop(now + 0.1);
+                    
+                    // Connect the splash
+                    splashSource.connect(splashFilter);
+                    splashFilter.connect(splashGain);
+                    splashGain.connect(audioContext.destination);
+                    splashSource.start(now);
+                    break;
+                    
+                case 'success':
+                    // Success fanfare - ascending notes
+                    const successNotes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+                    successNotes.forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                        
+                        gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
+                        
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.start(now + i * 0.1);
+                        osc.stop(now + i * 0.1 + 0.3);
+                    });
+                    break;
+            }
+        }
+
+        const GRID_SIZE = 50;
+        const ROWS = 15;
+        const COLS = 12;
+
+        let twoPlayerMode = false;
+        
+        let frog = {
+            x: 6,
+            y: 14,
+            size: 40,
+            jumping: false,
+            jumpProgress: 0,
+            targetX: 6,
+            targetY: 14,
+            animationSpeed: 8,
+            color: '#4CAF50',
+            homeFrogs: []
+        };
+        
+        let frog2 = {
+            x: 5,
+            y: 14,
+            size: 40,
+            jumping: false,
+            jumpProgress: 0,
+            targetX: 5,
+            targetY: 14,
+            animationSpeed: 8,
+            color: '#FF9800',
+            homeFrogs: []
+        };
+
+        let cars = [];
+        let logs = [];
+        let turtles = [];
+        let score = 0;
+        let score2 = 0;
+        let level = 1;
+        let lives = 3;
+        let timeLeft = 45;
+        let gameRunning = false;
+        let isPaused = false;
+        let lastTime = 0;
+        let timeSinceLastSecond = 0;
+        let homeFrogs = [];
+        let particles = [];
+        let winner = null;
+        let speedMultiplier = 1;
+        let musicMuted = false;
+
+        const lanes = [
+            { type: 'safe', y: 14 },
+            { type: 'road', y: 13, speed: 0.4, carGap: 300, carWidth: 80 },
+            { type: 'road', y: 12, speed: -0.5, carGap: 280, carWidth: 70 },
+            { type: 'road', y: 11, speed: 0.45, carGap: 350, carWidth: 90 },
+            { type: 'road', y: 10, speed: -0.35, carGap: 300, carWidth: 75 },
+            { type: 'road', y: 9, speed: 0.55, carGap: 380, carWidth: 85 },
+            { type: 'safe', y: 8 },
+            { type: 'water', y: 7, speed: 0.25, logGap: 160, logWidth: 100 },
+            { type: 'water', y: 6, speed: -0.35, logGap: 140, logWidth: 90 },
+            { type: 'water', y: 5, speed: 0.3, logGap: 180, logWidth: 110 },
+            { type: 'water', y: 4, speed: -0.4, logGap: 160, logWidth: 95 },
+            { type: 'safe', y: 3 },
+            { type: 'road', y: 2, speed: 0.7, carGap: 250, carWidth: 75 },
+            { type: 'road', y: 1, speed: -0.8, carGap: 230, carWidth: 85 },
+            { type: 'goal', y: 0 }
+        ];
+
+        function initObstacles() {
+            cars = [];
+            logs = [];
+            
+            lanes.forEach(lane => {
+                if (lane.type === 'road') {
+                    const numCars = Math.floor(canvas.width / lane.carGap) + 1;
+                    for (let i = 0; i < numCars; i++) {
+                        cars.push({
+                            x: i * lane.carGap,
+                            y: lane.y * GRID_SIZE,
+                            width: lane.carWidth,
+                            height: 40,
+                            speed: lane.speed * (0.9 + level * 0.03),
+                            color: `hsl(${Math.random() * 360}, 70%, 50%)`
+                        });
+                    }
+                } else if (lane.type === 'water') {
+                    const numLogs = Math.floor(canvas.width / lane.logGap) + 1;
+                    for (let i = 0; i < numLogs; i++) {
+                        logs.push({
+                            x: i * lane.logGap,
+                            y: lane.y * GRID_SIZE,
+                            width: lane.logWidth,
+                            height: 40,
+                            speed: lane.speed * (0.9 + level * 0.03)
+                        });
+                    }
+                }
+            });
+        }
+
+        function drawBackground() {
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            lanes.forEach(lane => {
+                const y = lane.y * GRID_SIZE;
+                
+                if (lane.type === 'safe') {
+                    const gradient = ctx.createLinearGradient(0, y, 0, y + GRID_SIZE);
+                    gradient.addColorStop(0, '#2a2a2a');
+                    gradient.addColorStop(1, '#1a1a1a');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, y, canvas.width, GRID_SIZE);
+                } else if (lane.type === 'road') {
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(0, y, canvas.width, GRID_SIZE);
+                    
+                    ctx.strokeStyle = '#666';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([20, 10]);
+                    ctx.beginPath();
+                    ctx.moveTo(0, y + GRID_SIZE / 2);
+                    ctx.lineTo(canvas.width, y + GRID_SIZE / 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                } else if (lane.type === 'water') {
+                    const gradient = ctx.createLinearGradient(0, y, 0, y + GRID_SIZE);
+                    gradient.addColorStop(0, '#1a3a52');
+                    gradient.addColorStop(0.5, '#0f2940');
+                    gradient.addColorStop(1, '#0a1f33');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, y, canvas.width, GRID_SIZE);
+                    
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    for (let x = 0; x < canvas.width; x += 40) {
+                        ctx.fillRect(x + (Date.now() / 50) % 40, y + 10, 20, 2);
+                        ctx.fillRect(x + (Date.now() / 70) % 40, y + 30, 15, 1);
+                    }
+                } else if (lane.type === 'goal') {
+                    const gradient = ctx.createLinearGradient(0, y, 0, y + GRID_SIZE);
+                    gradient.addColorStop(0, '#2E7D32');
+                    gradient.addColorStop(1, '#1B5E20');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, y, canvas.width, GRID_SIZE);
+                    
+                    for (let i = 0; i < 5; i++) {
+                        const homeX = i * 120 + 60;
+                        ctx.fillStyle = '#0a0a0a';
+                        ctx.fillRect(homeX - 30, y + 5, 60, 40);
+                        
+                        if (homeFrogs.includes(i)) {
+                            drawFrog(homeX / GRID_SIZE, 0, 30, '#4CAF50', null);
+                        }
+                        
+                        // In two player mode, show which player has claimed each home
+                        if (twoPlayerMode) {
+                            if (frog.homeFrogs.includes(i)) {
+                                drawFrog(homeX / GRID_SIZE, 0, 30, frog.color, null);
+                            } else if (frog2.homeFrogs.includes(i)) {
+                                drawFrog(homeX / GRID_SIZE, 0, 30, frog2.color, null);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function drawFrog(gridX, gridY, size = 40, color = '#4CAF50', frogObj = null) {
+            const x = gridX * GRID_SIZE;
+            const y = gridY * GRID_SIZE;
+            
+            ctx.save();
+            ctx.translate(x, y + GRID_SIZE / 2);
+            
+            // Body
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, size * 0.45, size * 0.4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Body gradient
+            const bodyGradient = ctx.createRadialGradient(0, -5, 0, 0, 0, size * 0.4);
+            bodyGradient.addColorStop(0, '#66BB6A');
+            bodyGradient.addColorStop(1, color);
+            ctx.fillStyle = bodyGradient;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, size * 0.45, size * 0.4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Belly
+            ctx.fillStyle = '#81C784';
+            ctx.beginPath();
+            ctx.ellipse(0, 5, size * 0.3, size * 0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Back legs
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.ellipse(-size * 0.35, size * 0.15, size * 0.2, size * 0.15, -0.5, 0, Math.PI * 2);
+            ctx.ellipse(size * 0.35, size * 0.15, size * 0.2, size * 0.15, 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Front legs
+            ctx.beginPath();
+            ctx.ellipse(-size * 0.3, -size * 0.1, size * 0.15, size * 0.12, -0.3, 0, Math.PI * 2);
+            ctx.ellipse(size * 0.3, -size * 0.1, size * 0.15, size * 0.12, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Head
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.ellipse(0, -size * 0.35, size * 0.35, size * 0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.ellipse(-size * 0.15, -size * 0.4, size * 0.12, size * 0.1, 0, 0, Math.PI * 2);
+            ctx.ellipse(size * 0.15, -size * 0.4, size * 0.12, size * 0.1, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eye details
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.ellipse(-size * 0.15, -size * 0.4, size * 0.08, size * 0.08, 0, 0, Math.PI * 2);
+            ctx.ellipse(size * 0.15, -size * 0.4, size * 0.08, size * 0.08, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eye highlights
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(-size * 0.13, -size * 0.42, size * 0.03, 0, Math.PI * 2);
+            ctx.arc(size * 0.17, -size * 0.42, size * 0.03, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Nostrils
+            ctx.fillStyle = '#2E7D32';
+            ctx.beginPath();
+            ctx.ellipse(-size * 0.05, -size * 0.35, size * 0.02, size * 0.03, 0, 0, Math.PI * 2);
+            ctx.ellipse(size * 0.05, -size * 0.35, size * 0.02, size * 0.03, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Mouth
+            ctx.strokeStyle = '#2E7D32';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(0, -size * 0.3, size * 0.1, 0, Math.PI);
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+
+        function drawCar(car) {
+            // Car shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(car.x + 3, car.y + 8, car.width, car.height);
+            
+            // Car body
+            const gradient = ctx.createLinearGradient(car.x, car.y, car.x, car.y + car.height);
+            gradient.addColorStop(0, car.color);
+            gradient.addColorStop(0.5, car.color);
+            gradient.addColorStop(1, '#1a1a1a');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.roundRect(car.x, car.y + 5, car.width, car.height, 5);
+            ctx.fill();
+            
+            // Car roof
+            ctx.fillStyle = car.color;
+            ctx.beginPath();
+            ctx.roundRect(car.x + car.width * 0.2, car.y + 8, car.width * 0.6, car.height * 0.7, 3);
+            ctx.fill();
+            
+            // Windows
+            ctx.fillStyle = 'rgba(100, 150, 200, 0.7)';
+            ctx.fillRect(car.x + car.width * 0.25, car.y + 12, car.width * 0.2, car.height * 0.4);
+            ctx.fillRect(car.x + car.width * 0.55, car.y + 12, car.width * 0.2, car.height * 0.4);
+            
+            // Window shine
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillRect(car.x + car.width * 0.25, car.y + 12, car.width * 0.2, 3);
+            ctx.fillRect(car.x + car.width * 0.55, car.y + 12, car.width * 0.2, 3);
+            
+            // Headlights
+            if (car.speed > 0) {
+                // Front headlights
+                ctx.fillStyle = '#ffffcc';
+                ctx.beginPath();
+                ctx.ellipse(car.x + car.width - 5, car.y + 18, 4, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(car.x + car.width - 5, car.y + 32, 4, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Light beam
+                ctx.fillStyle = 'rgba(255, 255, 200, 0.2)';
+                ctx.beginPath();
+                ctx.moveTo(car.x + car.width, car.y + 18);
+                ctx.lineTo(car.x + car.width + 30, car.y + 10);
+                ctx.lineTo(car.x + car.width + 30, car.y + 40);
+                ctx.lineTo(car.x + car.width, car.y + 32);
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                // Rear lights
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath();
+                ctx.ellipse(car.x + 5, car.y + 18, 4, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(car.x + 5, car.y + 32, 4, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Wheels
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(car.x + 10, car.y + car.height + 3, 15, 5);
+            ctx.fillRect(car.x + car.width - 25, car.y + car.height + 3, 15, 5);
+        }
+
+        function drawLog(log) {
+            // Log shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.beginPath();
+            ctx.roundRect(log.x + 2, log.y + 7, log.width, log.height, 10);
+            ctx.fill();
+            
+            // Main log body - red gradient
+            const gradient = ctx.createLinearGradient(log.x, log.y, log.x, log.y + log.height);
+            gradient.addColorStop(0, '#cc3333');
+            gradient.addColorStop(0.3, '#aa2222');
+            gradient.addColorStop(0.7, '#881111');
+            gradient.addColorStop(1, '#660000');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.roundRect(log.x, log.y + 5, log.width, log.height, 10);
+            ctx.fill();
+            
+            // Wood texture - darker red lines
+            ctx.strokeStyle = '#440000';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < log.width - 10; i += 15) {
+                ctx.beginPath();
+                ctx.moveTo(log.x + i + 10, log.y + 8);
+                ctx.lineTo(log.x + i + 10, log.y + log.height + 2);
+                ctx.stroke();
+            }
+            
+            // Log highlights
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.beginPath();
+            ctx.roundRect(log.x + 5, log.y + 8, log.width - 10, 5, 3);
+            ctx.fill();
+            
+            // End caps - red
+            ctx.fillStyle = '#991111';
+            ctx.beginPath();
+            ctx.arc(log.x + 10, log.y + 25, 8, 0, Math.PI * 2);
+            ctx.arc(log.x + log.width - 10, log.y + 25, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // End cap rings - dark red
+            ctx.strokeStyle = '#440000';
+            ctx.lineWidth = 1;
+            for (let r = 3; r < 8; r += 2) {
+                ctx.beginPath();
+                ctx.arc(log.x + 10, log.y + 25, r, 0, Math.PI * 2);
+                ctx.arc(log.x + log.width - 10, log.y + 25, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        function updateObstacles() {
+            cars.forEach(car => {
+                car.x += car.speed * speedMultiplier;
+                if (car.speed > 0 && car.x > canvas.width) {
+                    car.x = -car.width;
+                } else if (car.speed < 0 && car.x < -car.width) {
+                    car.x = canvas.width;
+                }
+            });
+
+            logs.forEach(log => {
+                log.x += log.speed * speedMultiplier;
+                if (log.speed > 0 && log.x > canvas.width) {
+                    log.x = -log.width;
+                } else if (log.speed < 0 && log.x < -log.width) {
+                    log.x = canvas.width;
+                }
+            });
+        }
+
+        function checkCollisions() {
+            const frogX = frog.x * GRID_SIZE;
+            const frogY = frog.y * GRID_SIZE;
+            const frogSize = frog.size;
+
+            const currentLane = lanes.find(lane => lane.y === frog.y);
+            
+            if (currentLane && currentLane.type === 'road') {
+                for (let car of cars) {
+                    if (car.y === frogY &&
+                        frogX + frogSize/2 > car.x &&
+                        frogX - frogSize/2 < car.x + car.width) {
+                        playSoundEffect('crash');
+                        loseLife();
+                        return;
+                    }
+                }
+            }
+
+            if (currentLane && currentLane.type === 'water') {
+                let onLog = false;
+                for (let log of logs) {
+                    if (log.y === frogY &&
+                        frogX > log.x &&
+                        frogX < log.x + log.width) {
+                        onLog = true;
+                        const logMovement = log.speed * speedMultiplier / GRID_SIZE;
+                        frog.x += logMovement;
+                        frog.targetX += logMovement;
+                        
+                        if (frog.x < 0 || frog.x > COLS - 1) {
+                            loseLife();
+                            return;
+                        }
+                        break;
+                    }
+                }
+                if (!onLog) {
+                    playSoundEffect('splash');
+                    loseLife();
+                }
+            }
+
+            if (currentLane && currentLane.type === 'goal') {
+                const homeIndex = Math.floor(frog.x / 2.4);
+                if (homeIndex >= 0 && homeIndex < 5 && !homeFrogs.includes(homeIndex)) {
+                    homeFrogs.push(homeIndex);
+                    frog.homeFrogs.push(homeIndex);
+                    score += 500;
+                    playSoundEffect('success');
+                    createParticles(frogX, frogY, frog.color);
+                    
+                    if (twoPlayerMode) {
+                        // Check for win condition in 2 player mode
+                        if (frog.homeFrogs.length >= 3) {
+                            winner = 'Player 1';
+                            gameWon();
+                            return;
+                        }
+                        resetFrogPosition();
+                    } else {
+                        if (homeFrogs.length === 5) {
+                            levelComplete();
+                        } else {
+                            resetFrogPosition();
+                            timeLeft = 45;
+                        }
+                    }
+                } else {
+                    loseLife();
+                }
+            }
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 20; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    dx: (Math.random() - 0.5) * 10,
+                    dy: (Math.random() - 0.5) * 10,
+                    size: Math.random() * 5 + 2,
+                    color: color,
+                    life: 1
+                });
+            }
+        }
+
+        function updateParticles() {
+            particles = particles.filter(particle => {
+                particle.x += particle.dx;
+                particle.y += particle.dy;
+                particle.dy += 0.3;
+                particle.life -= 0.02;
+
+                if (particle.life > 0) {
+                    ctx.globalAlpha = particle.life;
+                    ctx.fillStyle = particle.color;
+                    ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+                    ctx.globalAlpha = 1;
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        function loseLife() {
+            lives--;
+            createParticles(frog.x * GRID_SIZE, frog.y * GRID_SIZE, '#ff0000');
+            updateLivesDisplay();
+            
+            if (lives === 0) {
+                gameOver();
+            } else {
+                resetFrogPosition();
+            }
+        }
+
+        function resetFrogPosition() {
+            frog.x = 6;
+            frog.y = 14;
+            frog.targetX = 6;
+            frog.targetY = 14;
+        }
+        
+        function resetFrog2Position() {
+            frog2.x = 5;
+            frog2.y = 14;
+            frog2.targetX = 5;
+            frog2.targetY = 14;
+        }
+
+        function levelComplete() {
+            level++;
+            score += 1000;
+            homeFrogs = [];
+            resetFrogPosition();
+            initObstacles();
+            timeLeft = 45;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('score').textContent = score;
+            if (twoPlayerMode) {
+                document.getElementById('score2').textContent = score2;
+            }
+            document.getElementById('level').textContent = level;
+            document.getElementById('time').textContent = Math.ceil(timeLeft);
+        }
+
+        function updateLivesDisplay() {
+            const livesDisplay = document.getElementById('livesDisplay');
+            livesDisplay.innerHTML = '';
+            
+            if (twoPlayerMode) {
+                // Show progress in 2 player mode
+                const p1Progress = document.createElement('div');
+                p1Progress.style.color = frog.color;
+                p1Progress.style.fontSize = '16px';
+                p1Progress.textContent = `P1: ${frog.homeFrogs.length}/3`;
+                livesDisplay.appendChild(p1Progress);
+                
+                const p2Progress = document.createElement('div');
+                p2Progress.style.color = frog2.color;
+                p2Progress.style.fontSize = '16px';
+                p2Progress.textContent = `P2: ${frog2.homeFrogs.length}/3`;
+                livesDisplay.appendChild(p2Progress);
+            } else {
+                // Show lives in single player mode
+                for (let i = 0; i < lives; i++) {
+                    const life = document.createElement('div');
+                    life.className = 'life-icon';
+                    livesDisplay.appendChild(life);
+                }
+            }
+        }
+
+        function gameLoop(currentTime) {
+            if (!gameRunning) return;
+
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+
+            if (!isPaused && !winner) {
+                timeSinceLastSecond += deltaTime;
+                if (timeSinceLastSecond >= 1 && !twoPlayerMode) {
+                    timeLeft--;
+                    timeSinceLastSecond = 0;
+                    document.getElementById('time').textContent = Math.ceil(timeLeft);
+                    
+                    if (timeLeft <= 0) {
+                        loseLife();
+                        timeLeft = 45;
+                    }
+                }
+
+                updateObstacles();
+                
+                // Smooth frog movement
+                if (frog.x !== frog.targetX || frog.y !== frog.targetY) {
+                    const dx = frog.targetX - frog.x;
+                    const dy = frog.targetY - frog.y;
+                    const moveSpeed = deltaTime * frog.animationSpeed;
+                    
+                    if (Math.abs(dx) < moveSpeed) {
+                        frog.x = frog.targetX;
+                    } else {
+                        frog.x += Math.sign(dx) * moveSpeed;
+                    }
+                    
+                    if (Math.abs(dy) < moveSpeed) {
+                        frog.y = frog.targetY;
+                    } else {
+                        frog.y += Math.sign(dy) * moveSpeed;
+                    }
+                    
+                    frog.jumping = true;
+                    frog.jumpProgress = 1 - Math.max(Math.abs(dx), Math.abs(dy));
+                } else {
+                    frog.jumping = false;
+                }
+                
+                // Smooth frog2 movement in two player mode
+                if (twoPlayerMode) {
+                    if (frog2.x !== frog2.targetX || frog2.y !== frog2.targetY) {
+                        const dx2 = frog2.targetX - frog2.x;
+                        const dy2 = frog2.targetY - frog2.y;
+                        const moveSpeed2 = deltaTime * frog2.animationSpeed;
+                        
+                        if (Math.abs(dx2) < moveSpeed2) {
+                            frog2.x = frog2.targetX;
+                        } else {
+                            frog2.x += Math.sign(dx2) * moveSpeed2;
+                        }
+                        
+                        if (Math.abs(dy2) < moveSpeed2) {
+                            frog2.y = frog2.targetY;
+                        } else {
+                            frog2.y += Math.sign(dy2) * moveSpeed2;
+                        }
+                        
+                        frog2.jumping = true;
+                        frog2.jumpProgress = 1 - Math.max(Math.abs(dx2), Math.abs(dy2));
+                    } else {
+                        frog2.jumping = false;
+                    }
+                }
+                
+                checkCollisions();
+                if (twoPlayerMode) checkCollisions2();
+            }
+
+            drawBackground();
+            cars.forEach(drawCar);
+            logs.forEach(drawLog);
+            
+            // Draw frog with smooth jump animation
+            const jumpOffset = frog.jumping ? Math.sin(frog.jumpProgress * Math.PI) * 15 : 0;
+            ctx.save();
+            ctx.translate(0, -jumpOffset);
+            drawFrog(frog.x, frog.y, frog.size, frog.color, frog);
+            ctx.restore();
+            
+            // Draw second frog in two player mode
+            if (twoPlayerMode && lives > 0) {
+                const jumpOffset2 = frog2.jumping ? Math.sin(frog2.jumpProgress * Math.PI) * 15 : 0;
+                ctx.save();
+                ctx.translate(0, -jumpOffset2);
+                drawFrog(frog2.x, frog2.y, frog2.size, frog2.color, frog2);
+                ctx.restore();
+            }
+            
+            updateParticles();
+            updateDisplay();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+
+            if (e.key === ' ') {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    stopMusic();
+                } else {
+                    startMusic();
+                }
+                return;
+            }
+
+            if (isPaused || winner) return;
+
+            // Player 1 controls (arrows)
+            if (frog.x === frog.targetX && frog.y === frog.targetY) {
+                switch(e.key) {
+                    case 'ArrowUp':
+                        if (frog.targetY > 0) {
+                            frog.targetY--;
+                            if (frog.targetY < 6) score += 10;
+                            playSoundEffect('hop');
+                        }
+                        break;
+                    case 'ArrowDown':
+                        if (frog.targetY < 14) {
+                            frog.targetY++;
+                            playSoundEffect('hop');
+                        }
+                        break;
+                    case 'ArrowLeft':
+                        if (frog.targetX > 0) {
+                            frog.targetX--;
+                            playSoundEffect('hop');
+                        }
+                        break;
+                    case 'ArrowRight':
+                        if (frog.targetX < 11) {
+                            frog.targetX++;
+                            playSoundEffect('hop');
+                        }
+                        break;
+                }
+            }
+
+            // Player 2 controls (WASD) - only in two player mode
+            if (twoPlayerMode && frog2.x === frog2.targetX && frog2.y === frog2.targetY) {
+                switch(e.key.toLowerCase()) {
+                    case 'w':
+                        if (frog2.targetY > 0) {
+                            frog2.targetY--;
+                            if (frog2.targetY < 6) score2 += 10;
+                            playSoundEffect('hop');
+                        }
+                        break;
+                    case 's':
+                        if (frog2.targetY < 14) {
+                            frog2.targetY++;
+                            playSoundEffect('hop');
+                        }
+                        break;
+                    case 'a':
+                        if (frog2.targetX > 0) {
+                            frog2.targetX--;
+                            playSoundEffect('hop');
+                        }
+                        break;
+                    case 'd':
+                        if (frog2.targetX < 11) {
+                            frog2.targetX++;
+                            playSoundEffect('hop');
+                        }
+                        break;
+                }
+            }
+        });
+
+        function startGame(isTwoPlayer) {
+            // Stop any existing music before starting new game
+            stopMusic();
+            
+            document.getElementById('startScreen').classList.remove('active');
+            gameRunning = true;
+            twoPlayerMode = isTwoPlayer;
+            
+            if (twoPlayerMode) {
+                document.getElementById('score2').style.display = 'block';
+                document.getElementById('livesTitle').textContent = 'Progress';
+            }
+            lives = twoPlayerMode ? 100 : 3;  // Unlimited lives in 2 player mode
+            score = 0;
+            score2 = 0;
+            level = 1;
+            timeLeft = twoPlayerMode ? 999 : 45;  // No time limit in 2 player mode
+            homeFrogs = [];
+            frog.homeFrogs = [];
+            frog2.homeFrogs = [];
+            winner = null;
+            resetFrogPosition();
+            resetFrog2Position();
+            initObstacles();
+            updateLivesDisplay();
+            updateDisplay();
+            lastTime = performance.now();
+            startMusic();
+            gameLoop(lastTime);
+        }
+
+        function checkCollisions2() {
+            const frogX = frog2.x * GRID_SIZE;
+            const frogY = frog2.y * GRID_SIZE;
+            const frogSize = frog2.size;
+
+            const currentLane = lanes.find(lane => lane.y === frog2.y);
+            
+            if (currentLane && currentLane.type === 'road') {
+                for (let car of cars) {
+                    if (car.y === frogY &&
+                        frogX + frogSize/2 > car.x &&
+                        frogX - frogSize/2 < car.x + car.width) {
+                        playSoundEffect('crash');
+                        resetFrog2Position();
+                        createParticles(frogX, frogY, '#ff0000');
+                        return;
+                    }
+                }
+            }
+
+            if (currentLane && currentLane.type === 'water') {
+                let onLog = false;
+                for (let log of logs) {
+                    if (log.y === frogY &&
+                        frogX > log.x &&
+                        frogX < log.x + log.width) {
+                        onLog = true;
+                        const logMovement = log.speed * speedMultiplier / GRID_SIZE;
+                        frog2.x += logMovement;
+                        frog2.targetX += logMovement;
+                        
+                        if (frog2.x < 0 || frog2.x > COLS - 1) {
+                            resetFrog2Position();
+                            createParticles(frogX, frogY, '#ff0000');
+                            return;
+                        }
+                        break;
+                    }
+                }
+                if (!onLog) {
+                    playSoundEffect('splash');
+                    resetFrog2Position();
+                    createParticles(frogX, frogY, '#ff0000');
+                }
+            }
+
+            if (currentLane && currentLane.type === 'goal') {
+                const homeIndex = Math.floor(frog2.x / 2.4);
+                if (homeIndex >= 0 && homeIndex < 5 && !homeFrogs.includes(homeIndex)) {
+                    homeFrogs.push(homeIndex);
+                    frog2.homeFrogs.push(homeIndex);
+                    score2 += 500;
+                    playSoundEffect('success');
+                    createParticles(frogX, frogY, frog2.color);
+                    
+                    // Check for win condition in 2 player mode
+                    if (frog2.homeFrogs.length >= 3) {
+                        winner = 'Player 2';
+                        gameWon();
+                        return;
+                    }
+                    resetFrog2Position();
+                } else {
+                    resetFrog2Position();
+                    createParticles(frogX, frogY, '#ff0000');
+                }
+            }
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            stopMusic();
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverScreen').classList.add('active');
+        }
+        
+        function gameWon() {
+            gameRunning = false;
+            stopMusic();
+            document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = winner + ' Wins!';
+            document.getElementById('finalScore').textContent = `P1: ${score} - P2: ${score2}`;
+            document.getElementById('gameOverScreen').classList.add('active');
+        }
+
+        function resetGame() {
+            document.getElementById('gameOverScreen').classList.remove('active');
+            document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'Game Over';
+            startGame(twoPlayerMode);
+        }
+
+        // Add polyfill for roundRect if needed
+        if (!ctx.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+
+        document.getElementById('startScreen').classList.add('active');
+        
+        // Speed slider functionality
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const muteCheckbox = document.getElementById('muteCheckbox');
+        
+        speedSlider.addEventListener('input', (e) => {
+            speedMultiplier = parseFloat(e.target.value);
+            speedValue.textContent = speedMultiplier.toFixed(1) + 'x';
+        });
+        
+        muteCheckbox.addEventListener('change', (e) => {
+            musicMuted = e.target.checked;
+            if (musicMuted) {
+                stopMusic();
+            } else if (gameRunning && !isPaused) {
+                startMusic();
+            }
+        });
+    </script>
+</body>
+</html>
