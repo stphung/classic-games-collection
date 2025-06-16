@@ -2,7 +2,7 @@
 
 🎮 **[Play the games here!](https://stphung.github.io/classic-games-collection/)**
 
-A collection of five classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
+A collection of six classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
 
 ## Games Included
 
@@ -65,6 +65,18 @@ The classic snake game where you grow longer by eating food while avoiding colli
   - Try to beat your high score!
 - **Controls**: Arrow keys or WASD to change direction, ESC to return home
 - **Features**: High score tracking, increasing difficulty, smooth controls, glowing visual effects
+
+### ◈ JezzBall
+A strategic puzzle game where you trap bouncing balls by building walls to clear the playing field.
+- **How to Play**:
+  - Click anywhere to start building a wall at that position
+  - Walls grow in both directions (horizontal or vertical)
+  - Right-click or press Space to toggle between horizontal/vertical mode
+  - If a ball hits a wall while it's being built, you lose a life
+  - Clear at least 75% of the field to complete each level
+  - Each new level adds one more ball and increases speed
+- **Controls**: Click to build walls, Right-click/Space to toggle direction, P to pause
+- **Features**: Progressive difficulty, area percentage tracking, strategic gameplay
 
 ## Features
 

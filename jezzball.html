@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JezzBall</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff);
+            animation: gradient 15s ease infinite;
+            opacity: 0.1;
+        }
+
+        @keyframes gradient {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .game-container {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .game-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        canvas {
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            display: block;
+            cursor: crosshair;
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .control-item {
+            margin: 5px 0;
+        }
+
+        .control-key {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 0 4px;
+        }
+
+        .home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+
+        .home-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-over-screen, .start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        .game-over-title, .start-title {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff00ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .final-score {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            color: #00ffff;
+        }
+
+        .play-button {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: bold;
+        }
+
+        .play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .mute-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .mute-control input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .mute-control label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .mode-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .mode-horizontal {
+            color: #00ffff;
+            border: 1px solid #00ffff;
+        }
+
+        .mode-vertical {
+            color: #ff00ff;
+            border: 1px solid #ff00ff;
+        }
+
+        .cleared-indicator {
+            color: #00ff00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-button">← Home</a>
+    
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">JezzBall</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <div class="stat-label">Level</div>
+                    <div class="stat-value" id="level">1</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Lives</div>
+                    <div class="stat-value" id="lives">3</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Cleared</div>
+                    <div class="stat-value cleared-indicator" id="cleared">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="position: relative;">
+            <canvas id="gameCanvas" width="640" height="480"></canvas>
+            <div class="mode-indicator mode-horizontal" id="modeIndicator">Horizontal</div>
+            
+            <div class="start-screen" id="startScreen">
+                <h2 class="start-title">JezzBall</h2>
+                <p style="margin-bottom: 20px; opacity: 0.8;">Trap the balls and clear 75% of the field!</p>
+                <button class="play-button" onclick="startGame()">Start Game</button>
+            </div>
+            
+            <div class="game-over-screen" id="gameOverScreen" style="display: none;">
+                <h2 class="game-over-title" id="gameOverTitle">Game Over!</h2>
+                <div class="final-score" id="finalScore">Final Score: 0</div>
+                <button class="play-button" onclick="resetGame()">Play Again</button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-item">
+                <span class="control-key">Click</span> Build wall at cursor
+            </div>
+            <div class="control-item">
+                <span class="control-key">Right Click</span> or <span class="control-key">Space</span> Toggle wall direction
+            </div>
+            <div class="control-item">
+                <span class="control-key">P</span> Pause game
+            </div>
+            <div class="control-item">
+                <span class="control-key">ESC</span> Return to home
+            </div>
+        </div>
+    </div>
+    
+    <div class="mute-control">
+        <input type="checkbox" id="muteMusic">
+        <label for="muteMusic">Mute Background Music</label>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startScreen = document.getElementById('startScreen');
+        const modeIndicator = document.getElementById('modeIndicator');
+        
+        // Game constants
+        const CELL_SIZE = 20;
+        const GRID_WIDTH = canvas.width / CELL_SIZE;
+        const GRID_HEIGHT = canvas.height / CELL_SIZE;
+        const WALL_GROW_SPEED = 0.2; // Cells per frame
+        const INITIAL_BALL_SPEED = 2;
+        const TARGET_CLEAR_PERCENTAGE = 75;
+        
+        // Game state
+        let gameRunning = false;
+        let paused = false;
+        let level = 1;
+        let score = 0;
+        let lives = 3;
+        let clearedPercentage = 0;
+        let balls = [];
+        let walls = [];
+        let growingWalls = [];
+        let grid = [];
+        let isHorizontalMode = true;
+        
+        // Audio context
+        let audioContext;
+        let musicGainNode;
+        let musicOscillator;
+        let isMusicMuted = false;
+        
+        // Ball class
+        class Ball {
+            constructor(x, y, dx, dy, color) {
+                this.x = x;
+                this.y = y;
+                this.dx = dx;
+                this.dy = dy;
+                this.radius = 8;
+                this.color = color;
+            }
+            
+            update() {
+                // Store previous position
+                const prevX = this.x;
+                const prevY = this.y;
+                
+                // Move ball
+                this.x += this.dx;
+                this.y += this.dy;
+                
+                // Bounce off boundaries
+                if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
+                    this.dx = -this.dx;
+                    this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+                    playSound('bounce');
+                }
+                if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
+                    this.dy = -this.dy;
+                    this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+                    playSound('bounce');
+                }
+                
+                // Check collision with walls using grid
+                if (this.checkGridCollision()) {
+                    // Restore previous position
+                    this.x = prevX;
+                    this.y = prevY;
+                    
+                    // Determine bounce direction by testing each axis
+                    const testX = prevX + this.dx;
+                    const testY = prevY + this.dy;
+                    
+                    // Test horizontal movement
+                    this.x = testX;
+                    this.y = prevY;
+                    if (this.checkGridCollision()) {
+                        this.dx = -this.dx;
+                    }
+                    
+                    // Test vertical movement
+                    this.x = prevX;
+                    this.y = testY;
+                    if (this.checkGridCollision()) {
+                        this.dy = -this.dy;
+                    }
+                    
+                    // Apply the bounce
+                    this.x = prevX + this.dx;
+                    this.y = prevY + this.dy;
+                    
+                    playSound('bounce');
+                }
+            }
+            
+            checkGridCollision() {
+                // Check the grid cells that the ball overlaps
+                const leftGrid = Math.floor((this.x - this.radius) / CELL_SIZE);
+                const rightGrid = Math.floor((this.x + this.radius) / CELL_SIZE);
+                const topGrid = Math.floor((this.y - this.radius) / CELL_SIZE);
+                const bottomGrid = Math.floor((this.y + this.radius) / CELL_SIZE);
+                
+                // Check all cells the ball touches
+                for (let y = topGrid; y <= bottomGrid; y++) {
+                    for (let x = leftGrid; x <= rightGrid; x++) {
+                        // Check bounds
+                        if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) {
+                            // Check if cell contains a wall
+                            if (grid[y][x] === 1) {
+                                // Precise collision check with this cell
+                                const cellX = x * CELL_SIZE;
+                                const cellY = y * CELL_SIZE;
+                                
+                                // Find closest point on cell to ball center
+                                const closestX = Math.max(cellX, Math.min(this.x, cellX + CELL_SIZE));
+                                const closestY = Math.max(cellY, Math.min(this.y, cellY + CELL_SIZE));
+                                
+                                // Check distance
+                                const distance = Math.sqrt(
+                                    (this.x - closestX) * (this.x - closestX) +
+                                    (this.y - closestY) * (this.y - closestY)
+                                );
+                                
+                                if (distance < this.radius) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return false;
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Add glow effect
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+        
+        // Growing wall class
+        class GrowingWall {
+            constructor(x, y, isHorizontal) {
+                this.startX = x;
+                this.startY = y;
+                this.isHorizontal = isHorizontal;
+                this.length1 = 0;
+                this.length2 = 0;
+                // Calculate max lengths based on existing walls and boundaries
+                this.calculateMaxLengths();
+                this.completed = false;
+                this.destroyed = false;
+            }
+            
+            calculateMaxLengths() {
+                // Calculate max length in direction 1 (left or up)
+                this.maxLength1 = 0;
+                if (this.isHorizontal) {
+                    for (let x = this.startX - 1; x >= 0; x--) {
+                        if (grid[this.startY][x] === 1) break;
+                        this.maxLength1++;
+                    }
+                } else {
+                    for (let y = this.startY - 1; y >= 0; y--) {
+                        if (grid[y][this.startX] === 1) break;
+                        this.maxLength1++;
+                    }
+                }
+                
+                // Calculate max length in direction 2 (right or down)
+                this.maxLength2 = 0;
+                if (this.isHorizontal) {
+                    for (let x = this.startX + 1; x < GRID_WIDTH; x++) {
+                        if (grid[this.startY][x] === 1) break;
+                        this.maxLength2++;
+                    }
+                } else {
+                    for (let y = this.startY + 1; y < GRID_HEIGHT; y++) {
+                        if (grid[y][this.startX] === 1) break;
+                        this.maxLength2++;
+                    }
+                }
+            }
+            
+            update() {
+                if (this.destroyed || this.completed) return;
+                
+                // Grow in both directions
+                if (this.length1 < this.maxLength1) {
+                    this.length1 = Math.min(this.length1 + WALL_GROW_SPEED, this.maxLength1);
+                }
+                if (this.length2 < this.maxLength2) {
+                    this.length2 = Math.min(this.length2 + WALL_GROW_SPEED, this.maxLength2);
+                }
+                
+                // Check if completed
+                if (this.length1 >= this.maxLength1 && this.length2 >= this.maxLength2) {
+                    this.completed = true;
+                    this.convertToWall();
+                }
+                
+                // Check collision with balls
+                for (let ball of balls) {
+                    if (this.checkBallCollision(ball)) {
+                        this.destroyed = true;
+                        lives--;
+                        updateUI();
+                        playSound('lifeLost');
+                        if (lives <= 0) {
+                            gameOver();
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            checkBallCollision(ball) {
+                const x1 = this.isHorizontal ? (this.startX - this.length1) * CELL_SIZE : this.startX * CELL_SIZE;
+                const y1 = this.isHorizontal ? this.startY * CELL_SIZE : (this.startY - this.length1) * CELL_SIZE;
+                const x2 = this.isHorizontal ? (this.startX + this.length2 + 1) * CELL_SIZE : (this.startX + 1) * CELL_SIZE;
+                const y2 = this.isHorizontal ? (this.startY + 1) * CELL_SIZE : (this.startY + this.length2 + 1) * CELL_SIZE;
+                
+                const closestX = Math.max(x1, Math.min(ball.x, x2));
+                const closestY = Math.max(y1, Math.min(ball.y, y2));
+                
+                const distance = Math.sqrt(
+                    (ball.x - closestX) * (ball.x - closestX) +
+                    (ball.y - closestY) * (ball.y - closestY)
+                );
+                
+                return distance < ball.radius;
+            }
+            
+            convertToWall() {
+                // Create permanent wall
+                const wall = {
+                    x: this.isHorizontal ? this.startX - Math.floor(this.length1) : this.startX,
+                    y: this.isHorizontal ? this.startY : this.startY - Math.floor(this.length1),
+                    length: this.isHorizontal ? Math.floor(this.length1) + Math.floor(this.length2) + 1 : Math.floor(this.length1) + Math.floor(this.length2) + 1,
+                    isHorizontal: this.isHorizontal
+                };
+                walls.push(wall);
+                
+                // Update grid
+                for (let i = 0; i < wall.length; i++) {
+                    const x = wall.isHorizontal ? wall.x + i : wall.x;
+                    const y = wall.isHorizontal ? wall.y : wall.y + i;
+                    if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) {
+                        grid[y][x] = 1;
+                    }
+                }
+                
+                calculateClearedArea();
+                playSound('wallComplete');
+            }
+            
+            draw() {
+                if (this.destroyed) return;
+                
+                ctx.strokeStyle = this.isHorizontal ? '#00ffff' : '#ff00ff';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                
+                // Draw growing segments
+                ctx.beginPath();
+                if (this.isHorizontal) {
+                    ctx.moveTo((this.startX - this.length1) * CELL_SIZE, (this.startY + 0.5) * CELL_SIZE);
+                    ctx.lineTo((this.startX + this.length2 + 1) * CELL_SIZE, (this.startY + 0.5) * CELL_SIZE);
+                } else {
+                    ctx.moveTo((this.startX + 0.5) * CELL_SIZE, (this.startY - this.length1) * CELL_SIZE);
+                    ctx.lineTo((this.startX + 0.5) * CELL_SIZE, (this.startY + this.length2 + 1) * CELL_SIZE);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+        
+        // Initialize audio
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            startBackgroundMusic();
+        }
+        
+        // Sound effects
+        function playSound(type) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            const currentTime = audioContext.currentTime;
+            
+            switch(type) {
+                case 'bounce':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(150, currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(120, currentTime + 0.03);
+                    gainNode.gain.setValueAtTime(0.05, currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.03);
+                    oscillator.start(currentTime);
+                    oscillator.stop(currentTime + 0.03);
+                    break;
+                
+                case 'wallComplete':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(400, currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.3, currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.2);
+                    oscillator.start(currentTime);
+                    oscillator.stop(currentTime + 0.2);
+                    break;
+                
+                case 'lifeLost':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(400, currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.4, currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.3);
+                    oscillator.start(currentTime);
+                    oscillator.stop(currentTime + 0.3);
+                    break;
+                
+                case 'levelComplete':
+                    oscillator.type = 'square';
+                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C, E, G, C
+                    notes.forEach((freq, i) => {
+                        const noteOsc = audioContext.createOscillator();
+                        const noteGain = audioContext.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(audioContext.destination);
+                        noteOsc.type = 'square';
+                        noteOsc.frequency.setValueAtTime(freq, currentTime + i * 0.1);
+                        noteGain.gain.setValueAtTime(0.2, currentTime + i * 0.1);
+                        noteGain.gain.exponentialRampToValueAtTime(0.01, currentTime + i * 0.1 + 0.2);
+                        noteOsc.start(currentTime + i * 0.1);
+                        noteOsc.stop(currentTime + i * 0.1 + 0.2);
+                    });
+                    break;
+                
+                case 'gameOver':
+                    oscillator.type = 'square';
+                    const gameOverNotes = [262, 247, 233, 220]; // C, B, Bb, A
+                    gameOverNotes.forEach((freq, i) => {
+                        const noteOsc = audioContext.createOscillator();
+                        const noteGain = audioContext.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(audioContext.destination);
+                        noteOsc.type = 'square';
+                        noteOsc.frequency.setValueAtTime(freq, currentTime + i * 0.2);
+                        noteGain.gain.setValueAtTime(0.3, currentTime + i * 0.2);
+                        noteGain.gain.exponentialRampToValueAtTime(0.01, currentTime + i * 0.2 + 0.3);
+                        noteOsc.start(currentTime + i * 0.2);
+                        noteOsc.stop(currentTime + i * 0.2 + 0.3);
+                    });
+                    break;
+            }
+        }
+        
+        // Background music
+        function startBackgroundMusic() {
+            if (!audioContext || musicOscillator) return;
+            
+            musicGainNode = audioContext.createGain();
+            musicGainNode.gain.value = isMusicMuted ? 0 : 0.1;
+            musicGainNode.connect(audioContext.destination);
+            
+            // Create a simple melody loop
+            const playMelody = () => {
+                if (!gameRunning) return;
+                
+                const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 349.23, 329.63, 293.66];
+                const noteDuration = 0.25;
+                
+                notes.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const env = audioContext.createGain();
+                    
+                    osc.frequency.value = freq;
+                    osc.type = 'triangle';
+                    osc.connect(env);
+                    env.connect(musicGainNode);
+                    
+                    const startTime = audioContext.currentTime + i * noteDuration;
+                    env.gain.setValueAtTime(0, startTime);
+                    env.gain.linearRampToValueAtTime(0.1, startTime + 0.01);
+                    env.gain.exponentialRampToValueAtTime(0.001, startTime + noteDuration);
+                    
+                    osc.start(startTime);
+                    osc.stop(startTime + noteDuration);
+                });
+                
+                setTimeout(playMelody, notes.length * noteDuration * 1000);
+            };
+            
+            playMelody();
+        }
+        
+        // Initialize grid
+        function initGrid() {
+            grid = [];
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                grid[y] = new Array(GRID_WIDTH).fill(0);
+            }
+        }
+        
+        // Initialize game
+        function initGame() {
+            balls = [];
+            walls = [];
+            growingWalls = [];
+            initGrid();
+            
+            // Create balls based on level
+            const ballCount = 1 + level;
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b', '#eb4d4b'];
+            
+            for (let i = 0; i < ballCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = INITIAL_BALL_SPEED + (level - 1) * 0.2;
+                balls.push(new Ball(
+                    100 + Math.random() * (canvas.width - 200),
+                    100 + Math.random() * (canvas.height - 200),
+                    Math.cos(angle) * speed,
+                    Math.sin(angle) * speed,
+                    colors[i % colors.length]
+                ));
+            }
+            
+            clearedPercentage = 0;
+            updateUI();
+        }
+        
+        // Calculate cleared area
+        function calculateClearedArea() {
+            // Reset cleared cells
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (grid[y][x] === 2) {
+                        grid[y][x] = 0;
+                    }
+                }
+            }
+            
+            // Create a copy of the grid
+            const tempGrid = grid.map(row => [...row]);
+            
+            // Mark all cells reachable by balls
+            const visited = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(false));
+            
+            // Start flood fill from each ball position
+            for (let ball of balls) {
+                const ballX = Math.floor(ball.x / CELL_SIZE);
+                const ballY = Math.floor(ball.y / CELL_SIZE);
+                floodFill(tempGrid, visited, ballX, ballY);
+            }
+            
+            // Count cleared cells and total playable area
+            let clearedCells = 0;
+            let totalPlayableArea = GRID_WIDTH * GRID_HEIGHT;
+            
+            // First, count walls to subtract from total area
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (grid[y][x] === 1) {
+                        totalPlayableArea--;
+                    }
+                }
+            }
+            
+            // Then mark cleared areas (not reachable by balls)
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (grid[y][x] === 0 && !visited[y][x]) {
+                        clearedCells++;
+                        grid[y][x] = 2; // Mark as cleared
+                    }
+                }
+            }
+            
+            // Calculate percentage based on original playable area (total area minus walls)
+            clearedPercentage = Math.floor((clearedCells / totalPlayableArea) * 100);
+            updateUI();
+            
+            // Check level completion
+            if (clearedPercentage >= TARGET_CLEAR_PERCENTAGE) {
+                levelComplete();
+            }
+        }
+        
+        // Flood fill algorithm
+        function floodFill(tempGrid, visited, x, y) {
+            if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return;
+            if (visited[y][x] || tempGrid[y][x] !== 0) return;
+            
+            visited[y][x] = true;
+            
+            // Check all 4 directions
+            floodFill(tempGrid, visited, x + 1, y);
+            floodFill(tempGrid, visited, x - 1, y);
+            floodFill(tempGrid, visited, x, y + 1);
+            floodFill(tempGrid, visited, x, y - 1);
+        }
+        
+        // Level complete
+        function levelComplete() {
+            playSound('levelComplete');
+            score += 1000 * level + clearedPercentage * 10;
+            level++;
+            setTimeout(() => {
+                initGame();
+            }, 1500);
+        }
+        
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            playSound('gameOver');
+            document.getElementById('gameOverTitle').textContent = 
+                lives > 0 ? 'Level Complete!' : 'Game Over!';
+            document.getElementById('finalScore').textContent = `Final Score: ${score}`;
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        // Update UI
+        function updateUI() {
+            document.getElementById('level').textContent = level;
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+            document.getElementById('cleared').textContent = clearedPercentage + '%';
+        }
+        
+        // Draw functions
+        function drawGrid() {
+            // Find and fill entire cleared regions including internal walls
+            const processed = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(false));
+            
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (grid[y][x] === 2 && !processed[y][x]) {
+                        // Found a cleared area, flood fill to find entire region
+                        const region = [];
+                        const queue = [{x, y}];
+                        processed[y][x] = true;
+                        
+                        while (queue.length > 0) {
+                            const {x: cx, y: cy} = queue.shift();
+                            region.push({x: cx, y: cy});
+                            
+                            // Check all 4 directions for cleared cells or internal walls
+                            const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+                            for (const [dx, dy] of directions) {
+                                const nx = cx + dx;
+                                const ny = cy + dy;
+                                
+                                if (nx >= 0 && nx < GRID_WIDTH && ny >= 0 && ny < GRID_HEIGHT && !processed[ny][nx]) {
+                                    // Include cleared cells (2) and walls (1) that don't border active areas
+                                    if (grid[ny][nx] === 2) {
+                                        processed[ny][nx] = true;
+                                        queue.push({x: nx, y: ny});
+                                    } else if (grid[ny][nx] === 1) {
+                                        // Check if this wall borders any active area
+                                        let bordersActive = false;
+                                        for (const [ddx, ddy] of directions) {
+                                            const nnx = nx + ddx;
+                                            const nny = ny + ddy;
+                                            if (nnx >= 0 && nnx < GRID_WIDTH && nny >= 0 && nny < GRID_HEIGHT && grid[nny][nnx] === 0) {
+                                                bordersActive = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!bordersActive) {
+                                            processed[ny][nx] = true;
+                                            queue.push({x: nx, y: ny});
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Fill the entire region with consistent color
+                        ctx.fillStyle = 'rgba(0, 255, 0, 0.08)';
+                        for (const {x: rx, y: ry} of region) {
+                            ctx.fillRect(rx * CELL_SIZE, ry * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                        }
+                    }
+                }
+            }
+            
+            // Draw subtle grid lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x <= GRID_WIDTH; x++) {
+                ctx.beginPath();
+                ctx.moveTo(x * CELL_SIZE, 0);
+                ctx.lineTo(x * CELL_SIZE, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y <= GRID_HEIGHT; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, y * CELL_SIZE);
+                ctx.lineTo(canvas.width, y * CELL_SIZE);
+                ctx.stroke();
+            }
+        }
+        
+        function drawWalls() {
+            // Draw walls only in active areas as solid white
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            
+            // First, determine which cells are in active regions
+            const isActiveRegion = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(false));
+            const visited = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(false));
+            
+            // Flood fill from each ball position to mark active regions
+            for (let ball of balls) {
+                const ballX = Math.floor(ball.x / CELL_SIZE);
+                const ballY = Math.floor(ball.y / CELL_SIZE);
+                
+                const queue = [{x: ballX, y: ballY}];
+                while (queue.length > 0) {
+                    const {x, y} = queue.shift();
+                    
+                    if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) continue;
+                    if (visited[y][x] || grid[y][x] === 1) continue;
+                    
+                    visited[y][x] = true;
+                    isActiveRegion[y][x] = true;
+                    
+                    // Add neighbors
+                    queue.push({x: x + 1, y});
+                    queue.push({x: x - 1, y});
+                    queue.push({x, y: y + 1});
+                    queue.push({x, y: y - 1});
+                }
+            }
+            
+            // Draw walls that are in or adjacent to active regions
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (grid[y][x] === 1) {
+                        // Check if this wall is adjacent to an active region
+                        let adjacentToActive = false;
+                        
+                        const neighbors = [
+                            {x: x - 1, y}, {x: x + 1, y},
+                            {x, y: y - 1}, {x, y: y + 1}
+                        ];
+                        
+                        for (const {x: nx, y: ny} of neighbors) {
+                            if (nx >= 0 && nx < GRID_WIDTH && ny >= 0 && ny < GRID_HEIGHT) {
+                                if (isActiveRegion[ny][nx]) {
+                                    adjacentToActive = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Draw the wall if it's adjacent to active area
+                        if (adjacentToActive) {
+                            ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning || paused) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid and cleared areas
+            drawGrid();
+            
+            // Draw walls
+            drawWalls();
+            
+            // Update and draw growing walls
+            growingWalls = growingWalls.filter(wall => !wall.destroyed && !wall.completed);
+            for (let wall of growingWalls) {
+                wall.update();
+                wall.draw();
+            }
+            
+            // Update and draw balls
+            for (let ball of balls) {
+                ball.update();
+                ball.draw();
+            }
+            
+            // Draw cursor indicator when game is active
+            if (mouseX !== undefined && mouseY !== undefined && !paused) {
+                drawCursorIndicator();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Mouse position tracking
+        let mouseX, mouseY;
+        
+        // Draw cursor indicator
+        function drawCursorIndicator() {
+            const gridX = Math.floor(mouseX / CELL_SIZE);
+            const gridY = Math.floor(mouseY / CELL_SIZE);
+            
+            // Only show if position is valid
+            if (gridX >= 0 && gridX < GRID_WIDTH && gridY >= 0 && gridY < GRID_HEIGHT && grid[gridY][gridX] === 0) {
+                ctx.strokeStyle = isHorizontalMode ? 'rgba(0, 255, 255, 0.5)' : 'rgba(255, 0, 255, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                
+                if (isHorizontalMode) {
+                    // Draw horizontal line preview
+                    ctx.beginPath();
+                    ctx.moveTo(0, (gridY + 0.5) * CELL_SIZE);
+                    ctx.lineTo(canvas.width, (gridY + 0.5) * CELL_SIZE);
+                    ctx.stroke();
+                } else {
+                    // Draw vertical line preview
+                    ctx.beginPath();
+                    ctx.moveTo((gridX + 0.5) * CELL_SIZE, 0);
+                    ctx.lineTo((gridX + 0.5) * CELL_SIZE, canvas.height);
+                    ctx.stroke();
+                }
+                
+                ctx.setLineDash([]);
+            }
+        }
+        
+        // Start game
+        function startGame() {
+            if (!audioContext) {
+                initAudio();
+            }
+            
+            gameRunning = true;
+            paused = false;
+            level = 1;
+            score = 0;
+            lives = 3;
+            
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            
+            initGame();
+            gameLoop();
+        }
+        
+        // Reset game
+        function resetGame() {
+            startGame();
+        }
+        
+        // Event listeners
+        canvas.addEventListener('click', (e) => {
+            if (!gameRunning || paused) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / CELL_SIZE);
+            const y = Math.floor((e.clientY - rect.top) / CELL_SIZE);
+            
+            // Check if position is valid (not on existing wall)
+            if (grid[y] && grid[y][x] === 0) {
+                growingWalls.push(new GrowingWall(x, y, isHorizontalMode));
+                playSound('wallStart');
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!gameRunning || paused) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            mouseX = undefined;
+            mouseY = undefined;
+        });
+        
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            toggleMode();
+        });
+        
+        function toggleMode() {
+            isHorizontalMode = !isHorizontalMode;
+            modeIndicator.textContent = isHorizontalMode ? 'Horizontal' : 'Vertical';
+            modeIndicator.className = 'mode-indicator ' + (isHorizontalMode ? 'mode-horizontal' : 'mode-vertical');
+        }
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            switch(e.key.toLowerCase()) {
+                case ' ':
+                    e.preventDefault();
+                    toggleMode();
+                    break;
+                case 'p':
+                    if (gameRunning) {
+                        paused = !paused;
+                        if (!paused) gameLoop();
+                    }
+                    break;
+                case 'escape':
+                    window.location.href = 'index.html';
+                    break;
+            }
+        });
+        
+        // Mute control
+        document.getElementById('muteMusic').addEventListener('change', (e) => {
+            isMusicMuted = e.target.checked;
+            if (musicGainNode) {
+                musicGainNode.gain.value = isMusicMuted ? 0 : 0.1;
+            }
+        });
+    </script>
+</body>
+</html>
