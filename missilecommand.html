@@ -361,11 +361,11 @@
         let isPaused = false;
         let score = 0;
         let wave = 1;
-        let maxAmmo = 15;  // More ammo to start
+        let maxAmmo = 20;  // Even more ammo for increased difficulty
         let currentAmmo = maxAmmo;
         let lastAmmoRefill = 0;
         let waveInProgress = false;
-        const AMMO_REFILL_RATE = 2000; // Constant refill rate - 2 seconds
+        const AMMO_REFILL_RATE = 1500; // Faster refill rate - 1.5 seconds
         let animationId = null;
         let lastFrameTime = 0;
         let deltaTime = 0;
@@ -392,8 +392,8 @@
         const BATTERY_WIDTH = 50;
         const BATTERY_HEIGHT = 30;
         const EXPLOSION_MAX_RADIUS = 60;
-        const MISSILE_SPEED = 0.3;  // Much slower start speed
-        const PLAYER_MISSILE_SPEED = 10;  // Faster player missiles
+        const MISSILE_SPEED = 0.8;  // Increased base speed for more excitement
+        const PLAYER_MISSILE_SPEED = 12;  // Faster player missiles
         
         // Initialize cities
         function initCities() {
@@ -454,10 +454,10 @@
             newMissile.y = 0;
             newMissile.targetX = targetX;
             newMissile.targetY = targetY;
-            newMissile.vx = (dx / distance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15);  // Faster progression
-            newMissile.vy = (dy / distance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15);
+            newMissile.vx = (dx / distance) * MISSILE_SPEED * (1 + (wave - 1) * 0.2);  // Faster progression
+            newMissile.vy = (dy / distance) * MISSILE_SPEED * (1 + (wave - 1) * 0.2);
             newMissile.trail.length = 0;
-            newMissile.canSplit = wave >= 7 && Math.random() < 0.3;  // 30% chance to split at wave 7+
+            newMissile.canSplit = wave >= 5 && Math.random() < 0.4;  // 40% chance to split at wave 5+
             
             enemyMissiles.push(newMissile);
         }
@@ -637,12 +637,15 @@
             let headColor = '#ffa500';
             
             if (!isPlayer) {
-                if (wave >= 10) {
+                if (wave >= 8) {
                     missileColor = 'rgba(255, 0, 255, 0.8)';  // Purple for high waves
                     headColor = '#ff00ff';
-                } else if (wave >= 5) {
+                } else if (wave >= 4) {
                     missileColor = 'rgba(255, 255, 0, 0.8)';  // Yellow for mid waves
                     headColor = '#ffff00';
+                } else if (wave >= 2) {
+                    missileColor = 'rgba(0, 255, 255, 0.8)';  // Cyan for early waves
+                    headColor = '#00ffff';
                 }
             }
             
@@ -664,7 +667,7 @@
             // Missile head
             ctx.fillStyle = isPlayer ? '#ef4444' : headColor;
             ctx.beginPath();
-            const missileSize = isPlayer ? 4 : (3 + Math.floor(wave / 10));  // Bigger missiles at higher waves
+            const missileSize = isPlayer ? 4 : (3 + Math.floor(wave / 5));  // Bigger missiles sooner
             ctx.arc(missile.x, missile.y, missileSize, 0, Math.PI * 2);
             ctx.fill();
             
@@ -718,7 +721,7 @@
                 }
                 
                 // Check for missile split
-                if (missile.canSplit && missile.y > canvas.height * 0.3 && missile.y < canvas.height * 0.4) {
+                if (missile.canSplit && missile.y > canvas.height * 0.25 && missile.y < canvas.height * 0.35) {  // Split earlier
                     missile.canSplit = false;  // Only split once
                     
                     // Create two split missiles
@@ -747,8 +750,8 @@
                             splitMissile.y = missile.y;
                             splitMissile.targetX = splitTargetX;
                             splitMissile.targetY = splitTargetY;
-                            splitMissile.vx = (splitDx / splitDistance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15);
-                            splitMissile.vy = (splitDy / splitDistance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15);
+                            splitMissile.vx = (splitDx / splitDistance) * MISSILE_SPEED * (1 + (wave - 1) * 0.2);
+                            splitMissile.vy = (splitDy / splitDistance) * MISSILE_SPEED * (1 + (wave - 1) * 0.2);
                             splitMissile.trail.length = 0;
                             splitMissile.trail.push({x: missile.x, y: missile.y});
                             splitMissile.canSplit = false;
@@ -895,8 +898,8 @@
                 updateScore();
                 
                 wave++;
-                // Don't fully refill ammo, just add bonus ammo
-                currentAmmo = Math.min(currentAmmo + 5, maxAmmo);
+                // Give more ammo refill for harder gameplay
+                currentAmmo = Math.min(currentAmmo + 8, maxAmmo);
                 updateAmmoDisplay();
                 updateWave();
                 playSoundEffect('waveComplete');
@@ -904,23 +907,23 @@
                 // Spawn new wave
                 setTimeout(() => {
                     waveInProgress = true;
-                    const missileCount = Math.min(3 + wave * 2, 20);  // More missiles per wave
-                    const spawnDelay = Math.max(2500 - wave * 150, 300);  // Faster spawn rate
+                    const missileCount = Math.min(5 + wave * 2, 25);  // More missiles per wave
+                    const spawnDelay = Math.max(2000 - wave * 100, 200);  // Faster spawn rate
                     
                     // Add wave patterns for variety
                     if (wave % 3 === 0) {
                         // Wave of 3: Simultaneous launch from multiple positions
                         for (let burst = 0; burst < Math.ceil(missileCount / 3); burst++) {
                             setTimeout(() => {
-                                for (let i = 0; i < 3; i++) {
+                                for (let i = 0; i < 4; i++) {  // 4 missiles per burst
                                     createEnemyMissile();
                                 }
-                            }, burst * spawnDelay * 3);
+                            }, burst * spawnDelay * 2);  // Faster bursts
                         }
                     } else if (wave % 5 === 0) {
                         // Wave of 5: Full barrage
-                        for (let i = 0; i < missileCount; i++) {
-                            setTimeout(() => createEnemyMissile(), i * 100);  // Rapid fire
+                        for (let i = 0; i < missileCount * 1.5; i++) {  // 50% more missiles
+                            setTimeout(() => createEnemyMissile(), i * 80);  // Even more rapid fire
                         }
                     } else {
                         // Normal wave pattern
@@ -928,7 +931,7 @@
                             setTimeout(() => createEnemyMissile(), i * spawnDelay);
                         }
                     }
-                }, 2000);
+                }, 1500);  // Less delay between waves
             }
         }
         
@@ -1223,13 +1226,13 @@
             // Initialize ammo refill timer
             lastAmmoRefill = performance.now();
             
-            // Start first wave - much easier
+            // Start first wave - more exciting from the start
             setTimeout(() => {
                 waveInProgress = true;
-                for (let i = 0; i < 4; i++) {  // Only 4 missiles to start
-                    setTimeout(() => createEnemyMissile(), i * 2000);  // 2 seconds apart
+                for (let i = 0; i < 6; i++) {  // 6 missiles to start
+                    setTimeout(() => createEnemyMissile(), i * 1500);  // 1.5 seconds apart
                 }
-            }, 1500);  // Give player time to prepare
+            }, 1000);  // Quick start
             
             lastFrameTime = 0;
             animationId = requestAnimationFrame(gameLoop);
