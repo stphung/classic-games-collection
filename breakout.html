@@ -14,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0a;
+            background: #0f0f0f;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,7 +24,7 @@
             position: relative;
         }
 
-        /* Animated gradient background */
+        /* Subtle animated background */
         body::before {
             content: '';
             position: fixed;
@@ -33,67 +33,48 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%);
-            animation: gradientShift 20s ease-in-out infinite;
+                radial-gradient(circle at 30% 40%, rgba(255, 107, 107, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 70% 60%, rgba(78, 205, 196, 0.1) 0%, transparent 40%);
             z-index: -1;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.1); }
         }
 
         .game-container {
             position: relative;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            padding: 30px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .game-container:hover {
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
-                        0 0 60px rgba(120, 119, 198, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
 
         #canvas {
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            background: rgba(15, 15, 15, 0.8);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            background: #0f0f0f;
+            display: block;
         }
 
         .game-info {
             position: absolute;
-            top: 30px;
-            left: 30px;
-            right: 30px;
+            top: 40px;
+            left: 40px;
+            right: 40px;
             display: flex;
             justify-content: space-between;
-            font-size: 20px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-size: 18px;
+            font-weight: 500;
             pointer-events: none;
+            z-index: 10;
         }
 
         .score, .lives {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(10px);
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 12px 24px;
+            border-radius: 30px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .score:hover, .lives:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.5px;
         }
 
         .game-overlay {
@@ -106,7 +87,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(15, 15, 15, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 20px;
             opacity: 0;
@@ -122,148 +103,132 @@
         .overlay-title {
             font-size: 48px;
             margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.3));
+            font-weight: 300;
+            letter-spacing: 4px;
+            color: #ffffff;
         }
 
         .overlay-message {
-            font-size: 20px;
-            margin-bottom: 30px;
-            color: #888;
+            font-size: 18px;
+            margin-bottom: 40px;
+            color: #666;
+            font-weight: 300;
         }
 
         .play-button {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: transparent;
             color: #e5e5e5;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 15px 40px;
-            font-size: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 16px 48px;
+            font-size: 16px;
             border-radius: 30px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 2px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            font-weight: 300;
         }
 
         .play-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
-                        0 0 30px rgba(245, 158, 11, 0.2);
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
         }
 
         .instructions {
             position: absolute;
-            bottom: 30px;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
-            color: #666;
+            color: #444;
             font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
         }
 
         .speed-selection {
-            margin: 30px 0;
+            margin: 40px 0;
         }
 
         .speed-label {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #999;
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #666;
+            font-weight: 300;
         }
 
         .speed-buttons {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
         }
 
         .speed-button {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            color: #e5e5e5;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
-            font-size: 15px;
+            background: transparent;
+            color: #999;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 24px;
+            font-size: 14px;
             border-radius: 20px;
             cursor: pointer;
-            transition: all 0.3s;
-            min-width: 75px;
+            transition: all 0.2s;
+            font-weight: 300;
         }
 
         .speed-button:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
         .speed-button.selected {
-            background: rgba(245, 158, 11, 0.2);
-            border-color: rgba(245, 158, 11, 0.4);
-            color: #fbbf24;
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.4);
+            color: #fff;
         }
 
         .back-button {
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
-            color: #e5e5e5;
+            color: #999;
             text-decoration: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 25px;
             font-size: 14px;
-            font-weight: bold;
-            text-transform: uppercase;
+            font-weight: 300;
             letter-spacing: 1px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             z-index: 1000;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
         }
 
         .back-button:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateX(-5px) translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
-                        0 0 30px rgba(120, 119, 198, 0.2);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            transform: translateX(-2px);
         }
 
         .back-button::before {
             content: '←';
-            font-size: 18px;
+            font-size: 16px;
         }
 
         .mute-control {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             padding: 15px;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
-        }
-
-        .mute-control:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
 
         .mute-label {
@@ -272,61 +237,80 @@
             gap: 10px;
             cursor: pointer;
             user-select: none;
-            color: #999;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #666;
+            font-size: 13px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
         }
 
         .mute-checkbox {
-            width: 18px;
-            height: 18px;
-            accent-color: #f59e0b;
+            width: 16px;
+            height: 16px;
+            accent-color: #ff6b6b;
             cursor: pointer;
+        }
+
+        /* Custom cursor */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            transform: translate(-50%, -50%);
         }
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-button">Home</a>
+    <div class="cursor"></div>
+    <a href="index.html" class="back-button">HOME</a>
     <div class="game-container">
         <canvas id="canvas" width="800" height="600"></canvas>
         <div class="game-info">
-            <div class="score">Score: <span id="score">0</span></div>
-            <div class="lives">Lives: <span id="lives">3</span></div>
+            <div class="score">SCORE <span id="score">0</span></div>
+            <div class="lives">LIVES <span id="lives">3</span></div>
         </div>
         <div class="game-overlay" id="startScreen">
-            <h1 class="overlay-title">Breakout</h1>
+            <h1 class="overlay-title">BREAKOUT</h1>
             <p class="overlay-message">Move your mouse to control the paddle</p>
             <div class="speed-selection">
-                <p class="speed-label">Select Speed:</p>
+                <p class="speed-label">SELECT DIFFICULTY</p>
                 <div class="speed-buttons">
-                    <button class="speed-button" onclick="setSpeed(0.8)">Beginner</button>
-                    <button class="speed-button" onclick="setSpeed(1.2)">Casual</button>
-                    <button class="speed-button" onclick="setSpeed(1.5)">Easy</button>
-                    <button class="speed-button" onclick="setSpeed(2)">Normal</button>
-                    <button class="speed-button" onclick="setSpeed(3)">Hard</button>
+                    <button class="speed-button" onclick="setSpeed(0.8)">EASY</button>
+                    <button class="speed-button" onclick="setSpeed(1.5)">NORMAL</button>
+                    <button class="speed-button" onclick="setSpeed(2.5)">HARD</button>
                 </div>
             </div>
-            <button class="play-button" onclick="startGame()">Start Game</button>
+            <button class="play-button" onclick="startGame()">START GAME</button>
         </div>
         <div class="game-overlay" id="gameOverScreen">
-            <h1 class="overlay-title">Game Over</h1>
-            <p class="overlay-message">Final Score: <span id="finalScore">0</span></p>
-            <button class="play-button" onclick="resetGame()">Play Again</button>
+            <h1 class="overlay-title">GAME OVER</h1>
+            <p class="overlay-message">FINAL SCORE <span id="finalScore">0</span></p>
+            <button class="play-button" onclick="resetGame()">PLAY AGAIN</button>
         </div>
-        <div class="instructions">Move mouse to control paddle</div>
+        <div class="instructions" id="instructions">MOVE MOUSE TO CONTROL</div>
     </div>
     
     <div class="mute-control">
         <label class="mute-label">
             <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
-            Mute Background Music
+            MUTE MUSIC
         </label>
     </div>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        
+        // Custom cursor
+        const cursor = document.querySelector('.cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
         
         // Initialize Web Audio API
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -340,213 +324,115 @@
             
             switch(type) {
                 case 'paddleHit':
-                    // Bouncy boop sound
-                    const boopOsc = audioContext.createOscillator();
-                    const boopGain = audioContext.createGain();
-                    boopOsc.frequency.setValueAtTime(400, now);
-                    boopOsc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-                    boopOsc.type = 'sine';
-                    boopGain.gain.setValueAtTime(0.3, now);
-                    boopGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    boopOsc.connect(boopGain);
-                    boopGain.connect(audioContext.destination);
-                    boopOsc.start(now);
-                    boopOsc.stop(now + 0.1);
+                    // Clean, high ping
+                    const pingOsc = audioContext.createOscillator();
+                    const pingGain = audioContext.createGain();
+                    pingOsc.frequency.setValueAtTime(800, now);
+                    pingOsc.type = 'sine';
+                    pingGain.gain.setValueAtTime(0.08, now);
+                    pingGain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
+                    pingOsc.connect(pingGain);
+                    pingGain.connect(audioContext.destination);
+                    pingOsc.start(now);
+                    pingOsc.stop(now + 0.03);
                     break;
                     
                 case 'brickHit':
-                    // Satisfying crack/pop sound
+                    // Satisfying pop
                     const popOsc = audioContext.createOscillator();
                     const popGain = audioContext.createGain();
-                    const popFilter = audioContext.createBiquadFilter();
-                    
-                    popOsc.frequency.setValueAtTime(800, now);
-                    popOsc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
-                    popOsc.type = 'square';
-                    
-                    popFilter.type = 'bandpass';
-                    popFilter.frequency.setValueAtTime(1000, now);
-                    popFilter.Q.setValueAtTime(10, now);
-                    
-                    popGain.gain.setValueAtTime(0.3, now);
-                    popGain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                    
-                    popOsc.connect(popFilter);
-                    popFilter.connect(popGain);
+                    popOsc.frequency.setValueAtTime(600, now);
+                    popOsc.frequency.exponentialRampToValueAtTime(300, now + 0.02);
+                    popOsc.type = 'triangle';
+                    popGain.gain.setValueAtTime(0.1, now);
+                    popGain.gain.exponentialRampToValueAtTime(0.01, now + 0.02);
+                    popOsc.connect(popGain);
                     popGain.connect(audioContext.destination);
-                    
                     popOsc.start(now);
-                    popOsc.stop(now + 0.05);
-                    
-                    // Add a click sound
-                    const clickBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.01, audioContext.sampleRate);
-                    const clickData = clickBuffer.getChannelData(0);
-                    for (let i = 0; i < clickData.length; i++) {
-                        clickData[i] = Math.random() * 2 - 1;
-                    }
-                    const clickSource = audioContext.createBufferSource();
-                    clickSource.buffer = clickBuffer;
-                    const clickGain = audioContext.createGain();
-                    clickGain.gain.setValueAtTime(0.1, now);
-                    clickSource.connect(clickGain);
-                    clickGain.connect(audioContext.destination);
-                    clickSource.start(now);
+                    popOsc.stop(now + 0.02);
                     break;
                     
                 case 'lifeLost':
-                    // Descending tone
+                    // Subtle descending tone
                     const lossOsc = audioContext.createOscillator();
                     const lossGain = audioContext.createGain();
-                    lossOsc.frequency.setValueAtTime(400, now);
-                    lossOsc.frequency.exponentialRampToValueAtTime(100, now + 0.5);
-                    lossOsc.type = 'sawtooth';
-                    lossGain.gain.setValueAtTime(0.2, now);
-                    lossGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    lossOsc.frequency.setValueAtTime(300, now);
+                    lossOsc.frequency.exponentialRampToValueAtTime(150, now + 0.3);
+                    lossOsc.type = 'sine';
+                    lossGain.gain.setValueAtTime(0.1, now);
+                    lossGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
                     lossOsc.connect(lossGain);
                     lossGain.connect(audioContext.destination);
                     lossOsc.start(now);
-                    lossOsc.stop(now + 0.5);
+                    lossOsc.stop(now + 0.3);
                     break;
                     
                 case 'gameOver':
-                    // Sad melody
-                    const sadNotes = [
-                        { freq: 261.63, time: 0 },    // C4
-                        { freq: 246.94, time: 0.2 },  // B3
-                        { freq: 220.00, time: 0.4 },  // A3
-                        { freq: 196.00, time: 0.6 },  // G3
-                        { freq: 174.61, time: 0.8 }   // F3
-                    ];
-                    
-                    sadNotes.forEach(note => {
+                    // Minimal game over sound
+                    const notes = [300, 250, 200];
+                    notes.forEach((freq, i) => {
                         const osc = audioContext.createOscillator();
                         const gain = audioContext.createGain();
-                        osc.frequency.setValueAtTime(note.freq, now + note.time);
-                        osc.type = 'triangle';
-                        gain.gain.setValueAtTime(0.2, now + note.time);
-                        gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + 0.3);
+                        osc.frequency.value = freq;
+                        osc.type = 'sine';
+                        gain.gain.setValueAtTime(0.08, now + i * 0.2);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.3);
                         osc.connect(gain);
                         gain.connect(audioContext.destination);
-                        osc.start(now + note.time);
-                        osc.stop(now + note.time + 0.3);
-                    });
-                    break;
-                    
-                case 'levelComplete':
-                    // Victory fanfare
-                    const victoryNotes = [
-                        { freq: 523.25, time: 0 },    // C5
-                        { freq: 523.25, time: 0.1 },  // C5
-                        { freq: 523.25, time: 0.2 },  // C5
-                        { freq: 523.25, time: 0.3 },  // C5
-                        { freq: 415.30, time: 0.4 },  // G#4
-                        { freq: 466.16, time: 0.5 },  // A#4
-                        { freq: 523.25, time: 0.6 },  // C5
-                        { freq: 466.16, time: 0.75 }, // A#4
-                        { freq: 523.25, time: 0.9 }   // C5
-                    ];
-                    
-                    victoryNotes.forEach(note => {
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        osc.frequency.setValueAtTime(note.freq, now + note.time);
-                        osc.type = 'square';
-                        gain.gain.setValueAtTime(0.2, now + note.time);
-                        gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + 0.15);
-                        osc.connect(gain);
-                        gain.connect(audioContext.destination);
-                        osc.start(now + note.time);
-                        osc.stop(now + note.time + 0.15);
+                        osc.start(now + i * 0.2);
+                        osc.stop(now + i * 0.2 + 0.3);
                     });
                     break;
             }
         }
         
-        // Background music
-        const musicNotes = [
-            // Main melody pattern
-            { freq: 261.63, duration: 0.2 }, // C4
-            { freq: 329.63, duration: 0.2 }, // E4
-            { freq: 392.00, duration: 0.2 }, // G4
-            { freq: 329.63, duration: 0.2 }, // E4
-            { freq: 261.63, duration: 0.4 }, // C4
-            
-            { freq: 293.66, duration: 0.2 }, // D4
-            { freq: 349.23, duration: 0.2 }, // F4
-            { freq: 440.00, duration: 0.2 }, // A4
-            { freq: 349.23, duration: 0.2 }, // F4
-            { freq: 293.66, duration: 0.4 }, // D4
-            
-            { freq: 329.63, duration: 0.2 }, // E4
-            { freq: 392.00, duration: 0.2 }, // G4
-            { freq: 493.88, duration: 0.2 }, // B4
-            { freq: 392.00, duration: 0.2 }, // G4
-            { freq: 329.63, duration: 0.4 }, // E4
-        ];
-        
-        const bassPattern = [
-            { freq: 130.81, duration: 0.8 }, // C3
-            { freq: 146.83, duration: 0.8 }, // D3
-            { freq: 164.81, duration: 0.8 }, // E3
-            { freq: 146.83, duration: 0.8 }, // D3
-        ];
-        
-        function playMusicNote(frequency, duration, startTime, type = 'square') {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.type = type;
-            oscillator.frequency.setValueAtTime(frequency, startTime);
-            
-            gainNode.gain.setValueAtTime(0.1, startTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.start(startTime);
-            oscillator.stop(startTime + duration);
-        }
-        
+        // Minimal ambient music
         function playBackgroundMusic() {
             if (!musicPlaying || audioContext.state === 'suspended' || musicMuted) return;
             
             const now = audioContext.currentTime;
             
-            // Play melody
-            let melodyTime = 0;
-            musicNotes.forEach(note => {
-                playMusicNote(note.freq, note.duration, now + melodyTime, 'square');
-                melodyTime += note.duration;
-            });
+            // Simple ambient pad
+            const notes = [130.81, 164.81, 196.00, 164.81]; // C3, E3, G3, E3
             
-            // Play bass
-            let bassTime = 0;
-            bassPattern.forEach(note => {
-                playMusicNote(note.freq, note.duration, now + bassTime, 'triangle');
-                bassTime += note.duration;
+            notes.forEach((freq, index) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                const filter = audioContext.createBiquadFilter();
+                
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                
+                filter.type = 'lowpass';
+                filter.frequency.value = 400;
+                
+                const startTime = now + index * 2;
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(0.02, startTime + 0.5);
+                gain.gain.setValueAtTime(0.02, startTime + 1.5);
+                gain.gain.linearRampToValueAtTime(0, startTime + 2);
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.start(startTime);
+                osc.stop(startTime + 2);
             });
         }
         
         function startMusic() {
             if (musicMuted) return;
             
-            // Stop any existing music first
             stopMusic();
             
-            // Resume audio context if suspended
             if (audioContext.state === 'suspended') {
                 audioContext.resume();
             }
             
             musicPlaying = true;
-            
-            // Play music immediately
             playBackgroundMusic();
-            
-            // Set up interval to loop the music
-            const totalDuration = musicNotes.reduce((sum, note) => sum + note.duration, 0);
-            musicInterval = setInterval(playBackgroundMusic, totalDuration * 1000);
+            musicInterval = setInterval(playBackgroundMusic, 8000);
         }
         
         function stopMusic() {
@@ -557,20 +443,23 @@
             }
         }
 
-        let ballSpeed = 2; // Default to normal speed
+        let ballSpeed = 1.5;
         let ball = {
             x: canvas.width / 2,
             y: canvas.height - 100,
             dx: ballSpeed,
             dy: -ballSpeed,
-            radius: 8,
-            trail: []
+            radius: 6,
+            trail: [],
+            speed: function() {
+                return Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+            }
         };
 
         let paddle = {
-            width: 200,
-            height: 15,
-            x: canvas.width / 2 - 100,
+            width: 100,
+            height: 12,
+            x: canvas.width / 2 - 50,
             y: canvas.height - 30
         };
 
@@ -578,7 +467,7 @@
         const brickRowCount = 6;
         const brickColumnCount = 10;
         const brickWidth = 70;
-        const brickHeight = 25;
+        const brickHeight = 20;
         const brickPadding = 5;
         const brickOffsetTop = 80;
         const brickOffsetLeft = 35;
@@ -586,10 +475,18 @@
         let score = 0;
         let lives = 3;
         let gameRunning = false;
+        let ballLaunched = false;
         let particles = [];
-        let powerUps = [];
 
-        const brickColors = ['#666', '#777', '#888', '#999', '#aaa', '#bbb'];
+        // Clean color palette
+        const brickColors = [
+            '#ff6b6b', // Red
+            '#4ecdc4', // Teal
+            '#45b7d1', // Blue
+            '#96ceb4', // Mint
+            '#feca57', // Yellow
+            '#dfe6e9'  // Light gray
+        ];
 
         function initBricks() {
             bricks = [];
@@ -608,52 +505,30 @@
         }
 
         function drawBall() {
+            // Subtle trail
             ball.trail.forEach((pos, index) => {
-                ctx.globalAlpha = index / ball.trail.length * 0.5;
+                const alpha = (index / ball.trail.length) * 0.2;
+                ctx.globalAlpha = alpha;
                 ctx.beginPath();
                 ctx.arc(pos.x, pos.y, ball.radius * (index / ball.trail.length), 0, Math.PI * 2);
-                ctx.fillStyle = '#ff6666';
+                ctx.fillStyle = '#ffffff';
                 ctx.fill();
             });
             ctx.globalAlpha = 1;
 
+            // Clean white ball
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-            const gradient = ctx.createRadialGradient(ball.x - 3, ball.y - 3, 0, ball.x, ball.y, ball.radius);
-            gradient.addColorStop(0, '#ff9999');
-            gradient.addColorStop(1, '#cc0000');
-            ctx.fillStyle = gradient;
+            ctx.fillStyle = '#ffffff';
             ctx.fill();
             ctx.closePath();
-
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(255, 100, 100, 0.5)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            ctx.closePath();
-            
-            // Add glow effect
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = '#ff6666';
-            ctx.stroke();
-            ctx.shadowBlur = 0;
         }
 
         function drawPaddle() {
+            // Simple rounded paddle
             ctx.beginPath();
-            ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, 7);
-            const gradient = ctx.createLinearGradient(paddle.x, paddle.y, paddle.x, paddle.y + paddle.height);
-            gradient.addColorStop(0, '#4080ff');
-            gradient.addColorStop(0.5, '#2060e0');
-            gradient.addColorStop(1, '#1040c0');
-            ctx.fillStyle = gradient;
-            ctx.fill();
-            ctx.closePath();
-
-            ctx.beginPath();
-            ctx.roundRect(paddle.x, paddle.y, paddle.width, 3, 1);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, paddle.height / 2);
+            ctx.fillStyle = '#ffffff';
             ctx.fill();
             ctx.closePath();
         }
@@ -667,39 +542,33 @@
                         bricks[r][c].x = brickX;
                         bricks[r][c].y = brickY;
 
+                        // Flat design with subtle depth
                         ctx.beginPath();
                         ctx.roundRect(brickX, brickY, brickWidth, brickHeight, 3);
-                        const gradient = ctx.createLinearGradient(brickX, brickY, brickX, brickY + brickHeight);
-                        gradient.addColorStop(0, bricks[r][c].color);
-                        gradient.addColorStop(1, '#333');
-                        ctx.fillStyle = gradient;
-                        ctx.fill();
-                        ctx.closePath();
-
-                        ctx.beginPath();
-                        ctx.roundRect(brickX, brickY, brickWidth, 2, 1);
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                        ctx.fillStyle = bricks[r][c].color;
                         ctx.fill();
                         ctx.closePath();
                         
-                        // Add subtle glow to bricks
-                        ctx.shadowBlur = 10;
-                        ctx.shadowColor = bricks[r][c].color;
+                        // Very subtle highlight
+                        ctx.beginPath();
+                        ctx.roundRect(brickX, brickY, brickWidth, 1, 0);
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
                         ctx.fill();
-                        ctx.shadowBlur = 0;
+                        ctx.closePath();
                     }
                 }
             }
         }
 
         function createParticles(x, y, color) {
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI * 2 / 6) * i;
                 particles.push({
                     x: x,
                     y: y,
-                    dx: (Math.random() - 0.5) * 8,
-                    dy: (Math.random() - 0.5) * 8,
-                    size: Math.random() * 3 + 1,
+                    dx: Math.cos(angle) * 2,
+                    dy: Math.sin(angle) * 2,
+                    size: 2,
                     color: color,
                     life: 1
                 });
@@ -710,13 +579,14 @@
             particles = particles.filter(particle => {
                 particle.x += particle.dx;
                 particle.y += particle.dy;
-                particle.dy += 0.2;
-                particle.life -= 0.02;
+                particle.dy += 0.1;
+                particle.life -= 0.04;
+                particle.dx *= 0.95;
 
                 if (particle.life > 0) {
-                    ctx.globalAlpha = particle.life;
+                    ctx.globalAlpha = particle.life * 0.5;
                     ctx.fillStyle = particle.color;
-                    ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+                    ctx.fillRect(particle.x - particle.size/2, particle.y - particle.size/2, particle.size, particle.size);
                     ctx.globalAlpha = 1;
                     return true;
                 }
@@ -725,16 +595,51 @@
         }
 
         function collisionDetection() {
+            // Store the ball's previous position
+            const prevX = ball.x - ball.dx;
+            const prevY = ball.y - ball.dy;
+            
             for (let r = 0; r < brickRowCount; r++) {
                 for (let c = 0; c < brickColumnCount; c++) {
                     const b = bricks[r][c];
                     if (b.status === 1) {
+                        // Check if ball is colliding with brick
                         if (ball.x + ball.radius > b.x && 
                             ball.x - ball.radius < b.x + brickWidth && 
                             ball.y + ball.radius > b.y && 
                             ball.y - ball.radius < b.y + brickHeight) {
                             
-                            ball.dy = -ball.dy;
+                            // Determine which side of the brick was hit
+                            const ballCenterX = ball.x;
+                            const ballCenterY = ball.y;
+                            const brickCenterX = b.x + brickWidth / 2;
+                            const brickCenterY = b.y + brickHeight / 2;
+                            
+                            // Calculate overlap on each axis
+                            const overlapX = (brickWidth / 2 + ball.radius) - Math.abs(ballCenterX - brickCenterX);
+                            const overlapY = (brickHeight / 2 + ball.radius) - Math.abs(ballCenterY - brickCenterY);
+                            
+                            // Determine collision side based on smallest overlap
+                            if (overlapX < overlapY) {
+                                // Hit from left or right
+                                ball.dx = -ball.dx;
+                                // Move ball out of brick
+                                if (ballCenterX < brickCenterX) {
+                                    ball.x = b.x - ball.radius;
+                                } else {
+                                    ball.x = b.x + brickWidth + ball.radius;
+                                }
+                            } else {
+                                // Hit from top or bottom
+                                ball.dy = -ball.dy;
+                                // Move ball out of brick
+                                if (ballCenterY < brickCenterY) {
+                                    ball.y = b.y - ball.radius;
+                                } else {
+                                    ball.y = b.y + brickHeight + ball.radius;
+                                }
+                            }
+                            
                             b.status = 0;
                             score += b.points;
                             updateScore();
@@ -744,6 +649,9 @@
                             if (score === getTotalPossibleScore()) {
                                 gameWon();
                             }
+                            
+                            // Only handle one collision per frame
+                            return;
                         }
                     }
                 }
@@ -759,34 +667,67 @@
         }
 
         function updateBall() {
+            // If ball not launched, follow paddle
+            if (!ballLaunched) {
+                ball.x = paddle.x + paddle.width / 2;
+                ball.y = paddle.y - ball.radius - 2;
+                ball.trail = [];
+                return;
+            }
+            
             ball.trail.push({ x: ball.x, y: ball.y });
-            if (ball.trail.length > 10) {
+            if (ball.trail.length > 8) {
                 ball.trail.shift();
             }
+
+            // Store previous position for collision detection
+            const prevX = ball.x;
+            const prevY = ball.y;
 
             ball.x += ball.dx;
             ball.y += ball.dy;
 
-            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+            // Wall collisions
+            if (ball.x + ball.radius > canvas.width) {
+                ball.x = canvas.width - ball.radius;
+                ball.dx = -ball.dx;
+            } else if (ball.x - ball.radius < 0) {
+                ball.x = ball.radius;
                 ball.dx = -ball.dx;
             }
+            
             if (ball.y - ball.radius < 0) {
+                ball.y = ball.radius;
                 ball.dy = -ball.dy;
             }
 
-            if (ball.y + ball.radius > paddle.y && 
+            // Paddle collision
+            if (ball.dy > 0 && // Ball moving downward
+                ball.y + ball.radius > paddle.y && 
                 ball.y - ball.radius < paddle.y + paddle.height &&
                 ball.x > paddle.x && 
-                ball.x < paddle.x + paddle.width) {
+                ball.x < paddle.x + paddle.width &&
+                prevY + ball.radius <= paddle.y) { // Was above paddle in previous frame
                 
+                // Calculate hit position for angle
                 let hitPos = (ball.x - paddle.x) / paddle.width;
-                ball.dx = ballSpeed * 4 * (hitPos - 0.5);
-                ball.dy = -Math.abs(ball.dy);
+                hitPos = Math.max(0.1, Math.min(0.9, hitPos)); // Clamp to avoid extreme angles
                 
-                createParticles(ball.x, paddle.y, '#888');
+                // Set new velocity based on hit position
+                const maxAngle = Math.PI / 3; // 60 degrees max
+                const angle = (hitPos - 0.5) * maxAngle;
+                const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+                
+                ball.dx = speed * Math.sin(angle);
+                ball.dy = -speed * Math.cos(angle);
+                
+                // Ensure ball doesn't get stuck
+                ball.y = paddle.y - ball.radius;
+                
                 playSound('paddleHit');
             }
 
+            // Ball fell off screen
             if (ball.y - ball.radius > canvas.height) {
                 lives--;
                 updateLives();
@@ -800,24 +741,50 @@
         }
 
         function resetBall() {
-            ball.x = canvas.width / 2;
-            ball.y = canvas.height - 100;
-            ball.dx = ballSpeed;
-            ball.dy = -ballSpeed;
+            ballLaunched = false;
+            ball.x = paddle.x + paddle.width / 2;
+            ball.y = paddle.y - ball.radius - 2;
+            ball.dx = 0;
+            ball.dy = 0;
             ball.trail = [];
+            paddle.x = canvas.width / 2 - paddle.width / 2;
+        }
+        
+        function launchBall() {
+            if (!ballLaunched && gameRunning) {
+                ballLaunched = true;
+                // Random initial angle between -45 and 45 degrees
+                const angle = (Math.random() - 0.5) * Math.PI / 2;
+                ball.dx = ballSpeed * Math.sin(angle);
+                ball.dy = -ballSpeed * Math.cos(angle);
+            }
         }
 
         function draw() {
-            ctx.fillStyle = 'rgba(15, 15, 15, 0.1)';
+            // Clean black background
+            ctx.fillStyle = '#0f0f0f';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (gameRunning) {
+                // Update physics first
+                updateBall();
+                if (ballLaunched) {
+                    collisionDetection();
+                }
+                updateParticles();
+                
+                // Then draw everything
                 drawBricks();
                 drawBall();
                 drawPaddle();
-                updateParticles();
-                collisionDetection();
-                updateBall();
+                
+                // Show launch instruction
+                if (!ballLaunched) {
+                    ctx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('CLICK TO LAUNCH', canvas.width / 2, canvas.height / 2 + 100);
+                }
             }
 
             requestAnimationFrame(draw);
@@ -843,6 +810,10 @@
                 }
             }
         });
+        
+        canvas.addEventListener('click', (e) => {
+            launchBall();
+        });
 
         function setSpeed(speed) {
             ballSpeed = speed;
@@ -855,6 +826,7 @@
         function startGame() {
             document.getElementById('startScreen').classList.remove('active');
             gameRunning = true;
+            ballLaunched = false;
             initBricks();
             resetBall();
             score = 0;
@@ -875,15 +847,14 @@
         function gameWon() {
             gameRunning = false;
             stopMusic();
-            playSound('levelComplete');
-            document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'You Win!';
+            document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'YOU WIN!';
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOverScreen').classList.add('active');
         }
 
         function resetGame() {
             document.getElementById('gameOverScreen').classList.remove('active');
-            document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'Game Over';
+            document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'GAME OVER';
             startGame();
         }
 
@@ -903,9 +874,8 @@
             };
         }
 
-        // Add keyboard event listener for ESC key
+        // Keyboard event listener for ESC key
         document.addEventListener('keydown', (e) => {
-            // ESC key to return to index.html
             if (e.key === 'Escape') {
                 window.location.href = 'index.html';
                 return;
@@ -924,7 +894,7 @@
         });
 
         document.getElementById('startScreen').classList.add('active');
-        document.querySelectorAll('.speed-button')[3].classList.add('selected');
+        document.querySelectorAll('.speed-button')[1].classList.add('selected');
         draw();
     </script>
 </body>
