@@ -122,9 +122,44 @@
         .play-button:hover {
             transform: scale(1.05);
         }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-button:hover {
+            background: rgba(0, 0, 0, 0.9);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .back-button::before {
+            content: '←';
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
+    <a href="index.html" class="back-button">Home</a>
     <div class="game-container">
         <div class="game-board">
             <canvas id="canvas" width="300" height="600"></canvas>
@@ -466,6 +501,12 @@
         }
 
         document.addEventListener('keydown', (e) => {
+            // ESC key to return to index.html
+            if (e.key === 'Escape') {
+                window.location.href = 'index.html';
+                return;
+            }
+            
             if (!gameRunning || isPaused) {
                 if (e.key === 'p' || e.key === 'P') {
                     isPaused = !isPaused;

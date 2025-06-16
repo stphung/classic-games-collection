@@ -241,9 +241,46 @@
             accent-color: #4CAF50;
             cursor: pointer;
         }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #e0e0e0;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .back-button:hover {
+            background: rgba(0, 0, 0, 0.95);
+            border-color: rgba(76, 175, 80, 0.5);
+            transform: translateX(-5px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7),
+                        0 0 20px rgba(76, 175, 80, 0.2);
+        }
+
+        .back-button::before {
+            content: '←';
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
+    <a href="index.html" class="back-button">Home</a>
     <div class="game-container">
         <div class="game-board">
             <canvas id="canvas" width="600" height="750"></canvas>
@@ -1183,6 +1220,12 @@
         }
 
         document.addEventListener('keydown', (e) => {
+            // ESC key to return to index.html
+            if (e.key === 'Escape') {
+                window.location.href = 'index.html';
+                return;
+            }
+            
             if (!gameRunning) return;
 
             if (e.key === ' ') {
