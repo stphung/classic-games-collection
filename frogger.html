@@ -1654,22 +1654,22 @@
 
             drawBackground();
             
-            // Draw cars with their lane information
+            // Draw cars with their lane information (only on road lanes)
             cars.forEach(car => {
                 const carLane = gameMode === 'endless' 
                     ? endlessLanes.find(lane => lane.y === car.laneY)
-                    : lanes.find(lane => lane.y * GRID_SIZE === car.y);
-                if (carLane) {
+                    : lanes.find(lane => lane.y === car.laneY);
+                if (carLane && carLane.type === 'road') {
                     drawCar(car, carLane);
                 }
             });
             
-            // Draw logs with their lane information
+            // Draw logs with their lane information (only on water lanes)
             logs.forEach(log => {
                 const logLane = gameMode === 'endless'
                     ? endlessLanes.find(lane => lane.y === log.laneY)
-                    : lanes.find(lane => lane.y * GRID_SIZE === log.y);
-                if (logLane) {
+                    : lanes.find(lane => lane.y === log.laneY);
+                if (logLane && logLane.type === 'water') {
                     drawLog(log, logLane);
                 }
             });
