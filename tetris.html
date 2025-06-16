@@ -465,37 +465,63 @@
         // Enhanced sound effects
         function playRotateSound() {
             if (isMuted) return;
-            // Quick satisfying click with multiple layers
-            playSound(1200, 0.02, 'square', 0.04);
-            playSound(2400, 0.01, 'sine', 0.03);
-            // Add a subtle pop
+            // Crisp rotation sound
+            playSound(800, 0.03, 'square', 0.03);
+            playSound(1600, 0.02, 'sine', 0.02);
+            playSound(400, 0.04, 'triangle', 0.02, true);
+        }
+        
+        function playHardDropSound() {
+            if (isMuted) return;
+            // Swoosh down
+            const swoosh = audioContext.createOscillator();
+            const swooshGain = audioContext.createGain();
+            const swooshFilter = audioContext.createBiquadFilter();
+            
+            swoosh.connect(swooshFilter);
+            swooshFilter.connect(swooshGain);
+            swooshGain.connect(masterGainNode);
+            
+            swoosh.type = 'sawtooth';
+            swooshFilter.type = 'lowpass';
+            swooshFilter.frequency.setValueAtTime(2000, audioContext.currentTime);
+            swooshFilter.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.1);
+            
+            swooshGain.gain.setValueAtTime(0.05, audioContext.currentTime);
+            swooshGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+            
+            swoosh.start(audioContext.currentTime);
+            swoosh.stop(audioContext.currentTime + 0.1);
+            
+            // Impact
             setTimeout(() => {
-                playSound(800, 0.03, 'triangle', 0.02);
-            }, 10);
+                playSound(60, 0.1, 'sine', 0.08);
+                playSound(120, 0.05, 'square', 0.04);
+            }, 80);
+        }
+        
+        function playSoftDropSound() {
+            if (isMuted) return;
+            // Very subtle tick
+            playSound(150, 0.01, 'sine', 0.01);
+        }
+        
+        function playWarningSound() {
+            if (isMuted) return;
+            // Pulsing warning
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    playSound(440, 0.1, 'square', 0.05);
+                    playSound(220, 0.1, 'sawtooth', 0.03);
+                }, i * 150);
+            }
         }
 
         function playMoveSound() {
             if (isMuted) return;
-            // Subtle whoosh/slide sound
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            const filter = audioContext.createBiquadFilter();
-            
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(masterGainNode);
-            
-            osc.type = 'sawtooth';
-            filter.type = 'bandpass';
-            filter.frequency.setValueAtTime(400, audioContext.currentTime);
-            filter.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.05);
-            filter.Q.setValueAtTime(5, audioContext.currentTime);
-            
-            gain.gain.setValueAtTime(0.02, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.05);
-            
-            osc.start(audioContext.currentTime);
-            osc.stop(audioContext.currentTime + 0.05);
+            // Very subtle tick sound
+            playSound(200, 0.02, 'sine', 0.015);
+            playSound(400, 0.01, 'triangle', 0.01);
         }
 
         function playLockSound() {
@@ -660,100 +686,85 @@
 
         // Background music
         function startBackgroundMusic() {
-            if (musicStarted) return;
+            if (musicStarted || isMuted) return;
             musicStarted = true;
 
             musicGainNode = audioContext.createGain();
             musicGainNode.connect(masterGainNode);
-            musicGainNode.gain.setValueAtTime(isMuted ? 0 : 0.08, audioContext.currentTime);
+            musicGainNode.gain.setValueAtTime(0.06, audioContext.currentTime); // Much quieter
 
-            // Enhanced Tetris theme with multiple layers
+            // Simplified, ambient Tetris theme - very relaxing
             const melody = [
-                // Main theme (Korobeiniki-inspired) - more complete version
-                { note: 659.25, duration: 0.25 }, // E5
-                { note: 493.88, duration: 0.125 }, // B4
-                { note: 523.25, duration: 0.125 }, // C5
-                { note: 587.33, duration: 0.25 }, // D5
-                { note: 523.25, duration: 0.125 }, // C5
-                { note: 493.88, duration: 0.125 }, // B4
-                { note: 440.00, duration: 0.25 }, // A4
-                { note: 440.00, duration: 0.125 }, // A4
-                { note: 523.25, duration: 0.125 }, // C5
-                { note: 659.25, duration: 0.25 }, // E5
-                { note: 587.33, duration: 0.125 }, // D5
-                { note: 523.25, duration: 0.125 }, // C5
-                { note: 493.88, duration: 0.375 }, // B4
-                { note: 523.25, duration: 0.125 }, // C5
-                { note: 587.33, duration: 0.25 }, // D5
-                { note: 659.25, duration: 0.25 }, // E5
-                { note: 523.25, duration: 0.25 }, // C5
-                { note: 440.00, duration: 0.25 }, // A4
-                { note: 440.00, duration: 0.5 }, // A4
-                { note: 0, duration: 0.25 }, // Rest
-                { note: 587.33, duration: 0.375 }, // D5
-                { note: 698.46, duration: 0.125 }, // F5
-                { note: 880.00, duration: 0.25 }, // A5
-                { note: 783.99, duration: 0.125 }, // G5
-                { note: 698.46, duration: 0.125 }, // F5
-                { note: 659.25, duration: 0.375 }, // E5
-                { note: 523.25, duration: 0.125 }, // C5
-                { note: 659.25, duration: 0.25 }, // E5
-                { note: 587.33, duration: 0.125 }, // D5
-                { note: 523.25, duration: 0.125 }, // C5
-                { note: 493.88, duration: 0.75 }, // B4
+                // Sparse, ambient version of the theme
+                { note: 659.25, duration: 1.0 }, // E5
+                { note: 0, duration: 0.5 }, // Rest
+                { note: 493.88, duration: 0.5 }, // B4
+                { note: 523.25, duration: 0.5 }, // C5
+                { note: 587.33, duration: 1.0 }, // D5
+                { note: 0, duration: 0.5 }, // Rest
+                { note: 493.88, duration: 0.5 }, // B4
+                { note: 440.00, duration: 1.5 }, // A4
+                { note: 0, duration: 1.0 }, // Rest
+                { note: 523.25, duration: 0.5 }, // C5
+                { note: 659.25, duration: 1.0 }, // E5
+                { note: 0, duration: 0.5 }, // Rest
+                { note: 523.25, duration: 0.5 }, // C5
+                { note: 493.88, duration: 2.0 }, // B4
+                { note: 0, duration: 1.0 }, // Rest
+                { note: 587.33, duration: 1.0 }, // D5
+                { note: 659.25, duration: 1.0 }, // E5
+                { note: 523.25, duration: 1.0 }, // C5
+                { note: 440.00, duration: 2.0 }, // A4
+                { note: 0, duration: 2.0 }, // Long rest
             ];
 
             const bassline = [
-                // Enhanced bass pattern with walking bass
-                { note: 164.81, duration: 0.25 }, // E3
-                { note: 164.81, duration: 0.25 }, // E3
-                { note: 164.81, duration: 0.25 }, // E3
-                { note: 164.81, duration: 0.25 }, // E3
-                { note: 146.83, duration: 0.25 }, // D3
-                { note: 146.83, duration: 0.25 }, // D3
-                { note: 146.83, duration: 0.25 }, // D3
-                { note: 146.83, duration: 0.25 }, // D3
-                { note: 130.81, duration: 0.25 }, // C3
-                { note: 130.81, duration: 0.25 }, // C3
-                { note: 130.81, duration: 0.25 }, // C3
-                { note: 130.81, duration: 0.25 }, // C3
-                { note: 123.47, duration: 0.25 }, // B2
-                { note: 123.47, duration: 0.25 }, // B2
-                { note: 146.83, duration: 0.25 }, // D3
-                { note: 164.81, duration: 0.25 }, // E3
-                { note: 110.00, duration: 0.25 }, // A2
-                { note: 110.00, duration: 0.25 }, // A2
-                { note: 110.00, duration: 0.25 }, // A2
-                { note: 110.00, duration: 0.25 }, // A2
+                // Enhanced bass pattern with walking bass - adjusted for slower tempo
+                { note: 164.81, duration: 0.5 }, // E3
+                { note: 164.81, duration: 0.5 }, // E3
+                { note: 164.81, duration: 0.5 }, // E3
+                { note: 164.81, duration: 0.5 }, // E3
+                { note: 146.83, duration: 0.5 }, // D3
+                { note: 146.83, duration: 0.5 }, // D3
+                { note: 146.83, duration: 0.5 }, // D3
+                { note: 146.83, duration: 0.5 }, // D3
+                { note: 130.81, duration: 0.5 }, // C3
+                { note: 130.81, duration: 0.5 }, // C3
+                { note: 130.81, duration: 0.5 }, // C3
+                { note: 130.81, duration: 0.5 }, // C3
+                { note: 123.47, duration: 0.5 }, // B2
+                { note: 123.47, duration: 0.5 }, // B2
+                { note: 146.83, duration: 0.5 }, // D3
+                { note: 164.81, duration: 0.5 }, // E3
+                { note: 110.00, duration: 0.5 }, // A2
+                { note: 110.00, duration: 0.5 }, // A2
+                { note: 110.00, duration: 0.5 }, // A2
+                { note: 110.00, duration: 0.5 }, // A2
             ];
 
             const harmony = [
-                // Harmony layer
-                { note: 329.63, duration: 0.5 }, // E4
-                { note: 329.63, duration: 0.5 }, // E4
-                { note: 293.66, duration: 0.5 }, // D4
-                { note: 293.66, duration: 0.5 }, // D4
-                { note: 261.63, duration: 0.5 }, // C4
-                { note: 261.63, duration: 0.5 }, // C4
-                { note: 246.94, duration: 0.5 }, // B3
-                { note: 246.94, duration: 0.5 }, // B3
-                { note: 220.00, duration: 1.0 }, // A3
+                // Harmony layer - adjusted for slower tempo
+                { note: 329.63, duration: 1.0 }, // E4
+                { note: 329.63, duration: 1.0 }, // E4
+                { note: 293.66, duration: 1.0 }, // D4
+                { note: 293.66, duration: 1.0 }, // D4
+                { note: 261.63, duration: 1.0 }, // C4
+                { note: 261.63, duration: 1.0 }, // C4
+                { note: 246.94, duration: 1.0 }, // B3
+                { note: 246.94, duration: 1.0 }, // B3
+                { note: 220.00, duration: 2.0 }, // A3
             ];
 
-            // Percussion pattern (simulated with noise and filtered tones)
+            // Minimal percussion pattern - very subtle
             const percussion = [
                 { type: 'kick', delay: 0 },
-                { type: 'hat', delay: 0.125 },
-                { type: 'snare', delay: 0.25 },
-                { type: 'hat', delay: 0.375 },
-                { type: 'kick', delay: 0.5 },
-                { type: 'hat', delay: 0.625 },
-                { type: 'snare', delay: 0.75 },
-                { type: 'hat', delay: 0.875 },
+                { type: 'hat', delay: 0.5 },
+                { type: 'kick', delay: 1.0 },
+                { type: 'hat', delay: 1.5 },
             ];
 
             let currentTime = 0;
-            const tempo = 125; // Slightly faster for energy
+            const tempo = 60; // Very slow, ambient tempo
             const beatDuration = 60 / tempo;
             let loopInterval;
 
@@ -769,8 +780,8 @@
                     osc.frequency.setValueAtTime(60, time);
                     osc.frequency.exponentialRampToValueAtTime(40, time + 0.05);
                     
-                    gain.gain.setValueAtTime(0.15, time);
-                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+                    gain.gain.setValueAtTime(0.08, time);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
                     
                     osc.start(time);
                     osc.stop(time + 0.1);
@@ -797,7 +808,7 @@
                     filter.type = 'highpass';
                     filter.frequency.setValueAtTime(3000, time);
                     
-                    gain.gain.setValueAtTime(0.05, time);
+                    gain.gain.setValueAtTime(0.02, time);
                     gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
                     
                     noise.start(time);
@@ -818,8 +829,8 @@
                     filter.type = 'highpass';
                     filter.frequency.setValueAtTime(7000, time);
                     
-                    gain.gain.setValueAtTime(0.02, time);
-                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.03);
+                    gain.gain.setValueAtTime(0.01, time);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
                     
                     osc.start(time);
                     osc.stop(time + 0.03);
@@ -848,12 +859,14 @@
                         osc.connect(gain);
                         gain.connect(musicGainNode);
                         
-                        osc.type = 'square';
+                        osc.type = 'sine'; // Softer waveform
                         osc.frequency.setValueAtTime(note, startTime + currentTime);
                         
-                        gain.gain.setValueAtTime(0.06, startTime + currentTime);
-                        gain.gain.setValueAtTime(0.05, startTime + currentTime + 0.01);
-                        gain.gain.exponentialRampToValueAtTime(0.001, startTime + currentTime + duration * beatDuration * 0.9);
+                        // Gentle fade in and out
+                        gain.gain.setValueAtTime(0, startTime + currentTime);
+                        gain.gain.linearRampToValueAtTime(0.03, startTime + currentTime + 0.1);
+                        gain.gain.setValueAtTime(0.03, startTime + currentTime + duration * beatDuration * 0.7);
+                        gain.gain.exponentialRampToValueAtTime(0.001, startTime + currentTime + duration * beatDuration);
                         
                         vibrato.start(startTime + currentTime);
                         osc.start(startTime + currentTime);
@@ -874,11 +887,11 @@
                     osc.connect(gain);
                     gain.connect(musicGainNode);
                     
-                    osc.type = 'sawtooth';
+                    osc.type = 'triangle'; // Softer bass
                     osc.frequency.setValueAtTime(note, startTime + currentTime);
                     
-                    gain.gain.setValueAtTime(0.08, startTime + currentTime);
-                    gain.gain.setValueAtTime(0.07, startTime + currentTime + 0.01);
+                    gain.gain.setValueAtTime(0.04, startTime + currentTime);
+                    gain.gain.setValueAtTime(0.035, startTime + currentTime + 0.01);
                     
                     osc.start(startTime + currentTime);
                     osc.stop(startTime + currentTime + duration * beatDuration);
@@ -957,9 +970,13 @@
         muteCheckbox.addEventListener('change', (e) => {
             isMuted = e.target.checked;
             if (isMuted) {
-                stopMusic();
+                stopBackgroundMusic();
+                if (musicGainNode) {
+                    musicGainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                }
             } else if (gameRunning) {
-                startMusic();
+                musicStarted = false;
+                startBackgroundMusic();
             }
         });
 
@@ -1002,6 +1019,8 @@
         let lastDrop = 0;
         let gameRunning = true;
         let isPaused = false;
+        let particles = [];
+        let lineAnimations = [];
 
         class Piece {
             constructor(shape, color) {
@@ -1085,8 +1104,18 @@
 
         function init() {
             board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+            gameRunning = true;
             spawnPiece();
-            startBackgroundMusic();
+            
+            // Start music with user interaction to comply with browser policies
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    startBackgroundMusic();
+                });
+            } else {
+                startBackgroundMusic();
+            }
+            
             gameLoop();
         }
 
@@ -1124,19 +1153,18 @@
         }
 
         function drawBoard() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            // Clear with subtle gradient background
+            const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            bgGradient.addColorStop(0, 'rgba(10, 10, 20, 0.95)');
+            bgGradient.addColorStop(1, 'rgba(20, 10, 30, 0.95)');
+            ctx.fillStyle = bgGradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            for (let y = 0; y < ROWS; y++) {
-                for (let x = 0; x < COLS; x++) {
-                    if (board[y][x]) {
-                        drawBlock(x, y, board[y][x]);
-                    }
-                }
-            }
+            // Draw subtle grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.lineWidth = 1;
             
             for (let x = 0; x <= COLS; x++) {
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
                 ctx.beginPath();
                 ctx.moveTo(x * BLOCK_SIZE, 0);
                 ctx.lineTo(x * BLOCK_SIZE, canvas.height);
@@ -1149,31 +1177,113 @@
                 ctx.lineTo(canvas.width, y * BLOCK_SIZE);
                 ctx.stroke();
             }
+            
+            // Draw locked pieces with subtle animation
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (board[y][x]) {
+                        drawBlock(x, y, board[y][x]);
+                    }
+                }
+            }
+            
+            // Add danger zone indicator
+            if (isDangerZone()) {
+                const dangerGradient = ctx.createLinearGradient(0, 0, 0, 150);
+                dangerGradient.addColorStop(0, 'rgba(255, 0, 0, 0.2)');
+                dangerGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                ctx.fillStyle = dangerGradient;
+                ctx.fillRect(0, 0, canvas.width, 150);
+            }
+        }
+        
+        function isDangerZone() {
+            for (let y = 0; y < 4; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (board[y][x]) return true;
+                }
+            }
+            return false;
         }
 
-        function drawBlock(x, y, color) {
-            ctx.fillStyle = color;
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        function drawBlock(x, y, color, ghost = false) {
+            const padding = 1;
+            const blockX = x * BLOCK_SIZE + padding;
+            const blockY = y * BLOCK_SIZE + padding;
+            const blockSize = BLOCK_SIZE - padding * 2;
             
-            // Add glow effect
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 10;
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
-            ctx.shadowBlur = 0;
-            
-            // Highlight effects
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, 3);
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, 3, BLOCK_SIZE - 1);
-            
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            ctx.fillRect(x * BLOCK_SIZE + BLOCK_SIZE - 3, y * BLOCK_SIZE, 2, BLOCK_SIZE - 1);
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE + BLOCK_SIZE - 3, BLOCK_SIZE - 1, 2);
+            if (ghost) {
+                // Ghost piece styling
+                ctx.fillStyle = color + '30';
+                ctx.fillRect(blockX, blockY, blockSize, blockSize);
+                
+                ctx.strokeStyle = color + '60';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(blockX, blockY, blockSize, blockSize);
+            } else {
+                // Create gradient for 3D effect
+                const gradient = ctx.createLinearGradient(
+                    blockX, blockY,
+                    blockX + blockSize, blockY + blockSize
+                );
+                gradient.addColorStop(0, color);
+                gradient.addColorStop(1, adjustBrightness(color, -30));
+                
+                // Main block
+                ctx.fillStyle = gradient;
+                ctx.fillRect(blockX, blockY, blockSize, blockSize);
+                
+                // Inner glow
+                const innerGradient = ctx.createRadialGradient(
+                    blockX + blockSize * 0.3, blockY + blockSize * 0.3, 0,
+                    blockX + blockSize * 0.5, blockY + blockSize * 0.5, blockSize * 0.7
+                );
+                innerGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+                innerGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = innerGradient;
+                ctx.fillRect(blockX, blockY, blockSize, blockSize);
+                
+                // Edge highlights
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(blockX, blockY + blockSize);
+                ctx.lineTo(blockX, blockY);
+                ctx.lineTo(blockX + blockSize, blockY);
+                ctx.stroke();
+                
+                // Edge shadows
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.beginPath();
+                ctx.moveTo(blockX + blockSize, blockY);
+                ctx.lineTo(blockX + blockSize, blockY + blockSize);
+                ctx.lineTo(blockX, blockY + blockSize);
+                ctx.stroke();
+                
+                // Subtle outer glow
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 8;
+                ctx.fillStyle = color;
+                ctx.fillRect(blockX + 2, blockY + 2, blockSize - 4, blockSize - 4);
+                ctx.shadowBlur = 0;
+            }
+        }
+        
+        function adjustBrightness(color, amount) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+            const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+            return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
         }
 
         function drawPiece() {
             if (!currentPiece) return;
             
+            // Draw ghost piece first
+            drawGhostPiece();
+            
+            // Draw actual piece
             for (let y = 0; y < currentPiece.shape.length; y++) {
                 for (let x = 0; x < currentPiece.shape[y].length; x++) {
                     if (currentPiece.shape[y][x]) {
@@ -1181,6 +1291,45 @@
                     }
                 }
             }
+        }
+        
+        function drawGhostPiece() {
+            if (!currentPiece) return;
+            
+            // Calculate ghost position
+            let ghostY = currentPiece.y;
+            while (canMove(currentPiece.x, ghostY + 1, currentPiece.shape)) {
+                ghostY++;
+            }
+            
+            // Draw ghost piece
+            for (let y = 0; y < currentPiece.shape.length; y++) {
+                for (let x = 0; x < currentPiece.shape[y].length; x++) {
+                    if (currentPiece.shape[y][x]) {
+                        drawBlock(currentPiece.x + x, ghostY + y, currentPiece.color, true);
+                    }
+                }
+            }
+        }
+        
+        function canMove(newX, newY, shape) {
+            for (let y = 0; y < shape.length; y++) {
+                for (let x = 0; x < shape[y].length; x++) {
+                    if (shape[y][x]) {
+                        const boardX = newX + x;
+                        const boardY = newY + y;
+                        
+                        if (boardX < 0 || boardX >= COLS || boardY >= ROWS) {
+                            return false;
+                        }
+                        
+                        if (boardY >= 0 && board[boardY][boardX]) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
         }
 
         function drawNextPiece() {
@@ -1196,8 +1345,28 @@
             for (let y = 0; y < nextPiece.shape.length; y++) {
                 for (let x = 0; x < nextPiece.shape[y].length; x++) {
                     if (nextPiece.shape[y][x]) {
-                        nextCtx.fillStyle = nextPiece.color;
+                        // Draw mini block with gradient
+                        const gradient = nextCtx.createLinearGradient(
+                            offsetX + x * blockSize,
+                            offsetY + y * blockSize,
+                            offsetX + (x + 1) * blockSize,
+                            offsetY + (y + 1) * blockSize
+                        );
+                        gradient.addColorStop(0, nextPiece.color);
+                        gradient.addColorStop(1, adjustBrightness(nextPiece.color, -20));
+                        
+                        nextCtx.fillStyle = gradient;
                         nextCtx.fillRect(
+                            offsetX + x * blockSize,
+                            offsetY + y * blockSize,
+                            blockSize - 1,
+                            blockSize - 1
+                        );
+                        
+                        // Mini highlights
+                        nextCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                        nextCtx.lineWidth = 1;
+                        nextCtx.strokeRect(
                             offsetX + x * blockSize,
                             offsetY + y * blockSize,
                             blockSize - 1,
@@ -1231,9 +1400,35 @@
 
         function clearLines() {
             let linesCleared = 0;
+            let clearedRows = [];
             
             for (let y = ROWS - 1; y >= 0; y--) {
                 if (board[y].every(cell => cell)) {
+                    clearedRows.push(y);
+                    
+                    // Create particles for this line
+                    for (let x = 0; x < COLS; x++) {
+                        const color = board[y][x];
+                        for (let i = 0; i < 3; i++) {
+                            particles.push({
+                                x: x * BLOCK_SIZE + BLOCK_SIZE / 2,
+                                y: y * BLOCK_SIZE + BLOCK_SIZE / 2,
+                                vx: (Math.random() - 0.5) * 8,
+                                vy: Math.random() * -10 - 5,
+                                color: color,
+                                life: 1,
+                                size: Math.random() * 6 + 2
+                            });
+                        }
+                    }
+                    
+                    // Add line animation
+                    lineAnimations.push({
+                        y: y,
+                        progress: 0,
+                        color: board[y][0]
+                    });
+                    
                     board.splice(y, 1);
                     board.unshift(Array(COLS).fill(0));
                     linesCleared++;
@@ -1279,10 +1474,65 @@
                 }
                 
                 drawBoard();
+                drawLineAnimations();
                 drawPiece();
+                drawParticles();
+                updateParticles();
             }
             
             requestAnimationFrame(gameLoop);
+        }
+        
+        function drawParticles() {
+            particles.forEach(particle => {
+                ctx.globalAlpha = particle.life;
+                ctx.fillStyle = particle.color;
+                ctx.shadowColor = particle.color;
+                ctx.shadowBlur = 10;
+                ctx.fillRect(
+                    particle.x - particle.size / 2,
+                    particle.y - particle.size / 2,
+                    particle.size,
+                    particle.size
+                );
+            });
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+        }
+        
+        function updateParticles() {
+            particles = particles.filter(particle => {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.vy += 0.5; // gravity
+                particle.life -= 0.02;
+                particle.size *= 0.98;
+                return particle.life > 0;
+            });
+        }
+        
+        function drawLineAnimations() {
+            lineAnimations = lineAnimations.filter(anim => {
+                anim.progress += 0.05;
+                
+                if (anim.progress < 1) {
+                    // Draw expanding flash
+                    ctx.fillStyle = anim.color + Math.floor((1 - anim.progress) * 255).toString(16).padStart(2, '0');
+                    ctx.fillRect(
+                        0,
+                        anim.y * BLOCK_SIZE - anim.progress * 10,
+                        canvas.width,
+                        BLOCK_SIZE + anim.progress * 20
+                    );
+                    
+                    // Draw white flash
+                    ctx.fillStyle = `rgba(255, 255, 255, ${(1 - anim.progress) * 0.5})`;
+                    ctx.fillRect(0, anim.y * BLOCK_SIZE, canvas.width, BLOCK_SIZE);
+                    
+                    return true;
+                }
+                return false;
+            });
         }
 
         function gameOver() {
@@ -1311,6 +1561,11 @@
         }
 
         document.addEventListener('keydown', (e) => {
+            // Resume audio context on first interaction
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
             // ESC key to return to index.html
             if (e.key === 'Escape') {
                 window.location.href = 'index.html';
@@ -1320,16 +1575,23 @@
             if (!gameRunning || isPaused) {
                 if (e.key === 'p' || e.key === 'P') {
                     isPaused = !isPaused;
+                    if (!isPaused && !musicStarted && !isMuted) {
+                        startBackgroundMusic();
+                    }
                 }
                 return;
             }
             
             switch(e.key) {
                 case 'ArrowLeft':
-                    currentPiece.move(-1, 0);
+                    if (currentPiece.move(-1, 0)) {
+                        playMoveSound();
+                    }
                     break;
                 case 'ArrowRight':
-                    currentPiece.move(1, 0);
+                    if (currentPiece.move(1, 0)) {
+                        playMoveSound();
+                    }
                     break;
                 case 'ArrowDown':
                     drop();
