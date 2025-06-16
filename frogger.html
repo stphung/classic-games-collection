@@ -1323,8 +1323,8 @@
             if (currentLane && currentLane.type === 'road') {
                 for (let car of cars) {
                     // Check collision with adjusted Y position for endless mode
-                    const carY = gameMode === 'endless' ? car.y + scrollOffset : car.y;
-                    const frogActualY = gameMode === 'endless' ? frogY + scrollOffset : frogY;
+                    const carY = car.y;  // Car Y is already in screen coordinates
+                    const frogActualY = frogY;  // Frog Y is already in screen coordinates
                     
                     if (Math.abs(carY - frogActualY) < GRID_SIZE &&
                         frogX + frogSize/2 > car.x &&
@@ -1343,9 +1343,9 @@
             if (currentLane && currentLane.type === 'water') {
                 let onLog = false;
                 for (let log of logs) {
-                    // Check collision with adjusted Y position for endless mode
-                    const logY = gameMode === 'endless' ? log.y + scrollOffset : log.y;
-                    const frogActualY = gameMode === 'endless' ? frogY + scrollOffset : frogY;
+                    // Check collision with adjusted Y position for endless mode  
+                    const logY = log.y;  // Log Y is already in screen coordinates
+                    const frogActualY = frogY;  // Frog Y is already in screen coordinates
                     
                     if (Math.abs(logY - frogActualY) < GRID_SIZE &&
                         frogX > log.x &&
@@ -1574,7 +1574,9 @@
                     }
                     
                     // Check if frog has fallen too far behind
-                    if (frog.y * GRID_SIZE + scrollOffset > 750 - GRID_SIZE) {
+                    // In endless mode, frog should stay near bottom (y=14)
+                    // Game over if frog falls below the visible area
+                    if (frog.y > 15) {  // Allow some margin below the screen
                         endlessGameOver();
                     }
                 }
