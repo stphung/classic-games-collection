@@ -138,6 +138,41 @@
         .game-card.hidden .new-badge {
             opacity: 0;
         }
+        
+        /* Updated game badge */
+        .updated-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #818cf8;
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 12px rgba(129, 140, 248, 0.4);
+            z-index: 1;
+            animation: pulse-glow-purple 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow-purple {
+            0%, 100% { 
+                box-shadow: 0 4px 12px rgba(129, 140, 248, 0.4);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 4px 20px rgba(129, 140, 248, 0.6);
+                transform: scale(1.05);
+            }
+        }
+        
+        .game-card.far-prev .updated-badge,
+        .game-card.far-next .updated-badge,
+        .game-card.hidden .updated-badge {
+            opacity: 0;
+        }
 
         .game-card.active {
             transform: translateX(0) scale(1);
@@ -830,7 +865,8 @@
             <span>Update • Jun 16, 2025</span>
         </div>
         <div class="patch-content">
-            New games added: <span class="patch-games">Missile Command</span>, <span class="patch-games">Snake</span>, and <span class="patch-games">JezzBall</span>
+            New games added: <span class="patch-games">Missile Command</span>, <span class="patch-games">Snake</span>, and <span class="patch-games">JezzBall</span><br>
+            Game update: <span class="patch-games">Frogger</span> now includes endless mode!
         </div>
     </div>
     
@@ -877,6 +913,7 @@
 
             <!-- Frogger -->
             <div class="game-card" data-game="frogger.html">
+                <span class="updated-badge">Updated</span>
                 <div class="game-icon frogger">🐸</div>
                 <h2 class="game-title">Frogger</h2>
                 <p class="game-description">Navigate dangerous roads and rivers to reach safety</p>
@@ -1129,7 +1166,7 @@
         const gameData = [
             { title: 'Tetris', icon: '▦', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html' },
             { title: 'Breakout', icon: '▬', color: '#fbbf24', description: 'Smash through colorful bricks with precision and skill', url: 'breakout.html' },
-            { title: 'Frogger', icon: '🐸', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html' },
+            { title: 'Frogger', icon: '🐸', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html', isUpdated: true },
             { title: 'Missile Command', icon: '⟟', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html', isNew: true },
             { title: 'Snake', icon: '▪', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html', isNew: true },
             { title: 'JezzBall', icon: '◈', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html', isNew: true }
@@ -1167,6 +1204,7 @@
                 
                 card.innerHTML = `
                     ${game.isNew ? '<span class="new-badge">New</span>' : ''}
+                    ${game.isUpdated ? '<span class="updated-badge">Updated</span>' : ''}
                     <div class="game-icon ${game.title.toLowerCase().replace(' ', '')}" style="color: ${game.color}">${game.icon}</div>
                     <h3 class="game-title">${game.title}</h3>
                     <p class="game-description">${game.description}</p>
