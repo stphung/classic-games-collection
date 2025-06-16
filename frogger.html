@@ -518,55 +518,100 @@
         let musicPlaying = false;
         let musicInterval;
         
-        // Create retro music synthesizer
-        function playNote(frequency, duration, startTime) {
+        // Subtle ambient retro synthesizer
+        function playNote(frequency, duration, startTime, waveType = 'square', volume = 0.03) {
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            const delay = audioContext.createDelay();
+            const delayGain = audioContext.createGain();
             
-            oscillator.type = 'square'; // Retro 8-bit sound
+            // Retro wave with subtle filtering
+            oscillator.type = waveType;
             oscillator.frequency.setValueAtTime(frequency, startTime);
             
-            gainNode.gain.setValueAtTime(0.1, startTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            // Gentle low-pass for vintage warmth
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(4000, startTime);
+            filter.Q.value = 0.5;
             
-            oscillator.connect(gainNode);
+            // Subtle delay for ambient space
+            delay.delayTime.setValueAtTime(0.15, startTime);
+            delayGain.gain.setValueAtTime(0.1, startTime);
+            
+            // Very gentle envelope for background ambience
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.1);
+            gainNode.gain.setValueAtTime(volume, startTime + duration * 0.8);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+            
+            // Connect with subtle delay
+            oscillator.connect(filter);
+            filter.connect(gainNode);
             gainNode.connect(audioContext.destination);
+            
+            // Add subtle delay trail
+            gainNode.connect(delay);
+            delay.connect(delayGain);
+            delayGain.connect(audioContext.destination);
             
             oscillator.start(startTime);
             oscillator.stop(startTime + duration);
         }
         
-        // Frogger theme melody
+        // More exciting retro gaming melody with rhythm
         const melody = [
-            { note: 392, duration: 0.2 }, // G4
-            { note: 440, duration: 0.2 }, // A4
-            { note: 523, duration: 0.2 }, // C5
-            { note: 440, duration: 0.2 }, // A4
-            { note: 392, duration: 0.4 }, // G4
-            { note: 349, duration: 0.2 }, // F4
-            { note: 330, duration: 0.2 }, // E4
-            { note: 349, duration: 0.4 }, // F4
+            { note: 440, duration: 0.6, wave: 'square' }, // A4 - quick start
+            { note: 523, duration: 0.3, wave: 'square' }, // C5
+            { note: 659, duration: 0.6, wave: 'square' }, // E5 - higher energy
+            { note: 523, duration: 0.3, wave: 'square' }, // C5
+            { note: 440, duration: 0.8, wave: 'square' }, // A4
+            { note: 392, duration: 0.4, wave: 'square' }, // G4
             
-            { note: 392, duration: 0.2 }, // G4
-            { note: 440, duration: 0.2 }, // A4
-            { note: 523, duration: 0.2 }, // C5
-            { note: 440, duration: 0.2 }, // A4
-            { note: 392, duration: 0.4 }, // G4
-            { note: 523, duration: 0.2 }, // C5
-            { note: 494, duration: 0.2 }, // B4
-            { note: 440, duration: 0.4 }, // A4
+            { note: 523, duration: 0.6, wave: 'square' }, // C5 - ascending
+            { note: 659, duration: 0.6, wave: 'square' }, // E5
+            { note: 784, duration: 0.8, wave: 'square' }, // G5 - peak
+            { note: 659, duration: 0.4, wave: 'square' }, // E5
+            { note: 523, duration: 0.6, wave: 'square' }, // C5
+            { note: 440, duration: 1.0, wave: 'square' }, // A4 - resolution
         ];
         
-        // Bass line
+        // Rhythmic bass with more movement
         const bassLine = [
-            { note: 131, duration: 0.4 }, // C3
-            { note: 131, duration: 0.4 }, // C3
-            { note: 175, duration: 0.4 }, // F3
-            { note: 175, duration: 0.4 }, // F3
-            { note: 131, duration: 0.4 }, // C3
-            { note: 131, duration: 0.4 }, // C3
-            { note: 196, duration: 0.4 }, // G3
-            { note: 196, duration: 0.4 }, // G3
+            { note: 110, duration: 1.0, wave: 'triangle' }, // A2
+            { note: 110, duration: 0.5, wave: 'triangle' }, // A2 - staccato
+            { note: 131, duration: 1.0, wave: 'triangle' }, // C3 - movement
+            { note: 110, duration: 0.5, wave: 'triangle' }, // A2
+            { note: 98, duration: 1.0, wave: 'triangle' },  // G2
+            { note: 87, duration: 1.0, wave: 'triangle' },  // F2
+            { note: 110, duration: 1.0, wave: 'triangle' }, // A2 - return
+        ];
+        
+        // Arpeggio layer for excitement
+        const arpeggioLayer = [
+            { note: 220, duration: 0.2, wave: 'triangle' }, // A3
+            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
+            { note: 330, duration: 0.2, wave: 'triangle' }, // E4
+            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
+            { note: 220, duration: 0.2, wave: 'triangle' }, // A3
+            { note: 196, duration: 0.2, wave: 'triangle' }, // G3
+            { note: 220, duration: 0.2, wave: 'triangle' }, // A3
+            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
+            
+            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
+            { note: 330, duration: 0.2, wave: 'triangle' }, // E4
+            { note: 392, duration: 0.2, wave: 'triangle' }, // G4
+            { note: 330, duration: 0.2, wave: 'triangle' }, // E4
+            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
+            { note: 220, duration: 0.2, wave: 'triangle' }, // A3
+            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
+            { note: 220, duration: 0.2, wave: 'triangle' }, // A3
+        ];
+        
+        // Soft ambient pad - still atmospheric
+        const ambientPad = [
+            { note: 440, duration: 3.2, wave: 'sine' }, // A4 - warm pad
+            { note: 392, duration: 3.2, wave: 'sine' }, // G4 - gentle movement
         ];
         
         function playMusic() {
@@ -574,18 +619,32 @@
             
             const now = audioContext.currentTime;
             
-            // Play melody
+            // Play exciting retro melody - more prominent
             let melodyTime = 0;
             melody.forEach(note => {
-                playNote(note.note, note.duration, now + melodyTime);
+                playNote(note.note, note.duration, now + melodyTime, note.wave, 0.035);
                 melodyTime += note.duration;
             });
             
-            // Play bass
+            // Play rhythmic bass foundation
             let bassTime = 0;
             bassLine.forEach(note => {
-                playNote(note.note / 2, note.duration, now + bassTime);
+                playNote(note.note, note.duration, now + bassTime, note.wave, 0.025);
                 bassTime += note.duration;
+            });
+            
+            // Play exciting arpeggio layer for movement
+            let arpeggioTime = 0;
+            arpeggioLayer.forEach(note => {
+                playNote(note.note, note.duration, now + arpeggioTime, note.wave, 0.018);
+                arpeggioTime += note.duration;
+            });
+            
+            // Play soft ambient pad - atmospheric foundation
+            let padTime = 0;
+            ambientPad.forEach(note => {
+                playNote(note.note, note.duration, now + padTime, note.wave, 0.012);
+                padTime += note.duration;
             });
         }
         
@@ -601,7 +660,7 @@
             
             musicPlaying = true;
             playMusic();
-            musicInterval = setInterval(playMusic, 3200); // Loop every 3.2 seconds
+            musicInterval = setInterval(playMusic, 6400); // Loop every 6.4 seconds for exciting retro gaming
         }
         
         function stopMusic() {
