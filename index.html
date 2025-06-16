@@ -302,6 +302,72 @@
             letter-spacing: 1px;
             text-transform: uppercase;
         }
+        
+        /* Patch notes */
+        .patch-notes {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px 20px;
+            max-width: 280px;
+            z-index: 20;
+            transition: all 0.3s ease;
+        }
+        
+        .patch-notes:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        
+        .patch-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .patch-indicator {
+            width: 6px;
+            height: 6px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .patch-content {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #999;
+        }
+        
+        .patch-games {
+            color: #fff;
+            font-weight: 400;
+        }
+        
+        @media (max-width: 768px) {
+            .patch-notes {
+                position: absolute;
+                top: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                max-width: 90%;
+                text-align: center;
+            }
+        }
 
         /* Game specific colors */
         .tetris { color: #818cf8; }
@@ -362,6 +428,16 @@
 </head>
 <body>
     <div class="bg-pattern"></div>
+    
+    <div class="patch-notes">
+        <div class="patch-title">
+            <span class="patch-indicator"></span>
+            <span>Update • Jun 16, 2025</span>
+        </div>
+        <div class="patch-content">
+            New games added: <span class="patch-games">Missile Command</span>, <span class="patch-games">Snake</span>, and <span class="patch-games">JezzBall</span>
+        </div>
+    </div>
     
     <header class="header">
         <h1 class="logo">ARCADE</h1>
