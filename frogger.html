@@ -780,6 +780,7 @@
         let baseScrollSpeed = 50; // pixels per second
         let isScrolling = false;
         let scrollTarget = 0;
+        let scrollStartOffset = 0; // Track initial scroll offset when scrolling begins
         let scrollAnimationSpeed = 300; // pixels per second
         let highScoreEndless = localStorage.getItem('froggerEndlessHighScore') || 0;
 
@@ -1351,9 +1352,11 @@
                     const logY = log.y;  // Log Y is already in screen coordinates
                     const frogActualY = frogY;  // Frog Y is already in screen coordinates
                     
+                    // Check if frog overlaps with log (partial overlap is sufficient)
+                    // frogX is already in pixels, use same pattern as car collision
                     if (Math.abs(logY - frogActualY) < GRID_SIZE &&
-                        frogX > log.x &&
-                        frogX < log.x + log.width) {
+                        frogX + frogSize/2 > log.x &&
+                        frogX - frogSize/2 < log.x + log.width) {
                         onLog = true;
                         const logMovement = log.speed * speedMultiplier / GRID_SIZE;
                         frog.x += logMovement;
@@ -1548,13 +1551,7 @@
                             scrollOffset = scrollTarget;
                             isScrolling = false;
                             
-                            // Generate new lanes and clean up now that scrolling is complete
-                            // Generate 7 new lanes since we scrolled 7 rows
-                            for (let i = 0; i < 7; i++) {
-                                generateNewLane();
-                            }
-                            
-                            // Remove old lanes and obstacles that are off screen
+                            // Clean up old lanes and obstacles that are off screen (new lanes already generated)
                             endlessLanes = endlessLanes.filter(lane => {
                                 const renderY = (lane.y * GRID_SIZE) + scrollOffset;
                                 return renderY > -GRID_SIZE && renderY < 800;
@@ -1591,12 +1588,23 @@
                     // Only trigger when frog is not currently moving and not already scrolling
                     const frogScreenY = (frog.y * GRID_SIZE + scrollOffset) / GRID_SIZE;
                     if (frogScreenY <= 1.5 && frog.x === frog.targetX && frog.y === frog.targetY && !isScrolling) {
-                        // Start smooth scrolling - scroll many rows for much better spacing
-                        isScrolling = true;
-                        scrollTarget = scrollOffset + (GRID_SIZE * 7); // Scroll 7 rows for big chunks
+                        // Pre-generate new lanes before scrolling starts to avoid black space
+                        scrollStartOffset = scrollOffset; // Remember where we started
+                        // Calculate scroll amount to move frog from current position to bottom (y=14)
+                        const scrollAmount = (14 - frogScreenY) * GRID_SIZE;
+                        const lanesToGenerate = Math.ceil(scrollAmount / GRID_SIZE);
                         
-                        // After scrolling completes, the frog will have lots of room for continued play
-                        // This creates bigger level chunks and less frequent scrolling
+                        // Generate the new lanes ahead of time
+                        for (let i = 0; i < lanesToGenerate; i++) {
+                            generateNewLane();
+                        }
+                        
+                        // Now start smooth scrolling
+                        isScrolling = true;
+                        scrollTarget = scrollOffset + scrollAmount;
+                        
+                        // After scrolling, frog will be visually at the bottom again
+                        // This creates natural level progression like entering a new screen
                     }
                     
                     // Check if frog has fallen too far behind
@@ -1934,9 +1942,11 @@
             if (currentLane && currentLane.type === 'water') {
                 let onLog = false;
                 for (let log of logs) {
+                    // Check if frog overlaps with log (partial overlap is sufficient)
+                    // Use same pattern as car collision detection
                     if (Math.abs(log.y - frogY) < 1 &&
-                        frogX > log.x &&
-                        frogX < log.x + log.width) {
+                        frogX + frog2.size/2 > log.x &&
+                        frogX - frog2.size/2 < log.x + log.width) {
                         onLog = true;
                         const logMovement = log.speed * speedMultiplier / GRID_SIZE;
                         frog2.x += logMovement;
