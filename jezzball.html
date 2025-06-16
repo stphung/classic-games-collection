@@ -97,6 +97,10 @@
             background: rgba(0, 0, 0, 0.8);
             display: block;
             cursor: crosshair;
+            will-change: transform;
+            transform: translateZ(0);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
 
         .controls {
@@ -243,7 +247,7 @@
     </style>
 </head>
 <body>
-    <a href="index.html" class="home-button">← Home</a>
+    <a href="index.html" class="home-button" title="Press ESC to go back">← Home</a>
     
     <div class="game-container">
         <div class="game-header">
@@ -317,8 +321,8 @@
         const CELL_SIZE = 20;
         const GRID_WIDTH = canvas.width / CELL_SIZE;
         const GRID_HEIGHT = canvas.height / CELL_SIZE;
-        const WALL_GROW_SPEED = 0.2; // Cells per frame
-        const INITIAL_BALL_SPEED = 2;
+        const WALL_GROW_SPEED = 12; // Cells per second
+        const INITIAL_BALL_SPEED = 120; // pixels per second
         const TARGET_CLEAR_PERCENTAGE = 75;
         
         // Game state
@@ -351,14 +355,14 @@
                 this.color = color;
             }
             
-            update() {
+            update(deltaTime) {
                 // Store previous position
                 const prevX = this.x;
                 const prevY = this.y;
                 
-                // Move ball
-                this.x += this.dx;
-                this.y += this.dy;
+                // Move ball based on delta time
+                this.x += this.dx * deltaTime;
+                this.y += this.dy * deltaTime;
                 
                 // Bounce off boundaries
                 if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
@@ -397,8 +401,8 @@
                     }
                     
                     // Apply the bounce
-                    this.x = prevX + this.dx;
-                    this.y = prevY + this.dy;
+                    this.x = prevX + this.dx * deltaTime;
+                    this.y = prevY + this.dy * deltaTime;
                     
                     playSound('bounce');
                 }
@@ -501,15 +505,16 @@
                 }
             }
             
-            update() {
+            update(deltaTime) {
                 if (this.destroyed || this.completed) return;
                 
-                // Grow in both directions
+                // Grow in both directions based on delta time
+                const growthAmount = WALL_GROW_SPEED * deltaTime;
                 if (this.length1 < this.maxLength1) {
-                    this.length1 = Math.min(this.length1 + WALL_GROW_SPEED, this.maxLength1);
+                    this.length1 = Math.min(this.length1 + growthAmount, this.maxLength1);
                 }
                 if (this.length2 < this.maxLength2) {
-                    this.length2 = Math.min(this.length2 + WALL_GROW_SPEED, this.maxLength2);
+                    this.length2 = Math.min(this.length2 + growthAmount, this.maxLength2);
                 }
                 
                 // Check if completed
@@ -989,9 +994,19 @@
             }
         }
         
+        // Delta time tracking
+        let lastTime = 0;
+        
         // Game loop
-        function gameLoop() {
+        function gameLoop(currentTime) {
             if (!gameRunning || paused) return;
+            
+            // Calculate delta time in seconds
+            const deltaTime = lastTime ? (currentTime - lastTime) / 1000 : 0;
+            lastTime = currentTime;
+            
+            // Cap delta time to prevent large jumps
+            const cappedDeltaTime = Math.min(deltaTime, 0.1);
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
@@ -1004,13 +1019,13 @@
             // Update and draw growing walls
             growingWalls = growingWalls.filter(wall => !wall.destroyed && !wall.completed);
             for (let wall of growingWalls) {
-                wall.update();
+                wall.update(cappedDeltaTime);
                 wall.draw();
             }
             
             // Update and draw balls
             for (let ball of balls) {
-                ball.update();
+                ball.update(cappedDeltaTime);
                 ball.draw();
             }
             

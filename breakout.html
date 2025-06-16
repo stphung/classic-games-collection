@@ -53,6 +53,10 @@
             border-radius: 10px;
             background: #0f0f0f;
             display: block;
+            will-change: transform;
+            transform: translateZ(0);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
 
         .game-info {
@@ -266,7 +270,7 @@
 </head>
 <body>
     <div class="cursor"></div>
-    <a href="index.html" class="back-button">HOME</a>
+    <a href="index.html" class="back-button" title="Press ESC to go back">HOME</a>
     <div class="game-container">
         <canvas id="canvas" width="800" height="600"></canvas>
         <div class="game-info">
@@ -443,7 +447,7 @@
             }
         }
 
-        let ballSpeed = 1.5;
+        let ballSpeed = 300; // pixels per second
         let ball = {
             x: canvas.width / 2,
             y: canvas.height - 100,
@@ -566,8 +570,8 @@
                 particles.push({
                     x: x,
                     y: y,
-                    dx: Math.cos(angle) * 2,
-                    dy: Math.sin(angle) * 2,
+                    dx: Math.cos(angle) * 120, // pixels per second
+                    dy: Math.sin(angle) * 120, // pixels per second
                     size: 2,
                     color: color,
                     life: 1
@@ -575,13 +579,13 @@
             }
         }
 
-        function updateParticles() {
+        function updateParticles(deltaTime) {
             particles = particles.filter(particle => {
-                particle.x += particle.dx;
-                particle.y += particle.dy;
-                particle.dy += 0.1;
-                particle.life -= 0.04;
-                particle.dx *= 0.95;
+                particle.x += particle.dx * deltaTime;
+                particle.y += particle.dy * deltaTime;
+                particle.dy += 300 * deltaTime; // gravity
+                particle.life -= 2.4 * deltaTime;
+                particle.dx *= Math.pow(0.95, deltaTime * 60);
 
                 if (particle.life > 0) {
                     ctx.globalAlpha = particle.life * 0.5;
@@ -594,10 +598,10 @@
             });
         }
 
-        function collisionDetection() {
+        function collisionDetection(deltaTime) {
             // Store the ball's previous position
-            const prevX = ball.x - ball.dx;
-            const prevY = ball.y - ball.dy;
+            const prevX = ball.x - ball.dx * deltaTime;
+            const prevY = ball.y - ball.dy * deltaTime;
             
             for (let r = 0; r < brickRowCount; r++) {
                 for (let c = 0; c < brickColumnCount; c++) {
@@ -666,7 +670,7 @@
             return total;
         }
 
-        function updateBall() {
+        function updateBall(deltaTime) {
             // If ball not launched, follow paddle
             if (!ballLaunched) {
                 ball.x = paddle.x + paddle.width / 2;
@@ -684,8 +688,8 @@
             const prevX = ball.x;
             const prevY = ball.y;
 
-            ball.x += ball.dx;
-            ball.y += ball.dy;
+            ball.x += ball.dx * deltaTime;
+            ball.y += ball.dy * deltaTime;
 
             // Wall collisions
             if (ball.x + ball.radius > canvas.width) {
@@ -760,18 +764,28 @@
             }
         }
 
-        function draw() {
+        // Delta time tracking
+        let lastTime = 0;
+        
+        function draw(currentTime) {
+            // Calculate delta time in seconds
+            const deltaTime = lastTime ? (currentTime - lastTime) / 1000 : 0;
+            lastTime = currentTime;
+            
+            // Cap delta time to prevent large jumps
+            const cappedDeltaTime = Math.min(deltaTime, 0.1);
+            
             // Clean black background
             ctx.fillStyle = '#0f0f0f';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (gameRunning) {
                 // Update physics first
-                updateBall();
+                updateBall(cappedDeltaTime);
                 if (ballLaunched) {
-                    collisionDetection();
+                    collisionDetection(cappedDeltaTime);
                 }
-                updateParticles();
+                updateParticles(cappedDeltaTime);
                 
                 // Then draw everything
                 drawBricks();
@@ -816,7 +830,7 @@
         });
 
         function setSpeed(speed) {
-            ballSpeed = speed;
+            ballSpeed = speed * 200; // Convert to pixels per second
             document.querySelectorAll('.speed-button').forEach(btn => {
                 btn.classList.remove('selected');
             });

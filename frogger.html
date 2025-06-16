@@ -72,6 +72,10 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             width: 600px;
             height: 750px;
+            will-change: transform;
+            transform: translateZ(0);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
 
         .info-panel {
@@ -342,7 +346,7 @@
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-button">Home</a>
+    <a href="index.html" class="back-button" title="Press ESC to go back">Home</a>
     <div class="game-container">
         <div class="game-board">
             <canvas id="canvas" width="600" height="750"></canvas>

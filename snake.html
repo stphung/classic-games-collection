@@ -84,6 +84,10 @@
             border-radius: 8px;
             display: block;
             position: relative;
+            will-change: transform;
+            transform: translateZ(0);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
 
         .start-screen {
@@ -251,7 +255,7 @@
 </head>
 <body>
     <div class="bg-effect"></div>
-    <a href="index.html" class="back-button">HOME</a>
+    <a href="index.html" class="back-button" title="Press ESC to go back">HOME</a>
     
     <div class="game-container">
         <div class="game-header">
@@ -294,7 +298,8 @@
         // Game constants
         const GRID_SIZE = 30;
         const CELL_SIZE = canvas.width / GRID_SIZE;
-        const INITIAL_SPEED = 120;
+        const INITIAL_SPEED = 120; // milliseconds per move
+        const MOVES_PER_SECOND = 1000 / INITIAL_SPEED; // moves per second
         
         // Game state
         let snake = [];
@@ -304,6 +309,8 @@
         let highScore = localStorage.getItem('snakeHighScore') || 0;
         let gameRunning = false;
         let gameSpeed = INITIAL_SPEED;
+        let accumulator = 0;
+        let lastTime = 0;
         let particles = [];
         let muted = false;
         
@@ -394,17 +401,34 @@
             placeFood();
             score = 0;
             gameSpeed = INITIAL_SPEED;
+            accumulator = 0;
+            lastTime = 0;
             scoreElement.textContent = score;
             particles = [];
         }
         
         // Game loop
-        function gameLoop() {
+        function gameLoop(currentTime) {
             if (!gameRunning) return;
             
-            update();
-            draw();
-            setTimeout(gameLoop, gameSpeed);
+            // Calculate delta time
+            if (lastTime === 0) {
+                lastTime = currentTime;
+            }
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+            
+            // Accumulate time
+            accumulator += deltaTime;
+            
+            // Update game at fixed intervals
+            while (accumulator >= gameSpeed) {
+                update();
+                accumulator -= gameSpeed;
+            }
+            
+            draw(deltaTime / 1000); // Pass delta time in seconds
+            requestAnimationFrame(gameLoop);
         }
         
         // Update game state
@@ -439,19 +463,12 @@
                 placeFood();
                 
                 // Increase speed
-                gameSpeed = Math.max(50, gameSpeed - 2);
+                gameSpeed = Math.max(50, gameSpeed - 2); // Speed up by reducing interval
             } else {
                 snake.pop();
             }
             
-            // Update particles
-            particles = particles.filter(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life -= 0.02;
-                p.vy += 0.1;
-                return p.life > 0;
-            });
+            // Update particles (this happens in draw loop now for smooth animation)
         }
         
         // Create particle effect
@@ -470,10 +487,21 @@
         }
         
         // Draw game
-        function draw() {
+        function draw(deltaTime = 0) {
             // Clear canvas
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update particles with delta time for smooth animation
+            if (deltaTime > 0) {
+                particles = particles.filter(p => {
+                    p.x += p.vx * deltaTime * 60; // 60 FPS baseline
+                    p.y += p.vy * deltaTime * 60;
+                    p.life -= 1.2 * deltaTime; // 0.02 * 60
+                    p.vy += 6 * deltaTime; // 0.1 * 60 (gravity)
+                    return p.life > 0;
+                });
+            }
             
             // Draw subtle grid dots
             ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
@@ -611,7 +639,7 @@
         function startGame() {
             startScreen.classList.add('hidden');
             gameRunning = true;
-            gameLoop();
+            requestAnimationFrame(gameLoop);
         }
         
         // Game over
@@ -639,7 +667,7 @@
             init();
             gameRunning = true;
             lastDirection = { x: 1, y: 0 };
-            gameLoop();
+            requestAnimationFrame(gameLoop);
         }
         
         // Initialize

@@ -89,6 +89,10 @@
                 0 10px 30px rgba(0, 0, 0, 0.5),
                 inset 0 0 20px rgba(0, 0, 0, 0.3);
             background: rgba(0, 0, 0, 0.3);
+            will-change: transform;
+            transform: translateZ(0);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
 
         .info-panel {
@@ -354,7 +358,7 @@
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-button">Home</a>
+    <a href="index.html" class="back-button" title="Press ESC to go back">Home</a>
     <div class="mute-control">
         <label class="mute-label">
             <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
@@ -1464,8 +1468,17 @@
             document.getElementById('lines').textContent = lines;
         }
 
+        let lastFrameTime = 0;
+        
         function gameLoop(currentTime = 0) {
             if (!gameRunning) return;
+            
+            // Calculate delta time
+            const deltaTime = lastFrameTime ? (currentTime - lastFrameTime) / 1000 : 0;
+            lastFrameTime = currentTime;
+            
+            // Cap delta time to prevent large jumps
+            const cappedDeltaTime = Math.min(deltaTime, 0.1);
             
             if (!isPaused) {
                 if (currentTime - lastDrop > dropTime) {
@@ -1477,7 +1490,7 @@
                 drawLineAnimations();
                 drawPiece();
                 drawParticles();
-                updateParticles();
+                updateParticles(cappedDeltaTime);
             }
             
             requestAnimationFrame(gameLoop);
@@ -1500,13 +1513,13 @@
             ctx.shadowBlur = 0;
         }
         
-        function updateParticles() {
+        function updateParticles(deltaTime) {
             particles = particles.filter(particle => {
-                particle.x += particle.vx;
-                particle.y += particle.vy;
-                particle.vy += 0.5; // gravity
-                particle.life -= 0.02;
-                particle.size *= 0.98;
+                particle.x += particle.vx * deltaTime * 60; // 60 FPS baseline
+                particle.y += particle.vy * deltaTime * 60;
+                particle.vy += 30 * deltaTime; // gravity (0.5 * 60)
+                particle.life -= 1.2 * deltaTime; // (0.02 * 60)
+                particle.size *= Math.pow(0.98, deltaTime * 60);
                 return particle.life > 0;
             });
         }
