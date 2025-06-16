@@ -1548,9 +1548,10 @@
                         livesDisplay.innerHTML = `<div style="color: #4ade80; font-size: 20px;">${Math.floor(distanceTraveled)}m</div>`;
                     }
                     
-                    // Check if frog has moved too far up and needs screen to scroll
+                    // Check if frog has moved too far up on screen and needs screen to scroll
                     // Only trigger when frog is not currently moving (completed the move)
-                    if (frog.y <= 7 && frog.x === frog.targetX && frog.y === frog.targetY) {
+                    const frogScreenY = (frog.y * GRID_SIZE + scrollOffset) / GRID_SIZE;
+                    if (frogScreenY <= 7 && frog.x === frog.targetX && frog.y === frog.targetY) {
                         // Scroll the world down to keep frog in view
                         scrollOffset += GRID_SIZE;
                         
@@ -1664,9 +1665,14 @@
             ctx.save();
             ctx.translate(0, -jumpOffset);
             
-            // Draw frog - ensure it's always visible
-            const frogDrawY = gameMode === 'endless' ? 14 : frog.y; // In endless mode, keep frog visually at bottom
-            drawFrog(frog.x, frogDrawY, frog.size, frog.color, frog);
+            // Draw frog at its actual position
+            if (gameMode === 'endless') {
+                // In endless mode, apply scroll offset to frog position
+                const frogScreenY = (frog.y * GRID_SIZE + scrollOffset) / GRID_SIZE;
+                drawFrog(frog.x, frogScreenY, frog.size, frog.color, frog);
+            } else {
+                drawFrog(frog.x, frog.y, frog.size, frog.color, frog);
+            }
             
             // Draw a marker to show frog position in debug mode
             if (gameMode === 'endless' && window.location.hash === '#debug') {
