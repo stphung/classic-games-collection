@@ -1547,8 +1547,11 @@
                             scrollOffset = scrollTarget;
                             isScrolling = false;
                             
-                            // Generate new lane and clean up now that scrolling is complete
-                            generateNewLane();
+                            // Generate new lanes and clean up now that scrolling is complete
+                            // Generate 4 new lanes since we scrolled 4 rows
+                            for (let i = 0; i < 4; i++) {
+                                generateNewLane();
+                            }
                             
                             // Remove old lanes and obstacles that are off screen
                             endlessLanes = endlessLanes.filter(lane => {
@@ -1580,16 +1583,16 @@
                         livesDisplay.innerHTML = `<div style="color: #4ade80; font-size: 20px;">${Math.floor(distanceTraveled)}m</div>`;
                     }
                     
-                    // Check if frog has moved too far up on screen and needs screen to scroll
+                    // Check if frog has moved to 75% from the top and needs screen to scroll
                     // Only trigger when frog is not currently moving and not already scrolling
                     const frogScreenY = (frog.y * GRID_SIZE + scrollOffset) / GRID_SIZE;
-                    if (frogScreenY <= 7 && frog.x === frog.targetX && frog.y === frog.targetY && !isScrolling) {
-                        // Start smooth scrolling
+                    if (frogScreenY <= 3.75 && frog.x === frog.targetX && frog.y === frog.targetY && !isScrolling) {
+                        // Start smooth scrolling - scroll multiple rows for better spacing
                         isScrolling = true;
-                        scrollTarget = scrollOffset + GRID_SIZE;
+                        scrollTarget = scrollOffset + (GRID_SIZE * 4); // Scroll 4 rows instead of 1
                         
-                        // After scrolling completes, the frog should be at approximately y=8 on screen
-                        // This happens automatically because scroll offset increases
+                        // After scrolling completes, the frog will be positioned better for continued play
+                        // This gives more room before the next scroll trigger
                     }
                     
                     // Check if frog has fallen too far behind
