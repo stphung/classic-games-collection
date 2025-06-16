@@ -202,6 +202,37 @@
             content: '←';
             font-size: 18px;
         }
+
+        .mute-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .mute-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            color: #999;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mute-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #666;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -234,10 +265,246 @@
         </div>
         <div class="instructions">Move mouse to control paddle</div>
     </div>
+    
+    <div class="mute-control">
+        <label class="mute-label">
+            <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
+            Mute Background Music
+        </label>
+    </div>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        
+        // Initialize Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let musicPlaying = false;
+        let musicMuted = false;
+        let musicInterval;
+
+        // Sound effect functions
+        function playSound(type) {
+            const now = audioContext.currentTime;
+            
+            switch(type) {
+                case 'paddleHit':
+                    // Bouncy boop sound
+                    const boopOsc = audioContext.createOscillator();
+                    const boopGain = audioContext.createGain();
+                    boopOsc.frequency.setValueAtTime(400, now);
+                    boopOsc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+                    boopOsc.type = 'sine';
+                    boopGain.gain.setValueAtTime(0.3, now);
+                    boopGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    boopOsc.connect(boopGain);
+                    boopGain.connect(audioContext.destination);
+                    boopOsc.start(now);
+                    boopOsc.stop(now + 0.1);
+                    break;
+                    
+                case 'brickHit':
+                    // Satisfying crack/pop sound
+                    const popOsc = audioContext.createOscillator();
+                    const popGain = audioContext.createGain();
+                    const popFilter = audioContext.createBiquadFilter();
+                    
+                    popOsc.frequency.setValueAtTime(800, now);
+                    popOsc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+                    popOsc.type = 'square';
+                    
+                    popFilter.type = 'bandpass';
+                    popFilter.frequency.setValueAtTime(1000, now);
+                    popFilter.Q.setValueAtTime(10, now);
+                    
+                    popGain.gain.setValueAtTime(0.3, now);
+                    popGain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    
+                    popOsc.connect(popFilter);
+                    popFilter.connect(popGain);
+                    popGain.connect(audioContext.destination);
+                    
+                    popOsc.start(now);
+                    popOsc.stop(now + 0.05);
+                    
+                    // Add a click sound
+                    const clickBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.01, audioContext.sampleRate);
+                    const clickData = clickBuffer.getChannelData(0);
+                    for (let i = 0; i < clickData.length; i++) {
+                        clickData[i] = Math.random() * 2 - 1;
+                    }
+                    const clickSource = audioContext.createBufferSource();
+                    clickSource.buffer = clickBuffer;
+                    const clickGain = audioContext.createGain();
+                    clickGain.gain.setValueAtTime(0.1, now);
+                    clickSource.connect(clickGain);
+                    clickGain.connect(audioContext.destination);
+                    clickSource.start(now);
+                    break;
+                    
+                case 'lifeLost':
+                    // Descending tone
+                    const lossOsc = audioContext.createOscillator();
+                    const lossGain = audioContext.createGain();
+                    lossOsc.frequency.setValueAtTime(400, now);
+                    lossOsc.frequency.exponentialRampToValueAtTime(100, now + 0.5);
+                    lossOsc.type = 'sawtooth';
+                    lossGain.gain.setValueAtTime(0.2, now);
+                    lossGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    lossOsc.connect(lossGain);
+                    lossGain.connect(audioContext.destination);
+                    lossOsc.start(now);
+                    lossOsc.stop(now + 0.5);
+                    break;
+                    
+                case 'gameOver':
+                    // Sad melody
+                    const sadNotes = [
+                        { freq: 261.63, time: 0 },    // C4
+                        { freq: 246.94, time: 0.2 },  // B3
+                        { freq: 220.00, time: 0.4 },  // A3
+                        { freq: 196.00, time: 0.6 },  // G3
+                        { freq: 174.61, time: 0.8 }   // F3
+                    ];
+                    
+                    sadNotes.forEach(note => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.frequency.setValueAtTime(note.freq, now + note.time);
+                        osc.type = 'triangle';
+                        gain.gain.setValueAtTime(0.2, now + note.time);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + 0.3);
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.start(now + note.time);
+                        osc.stop(now + note.time + 0.3);
+                    });
+                    break;
+                    
+                case 'levelComplete':
+                    // Victory fanfare
+                    const victoryNotes = [
+                        { freq: 523.25, time: 0 },    // C5
+                        { freq: 523.25, time: 0.1 },  // C5
+                        { freq: 523.25, time: 0.2 },  // C5
+                        { freq: 523.25, time: 0.3 },  // C5
+                        { freq: 415.30, time: 0.4 },  // G#4
+                        { freq: 466.16, time: 0.5 },  // A#4
+                        { freq: 523.25, time: 0.6 },  // C5
+                        { freq: 466.16, time: 0.75 }, // A#4
+                        { freq: 523.25, time: 0.9 }   // C5
+                    ];
+                    
+                    victoryNotes.forEach(note => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.frequency.setValueAtTime(note.freq, now + note.time);
+                        osc.type = 'square';
+                        gain.gain.setValueAtTime(0.2, now + note.time);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + 0.15);
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.start(now + note.time);
+                        osc.stop(now + note.time + 0.15);
+                    });
+                    break;
+            }
+        }
+        
+        // Background music
+        const musicNotes = [
+            // Main melody pattern
+            { freq: 261.63, duration: 0.2 }, // C4
+            { freq: 329.63, duration: 0.2 }, // E4
+            { freq: 392.00, duration: 0.2 }, // G4
+            { freq: 329.63, duration: 0.2 }, // E4
+            { freq: 261.63, duration: 0.4 }, // C4
+            
+            { freq: 293.66, duration: 0.2 }, // D4
+            { freq: 349.23, duration: 0.2 }, // F4
+            { freq: 440.00, duration: 0.2 }, // A4
+            { freq: 349.23, duration: 0.2 }, // F4
+            { freq: 293.66, duration: 0.4 }, // D4
+            
+            { freq: 329.63, duration: 0.2 }, // E4
+            { freq: 392.00, duration: 0.2 }, // G4
+            { freq: 493.88, duration: 0.2 }, // B4
+            { freq: 392.00, duration: 0.2 }, // G4
+            { freq: 329.63, duration: 0.4 }, // E4
+        ];
+        
+        const bassPattern = [
+            { freq: 130.81, duration: 0.8 }, // C3
+            { freq: 146.83, duration: 0.8 }, // D3
+            { freq: 164.81, duration: 0.8 }, // E3
+            { freq: 146.83, duration: 0.8 }, // D3
+        ];
+        
+        function playMusicNote(frequency, duration, startTime, type = 'square') {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(frequency, startTime);
+            
+            gainNode.gain.setValueAtTime(0.1, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+        }
+        
+        function playBackgroundMusic() {
+            if (!musicPlaying || audioContext.state === 'suspended' || musicMuted) return;
+            
+            const now = audioContext.currentTime;
+            
+            // Play melody
+            let melodyTime = 0;
+            musicNotes.forEach(note => {
+                playMusicNote(note.freq, note.duration, now + melodyTime, 'square');
+                melodyTime += note.duration;
+            });
+            
+            // Play bass
+            let bassTime = 0;
+            bassPattern.forEach(note => {
+                playMusicNote(note.freq, note.duration, now + bassTime, 'triangle');
+                bassTime += note.duration;
+            });
+        }
+        
+        function startMusic() {
+            if (musicMuted) return;
+            
+            // Stop any existing music first
+            stopMusic();
+            
+            // Resume audio context if suspended
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            musicPlaying = true;
+            
+            // Play music immediately
+            playBackgroundMusic();
+            
+            // Set up interval to loop the music
+            const totalDuration = musicNotes.reduce((sum, note) => sum + note.duration, 0);
+            musicInterval = setInterval(playBackgroundMusic, totalDuration * 1000);
+        }
+        
+        function stopMusic() {
+            musicPlaying = false;
+            if (musicInterval) {
+                clearInterval(musicInterval);
+                musicInterval = null;
+            }
+        }
 
         let ballSpeed = 2; // Default to normal speed
         let ball = {
@@ -409,6 +676,7 @@
                             score += b.points;
                             updateScore();
                             createParticles(b.x + brickWidth / 2, b.y + brickHeight / 2, b.color);
+                            playSound('brickHit');
 
                             if (score === getTotalPossibleScore()) {
                                 gameWon();
@@ -453,6 +721,7 @@
                 ball.dy = -Math.abs(ball.dy);
                 
                 createParticles(ball.x, paddle.y, '#888');
+                playSound('paddleHit');
             }
 
             if (ball.y - ball.radius > canvas.height) {
@@ -461,6 +730,7 @@
                 if (lives === 0) {
                     gameOver();
                 } else {
+                    playSound('lifeLost');
                     resetBall();
                 }
             }
@@ -528,16 +798,21 @@
             lives = 3;
             updateScore();
             updateLives();
+            startMusic();
         }
 
         function gameOver() {
             gameRunning = false;
+            stopMusic();
+            playSound('gameOver');
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOverScreen').classList.add('active');
         }
 
         function gameWon() {
             gameRunning = false;
+            stopMusic();
+            playSound('levelComplete');
             document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'You Win!';
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOverScreen').classList.add('active');
@@ -571,6 +846,17 @@
             if (e.key === 'Escape') {
                 window.location.href = 'index.html';
                 return;
+            }
+        });
+
+        // Mute checkbox handler
+        const muteCheckbox = document.getElementById('muteCheckbox');
+        muteCheckbox.addEventListener('change', (e) => {
+            musicMuted = e.target.checked;
+            if (musicMuted) {
+                stopMusic();
+            } else if (gameRunning) {
+                startMusic();
             }
         });
 
