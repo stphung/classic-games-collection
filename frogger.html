@@ -210,6 +210,87 @@
             background: rgba(255, 255, 255, 0.15);
             border-color: rgba(255, 255, 255, 0.3);
         }
+        
+        /* Mode selection styles */
+        .mode-selection {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .mode-button {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 200px;
+            color: #e5e5e5;
+        }
+        
+        .mode-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(34, 211, 153, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(34, 211, 153, 0.3);
+        }
+        
+        .mode-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 15px;
+        }
+        
+        .mode-name {
+            font-size: 20px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .mode-desc {
+            font-size: 14px;
+            color: #999;
+            display: block;
+        }
+        
+        .back-button {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #999;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            color: #fff;
+        }
+        
+        /* Distance indicator for endless mode */
+        .distance-indicator {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4ade80;
+            display: none;
+            z-index: 10;
+        }
         .speed-control {
             position: absolute;
             bottom: 30px;
@@ -353,16 +434,33 @@
     <div class="game-container">
         <div class="game-board">
             <canvas id="canvas" width="600" height="750"></canvas>
+            <div class="distance-indicator" id="distanceIndicator">0m</div>
             <div class="game-overlay" id="startScreen">
                 <h1 class="overlay-title">Frogger</h1>
-                <p class="overlay-message">Help the frog cross the road and river!</p>
-                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
-                    <button class="play-button" onclick="startGame(false)">1 Player</button>
-                    <button class="play-button" onclick="startGame(true)">2 Players</button>
+                <p class="overlay-message">Choose your game mode</p>
+                <div class="mode-selection" id="modeSelection">
+                    <button class="mode-button" onclick="selectMode('classic')">
+                        <span class="mode-icon">🏁</span>
+                        <span class="mode-name">Classic Mode</span>
+                        <span class="mode-desc">Traditional 5 lives gameplay</span>
+                    </button>
+                    <button class="mode-button" onclick="selectMode('endless')">
+                        <span class="mode-icon">♾️</span>
+                        <span class="mode-name">Endless Mode</span>
+                        <span class="mode-desc">How far can you go?</span>
+                    </button>
                 </div>
-                <div style="margin-top: 20px; font-size: 14px; color: #666;">
-                    <p>Player 1: Arrow Keys (Green Frog)</p>
-                    <p>Player 2: WASD Keys (Orange Frog)</p>
+                <div class="player-selection" id="playerSelection" style="display: none;">
+                    <p class="overlay-message">Select number of players</p>
+                    <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
+                        <button class="play-button" onclick="startGame(false)">1 Player</button>
+                        <button class="play-button" onclick="startGame(true)">2 Players</button>
+                    </div>
+                    <div style="margin-top: 20px; font-size: 14px; color: #666;">
+                        <p>Player 1: Arrow Keys (Green Frog)</p>
+                        <p>Player 2: WASD Keys (Orange Frog)</p>
+                    </div>
+                    <button class="back-button" onclick="showModeSelection()">← Back</button>
                 </div>
             </div>
             <div class="game-overlay" id="gameOverScreen">
@@ -671,6 +769,15 @@
         let winner = null;
         let speedMultiplier = 1;
         let musicMuted = false;
+        
+        // Game mode variables
+        let gameMode = 'classic'; // 'classic' or 'endless'
+        let scrollOffset = 0;
+        let distanceTraveled = 0;
+        let endlessLanes = [];
+        let scrollSpeed = 0;
+        let baseScrollSpeed = 50; // pixels per second
+        let highScoreEndless = localStorage.getItem('froggerEndlessHighScore') || 0;
 
         const lanes = [
             { type: 'safe', y: 14 },
@@ -690,13 +797,164 @@
             { type: 'goal', y: 0 }
         ];
 
+        // Generate procedural lanes for endless mode
+        function generateNewLane() {
+            const lanePatterns = [
+                // Road patterns with difficulty scaling
+                () => ({ 
+                    type: 'road', 
+                    speed: (0.3 + Math.random() * 0.4) * (1 + distanceTraveled / 1000), 
+                    carGap: Math.max(200, 250 + Math.random() * 150 - distanceTraveled / 10), 
+                    carWidth: 70 + Math.random() * 30 
+                }),
+                () => ({ 
+                    type: 'road', 
+                    speed: -(0.3 + Math.random() * 0.4) * (1 + distanceTraveled / 1000), 
+                    carGap: Math.max(200, 250 + Math.random() * 150 - distanceTraveled / 10), 
+                    carWidth: 70 + Math.random() * 30 
+                }),
+                // Water patterns with difficulty scaling
+                () => ({ 
+                    type: 'water', 
+                    speed: (0.2 + Math.random() * 0.3) * (1 + distanceTraveled / 1000), 
+                    logGap: Math.max(120, 140 + Math.random() * 60 - distanceTraveled / 15), 
+                    logWidth: Math.max(60, 80 + Math.random() * 40 - distanceTraveled / 20) 
+                }),
+                () => ({ 
+                    type: 'water', 
+                    speed: -(0.2 + Math.random() * 0.3) * (1 + distanceTraveled / 1000), 
+                    logGap: Math.max(120, 140 + Math.random() * 60 - distanceTraveled / 15), 
+                    logWidth: Math.max(60, 80 + Math.random() * 40 - distanceTraveled / 20) 
+                }),
+                // Safe zones become rarer as distance increases
+                () => ({ type: 'safe' })
+            ];
+            
+            // Reduce chance of safe zones as distance increases
+            const weights = distanceTraveled > 100 ? [3, 3, 3, 3, 1] : [2, 2, 2, 2, 2];
+            const totalWeight = weights.reduce((a, b) => a + b, 0);
+            let random = Math.random() * totalWeight;
+            let patternIndex = 0;
+            
+            for (let i = 0; i < weights.length; i++) {
+                random -= weights[i];
+                if (random <= 0) {
+                    patternIndex = i;
+                    break;
+                }
+            }
+            
+            const pattern = lanePatterns[Math.min(patternIndex, lanePatterns.length - 1)]();
+            pattern.y = Math.min(...endlessLanes.map(l => l.y)) - 1;
+            endlessLanes.unshift(pattern);
+            
+            // Initialize obstacles for new lane
+            if (pattern.type === 'road') {
+                const numCars = Math.floor(600 / pattern.carGap) + 1;
+                for (let j = 0; j < numCars; j++) {
+                    cars.push({
+                        x: j * pattern.carGap,
+                        y: pattern.y * GRID_SIZE,
+                        width: pattern.carWidth,
+                        height: 40,
+                        speed: pattern.speed,
+                        color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                        laneY: pattern.y
+                    });
+                }
+            } else if (pattern.type === 'water') {
+                const numLogs = Math.floor(600 / pattern.logGap) + 1;
+                for (let j = 0; j < numLogs; j++) {
+                    logs.push({
+                        x: j * pattern.logGap,
+                        y: pattern.y * GRID_SIZE,
+                        width: pattern.logWidth,
+                        height: 40,
+                        speed: pattern.speed,
+                        laneY: pattern.y
+                    });
+                }
+            }
+        }
+        
+        function endlessGameOver() {
+            gameRunning = false;
+            stopMusic();
+            
+            // Save high score
+            if (distanceTraveled > highScoreEndless) {
+                highScoreEndless = Math.floor(distanceTraveled);
+                localStorage.setItem('froggerEndlessHighScore', highScoreEndless);
+            }
+            
+            document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'Game Over';
+            document.getElementById('finalScore').textContent = `Distance: ${Math.floor(distanceTraveled)}m (Best: ${highScoreEndless}m)`;
+            document.getElementById('gameOverScreen').classList.add('active');
+        }
+        
+        function generateEndlessLanes() {
+            endlessLanes = [];
+            cars = [];
+            logs = [];
+            
+            // Start with a safe zone
+            endlessLanes.push({ type: 'safe', y: 14 });
+            
+            let currentY = 13;
+            const lanePatterns = [
+                // Road patterns
+                () => ({ type: 'road', speed: 0.3 + Math.random() * 0.4, carGap: 250 + Math.random() * 150, carWidth: 70 + Math.random() * 30 }),
+                () => ({ type: 'road', speed: -(0.3 + Math.random() * 0.4), carGap: 250 + Math.random() * 150, carWidth: 70 + Math.random() * 30 }),
+                // Water patterns
+                () => ({ type: 'water', speed: 0.2 + Math.random() * 0.3, logGap: 140 + Math.random() * 60, logWidth: 80 + Math.random() * 40 }),
+                () => ({ type: 'water', speed: -(0.2 + Math.random() * 0.3), logGap: 140 + Math.random() * 60, logWidth: 80 + Math.random() * 40 }),
+                // Safe zones
+                () => ({ type: 'safe' })
+            ];
+            
+            // Generate initial set of lanes
+            for (let i = 0; i < 30; i++) {
+                const pattern = lanePatterns[Math.floor(Math.random() * lanePatterns.length)]();
+                pattern.y = currentY--;
+                endlessLanes.push(pattern);
+                
+                // Initialize obstacles for this lane
+                if (pattern.type === 'road') {
+                    const numCars = Math.floor(600 / pattern.carGap) + 1;
+                    for (let j = 0; j < numCars; j++) {
+                        cars.push({
+                            x: j * pattern.carGap,
+                            y: pattern.y * GRID_SIZE,
+                            width: pattern.carWidth,
+                            height: 40,
+                            speed: pattern.speed,
+                            color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                            laneY: pattern.y
+                        });
+                    }
+                } else if (pattern.type === 'water') {
+                    const numLogs = Math.floor(600 / pattern.logGap) + 1;
+                    for (let j = 0; j < numLogs; j++) {
+                        logs.push({
+                            x: j * pattern.logGap,
+                            y: pattern.y * GRID_SIZE,
+                            width: pattern.logWidth,
+                            height: 40,
+                            speed: pattern.speed,
+                            laneY: pattern.y
+                        });
+                    }
+                }
+            }
+        }
+        
         function initObstacles() {
             cars = [];
             logs = [];
             
             lanes.forEach(lane => {
                 if (lane.type === 'road') {
-                    const numCars = Math.floor(canvas.width / lane.carGap) + 1;
+                    const numCars = Math.floor(600 / lane.carGap) + 1;
                     for (let i = 0; i < numCars; i++) {
                         cars.push({
                             x: i * lane.carGap,
@@ -708,7 +966,7 @@
                         });
                     }
                 } else if (lane.type === 'water') {
-                    const numLogs = Math.floor(canvas.width / lane.logGap) + 1;
+                    const numLogs = Math.floor(600 / lane.logGap) + 1;
                     for (let i = 0; i < numLogs; i++) {
                         logs.push({
                             x: i * lane.logGap,
@@ -726,8 +984,12 @@
             ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            lanes.forEach(lane => {
-                const y = lane.y * GRID_SIZE;
+            const lanesToDraw = gameMode === 'endless' ? endlessLanes : lanes;
+            
+            lanesToDraw.forEach(lane => {
+                const y = gameMode === 'endless' ? 
+                    (lane.y * GRID_SIZE) + scrollOffset : 
+                    lane.y * GRID_SIZE;
                 
                 if (lane.type === 'safe') {
                     const gradient = ctx.createLinearGradient(0, y, 0, y + GRID_SIZE);
@@ -874,93 +1136,103 @@
             ctx.restore();
         }
 
-        function drawCar(car) {
+        function drawCar(car, lane) {
+            // Apply scroll offset in endless mode
+            const y = gameMode === 'endless' ? 
+                (lane.y * GRID_SIZE) + scrollOffset : 
+                lane.y * GRID_SIZE;
+            
             // Car shadow
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            ctx.fillRect(car.x + 3, car.y + 8, car.width, car.height);
+            ctx.fillRect(car.x + 3, y + 8, car.width, car.height);
             
             // Add glow effect to car
             ctx.shadowBlur = 15;
             ctx.shadowColor = car.color;
             
             // Car body
-            const gradient = ctx.createLinearGradient(car.x, car.y, car.x, car.y + car.height);
+            const gradient = ctx.createLinearGradient(car.x, y, car.x, y + car.height);
             gradient.addColorStop(0, car.color);
             gradient.addColorStop(0.5, car.color);
             gradient.addColorStop(1, '#1a1a1a');
             ctx.fillStyle = gradient;
             ctx.beginPath();
-            ctx.roundRect(car.x, car.y + 5, car.width, car.height, 5);
+            ctx.roundRect(car.x, y + 5, car.width, car.height, 5);
             ctx.fill();
             
             // Car roof
             ctx.fillStyle = car.color;
             ctx.beginPath();
-            ctx.roundRect(car.x + car.width * 0.2, car.y + 8, car.width * 0.6, car.height * 0.7, 3);
+            ctx.roundRect(car.x + car.width * 0.2, y + 8, car.width * 0.6, car.height * 0.7, 3);
             ctx.fill();
             
             // Windows
             ctx.fillStyle = 'rgba(100, 150, 200, 0.7)';
-            ctx.fillRect(car.x + car.width * 0.25, car.y + 12, car.width * 0.2, car.height * 0.4);
-            ctx.fillRect(car.x + car.width * 0.55, car.y + 12, car.width * 0.2, car.height * 0.4);
+            ctx.fillRect(car.x + car.width * 0.25, y + 12, car.width * 0.2, car.height * 0.4);
+            ctx.fillRect(car.x + car.width * 0.55, y + 12, car.width * 0.2, car.height * 0.4);
             
             // Window shine
             ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.fillRect(car.x + car.width * 0.25, car.y + 12, car.width * 0.2, 3);
-            ctx.fillRect(car.x + car.width * 0.55, car.y + 12, car.width * 0.2, 3);
+            ctx.fillRect(car.x + car.width * 0.25, y + 12, car.width * 0.2, 3);
+            ctx.fillRect(car.x + car.width * 0.55, y + 12, car.width * 0.2, 3);
             
             // Headlights
             if (car.speed > 0) {
                 // Front headlights
                 ctx.fillStyle = '#ffffcc';
                 ctx.beginPath();
-                ctx.ellipse(car.x + car.width - 5, car.y + 18, 4, 6, 0, 0, Math.PI * 2);
-                ctx.ellipse(car.x + car.width - 5, car.y + 32, 4, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(car.x + car.width - 5, y + 18, 4, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(car.x + car.width - 5, y + 32, 4, 6, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
                 // Light beam
                 ctx.fillStyle = 'rgba(255, 255, 200, 0.2)';
                 ctx.beginPath();
-                ctx.moveTo(car.x + car.width, car.y + 18);
-                ctx.lineTo(car.x + car.width + 30, car.y + 10);
-                ctx.lineTo(car.x + car.width + 30, car.y + 40);
-                ctx.lineTo(car.x + car.width, car.y + 32);
+                ctx.moveTo(car.x + car.width, y + 18);
+                ctx.lineTo(car.x + car.width + 30, y + 10);
+                ctx.lineTo(car.x + car.width + 30, y + 40);
+                ctx.lineTo(car.x + car.width, y + 32);
                 ctx.closePath();
                 ctx.fill();
             } else {
                 // Rear lights
                 ctx.fillStyle = '#ff0000';
                 ctx.beginPath();
-                ctx.ellipse(car.x + 5, car.y + 18, 4, 6, 0, 0, Math.PI * 2);
-                ctx.ellipse(car.x + 5, car.y + 32, 4, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(car.x + 5, y + 18, 4, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(car.x + 5, y + 32, 4, 6, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
             
             // Wheels
             ctx.fillStyle = '#1a1a1a';
-            ctx.fillRect(car.x + 10, car.y + car.height + 3, 15, 5);
-            ctx.fillRect(car.x + car.width - 25, car.y + car.height + 3, 15, 5);
+            ctx.fillRect(car.x + 10, y + car.height + 3, 15, 5);
+            ctx.fillRect(car.x + car.width - 25, y + car.height + 3, 15, 5);
             
             // Reset shadow
             ctx.shadowBlur = 0;
         }
 
-        function drawLog(log) {
+        function drawLog(log, lane) {
+            // Apply scroll offset in endless mode
+            const y = gameMode === 'endless' ? 
+                (lane.y * GRID_SIZE) + scrollOffset : 
+                lane.y * GRID_SIZE;
+            
             // Log shadow
             ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
             ctx.beginPath();
-            ctx.roundRect(log.x + 2, log.y + 7, log.width, log.height, 10);
+            ctx.roundRect(log.x + 2, y + 7, log.width, log.height, 10);
             ctx.fill();
             
             // Main log body - red gradient
-            const gradient = ctx.createLinearGradient(log.x, log.y, log.x, log.y + log.height);
+            const gradient = ctx.createLinearGradient(log.x, y, log.x, y + log.height);
             gradient.addColorStop(0, '#cc3333');
             gradient.addColorStop(0.3, '#aa2222');
             gradient.addColorStop(0.7, '#881111');
             gradient.addColorStop(1, '#660000');
             ctx.fillStyle = gradient;
             ctx.beginPath();
-            ctx.roundRect(log.x, log.y + 5, log.width, log.height, 10);
+            ctx.roundRect(log.x, y + 5, log.width, log.height, 10);
             ctx.fill();
             
             // Wood texture - darker red lines
@@ -968,22 +1240,22 @@
             ctx.lineWidth = 1;
             for (let i = 0; i < log.width - 10; i += 15) {
                 ctx.beginPath();
-                ctx.moveTo(log.x + i + 10, log.y + 8);
-                ctx.lineTo(log.x + i + 10, log.y + log.height + 2);
+                ctx.moveTo(log.x + i + 10, y + 8);
+                ctx.lineTo(log.x + i + 10, y + log.height + 2);
                 ctx.stroke();
             }
             
             // Log highlights
             ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
             ctx.beginPath();
-            ctx.roundRect(log.x + 5, log.y + 8, log.width - 10, 5, 3);
+            ctx.roundRect(log.x + 5, y + 8, log.width - 10, 5, 3);
             ctx.fill();
             
             // End caps - red
             ctx.fillStyle = '#991111';
             ctx.beginPath();
-            ctx.arc(log.x + 10, log.y + 25, 8, 0, Math.PI * 2);
-            ctx.arc(log.x + log.width - 10, log.y + 25, 8, 0, Math.PI * 2);
+            ctx.arc(log.x + 10, y + 25, 8, 0, Math.PI * 2);
+            ctx.arc(log.x + log.width - 10, y + 25, 8, 0, Math.PI * 2);
             ctx.fill();
             
             // End cap rings - dark red
@@ -1022,15 +1294,26 @@
             const frogY = frog.y * GRID_SIZE;
             const frogSize = frog.size;
 
-            const currentLane = lanes.find(lane => lane.y === frog.y);
+            // Find current lane based on game mode
+            const currentLane = gameMode === 'endless' 
+                ? endlessLanes.find(lane => lane.y === Math.floor(frog.y))
+                : lanes.find(lane => lane.y === frog.y);
             
             if (currentLane && currentLane.type === 'road') {
                 for (let car of cars) {
-                    if (car.y === frogY &&
+                    // Check collision with adjusted Y position for endless mode
+                    const carY = gameMode === 'endless' ? car.y + scrollOffset : car.y;
+                    const frogActualY = gameMode === 'endless' ? frogY + scrollOffset : frogY;
+                    
+                    if (Math.abs(carY - frogActualY) < GRID_SIZE &&
                         frogX + frogSize/2 > car.x &&
                         frogX - frogSize/2 < car.x + car.width) {
                         playSoundEffect('crash');
-                        loseLife();
+                        if (gameMode === 'endless') {
+                            endlessGameOver();
+                        } else {
+                            loseLife();
+                        }
                         return;
                     }
                 }
@@ -1039,7 +1322,11 @@
             if (currentLane && currentLane.type === 'water') {
                 let onLog = false;
                 for (let log of logs) {
-                    if (log.y === frogY &&
+                    // Check collision with adjusted Y position for endless mode
+                    const logY = gameMode === 'endless' ? log.y + scrollOffset : log.y;
+                    const frogActualY = gameMode === 'endless' ? frogY + scrollOffset : frogY;
+                    
+                    if (Math.abs(logY - frogActualY) < GRID_SIZE &&
                         frogX > log.x &&
                         frogX < log.x + log.width) {
                         onLog = true;
@@ -1048,7 +1335,11 @@
                         frog.targetX += logMovement;
                         
                         if (frog.x < 0 || frog.x > COLS - 1) {
-                            loseLife();
+                            if (gameMode === 'endless') {
+                                endlessGameOver();
+                            } else {
+                                loseLife();
+                            }
                             return;
                         }
                         break;
@@ -1056,7 +1347,11 @@
                 }
                 if (!onLog) {
                     playSoundEffect('splash');
-                    loseLife();
+                    if (gameMode === 'endless') {
+                        endlessGameOver();
+                    } else {
+                        loseLife();
+                    }
                 }
             }
 
@@ -1216,6 +1511,46 @@
 
                 updateObstacles();
                 
+                // Handle endless mode scrolling
+                if (gameMode === 'endless') {
+                    // Update scroll offset
+                    scrollOffset += scrollSpeed * deltaTime;
+                    
+                    // Update distance traveled
+                    distanceTraveled += scrollSpeed * deltaTime / GRID_SIZE;
+                    document.getElementById('distanceIndicator').textContent = Math.floor(distanceTraveled) + 'm';
+                    
+                    // Update score based on distance
+                    score = Math.floor(distanceTraveled * 10);
+                    
+                    // Update lives display to show distance
+                    document.getElementById('lives').textContent = Math.floor(distanceTraveled) + 'm';
+                    
+                    // Increase difficulty over time
+                    scrollSpeed = baseScrollSpeed * (1 + distanceTraveled / 500);
+                    
+                    // Generate new lanes as needed
+                    if (scrollOffset > GRID_SIZE) {
+                        scrollOffset -= GRID_SIZE;
+                        generateNewLane();
+                        
+                        // Shift all entities down
+                        cars.forEach(car => car.y += GRID_SIZE);
+                        logs.forEach(log => log.y += GRID_SIZE);
+                        endlessLanes.forEach(lane => lane.y++);
+                        
+                        // Remove old lanes and obstacles that are off screen
+                        endlessLanes = endlessLanes.filter(lane => lane.y * GRID_SIZE + scrollOffset < canvas.height + GRID_SIZE);
+                        cars = cars.filter(car => car.y < canvas.height + 100);
+                        logs = logs.filter(log => log.y < canvas.height + 100);
+                    }
+                    
+                    // Check if frog has fallen too far behind
+                    if (frog.y * GRID_SIZE + scrollOffset > canvas.height - GRID_SIZE) {
+                        endlessGameOver();
+                    }
+                }
+                
                 // Smooth frog movement
                 if (frog.x !== frog.targetX || frog.y !== frog.targetY) {
                     const dx = frog.targetX - frog.x;
@@ -1271,14 +1606,38 @@
             }
 
             drawBackground();
-            cars.forEach(drawCar);
-            logs.forEach(drawLog);
+            
+            // Draw cars with their lane information
+            cars.forEach(car => {
+                const carLane = gameMode === 'endless' 
+                    ? endlessLanes.find(lane => lane.y === car.laneY)
+                    : lanes.find(lane => lane.y * GRID_SIZE === car.y);
+                if (carLane) {
+                    drawCar(car, carLane);
+                }
+            });
+            
+            // Draw logs with their lane information
+            logs.forEach(log => {
+                const logLane = gameMode === 'endless'
+                    ? endlessLanes.find(lane => lane.y === log.laneY)
+                    : lanes.find(lane => lane.y * GRID_SIZE === log.y);
+                if (logLane) {
+                    drawLog(log, logLane);
+                }
+            });
             
             // Draw frog with smooth jump animation
             const jumpOffset = frog.jumping ? Math.sin(frog.jumpProgress * Math.PI) * 15 : 0;
             ctx.save();
             ctx.translate(0, -jumpOffset);
-            drawFrog(frog.x, frog.y, frog.size, frog.color, frog);
+            if (gameMode === 'endless') {
+                // Apply scroll offset to frog position in endless mode
+                const scrolledY = frog.y + (scrollOffset / GRID_SIZE);
+                drawFrog(frog.x, scrolledY, frog.size, frog.color, frog);
+            } else {
+                drawFrog(frog.x, frog.y, frog.size, frog.color, frog);
+            }
             ctx.restore();
             
             // Draw second frog in two player mode
@@ -1380,6 +1739,24 @@
             }
         });
 
+        // Mode selection functions
+        function selectMode(mode) {
+            gameMode = mode;
+            document.getElementById('modeSelection').style.display = 'none';
+            
+            if (mode === 'classic') {
+                document.getElementById('playerSelection').style.display = 'block';
+            } else {
+                // Endless mode is single player only
+                startGame(false);
+            }
+        }
+        
+        function showModeSelection() {
+            document.getElementById('modeSelection').style.display = 'flex';
+            document.getElementById('playerSelection').style.display = 'none';
+        }
+        
         function startGame(isTwoPlayer) {
             // Stop any existing music before starting new game
             stopMusic();
@@ -1388,22 +1765,47 @@
             gameRunning = true;
             twoPlayerMode = isTwoPlayer;
             
-            if (twoPlayerMode) {
-                document.getElementById('score2').style.display = 'block';
-                document.getElementById('livesTitle').textContent = 'Progress';
+            // Configure game based on mode
+            if (gameMode === 'endless') {
+                lives = 1;
+                timeLeft = 999;
+                scrollOffset = 0;
+                distanceTraveled = 0;
+                scrollSpeed = baseScrollSpeed;
+                generateEndlessLanes();
+                document.getElementById('distanceIndicator').style.display = 'block';
+                document.getElementById('distanceIndicator').textContent = '0m';
+                document.getElementById('level').parentElement.style.display = 'none';
+                document.getElementById('time').parentElement.style.display = 'none';
+                document.getElementById('livesTitle').textContent = 'Distance';
+            } else {
+                // Classic mode
+                if (twoPlayerMode) {
+                    document.getElementById('score2').style.display = 'block';
+                    document.getElementById('livesTitle').textContent = 'Progress';
+                    lives = 100;  // Unlimited lives in 2 player mode
+                    timeLeft = 999;  // No time limit in 2 player mode
+                } else {
+                    lives = 3;
+                    timeLeft = 45;
+                }
+                document.getElementById('distanceIndicator').style.display = 'none';
+                document.getElementById('level').parentElement.style.display = 'block';
+                document.getElementById('time').parentElement.style.display = 'block';
             }
-            lives = twoPlayerMode ? 100 : 3;  // Unlimited lives in 2 player mode
+            
             score = 0;
             score2 = 0;
             level = 1;
-            timeLeft = twoPlayerMode ? 999 : 45;  // No time limit in 2 player mode
             homeFrogs = [];
             frog.homeFrogs = [];
             frog2.homeFrogs = [];
             winner = null;
             resetFrogPosition();
             resetFrog2Position();
-            initObstacles();
+            if (gameMode === 'classic') {
+                initObstacles();
+            }
             updateLivesDisplay();
             updateDisplay();
             lastTime = performance.now();
