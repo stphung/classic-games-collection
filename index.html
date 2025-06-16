@@ -572,6 +572,245 @@
                 font-size: 16px;
             }
         }
+        
+        /* Browse/Search Controls */
+        .browse-controls {
+            position: fixed;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .browse-toggle {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 30px;
+            padding: 10px 24px;
+            color: #666;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .browse-toggle:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        
+        .browse-icon {
+            font-size: 16px;
+        }
+        
+        /* Browse search bar */
+        .browse-search-bar {
+            position: fixed;
+            top: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: fadeInScale 0.3s ease;
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .search-input {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 10px 20px;
+            color: #fff;
+            font-size: 14px;
+            width: 300px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input::placeholder {
+            color: #666;
+        }
+        
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .close-browse {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 10px 20px;
+            color: #999;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .close-browse:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        /* Browse Grid */
+        .browse-grid-container {
+            position: fixed;
+            top: 220px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 40px;
+            overflow-y: auto;
+            z-index: 5;
+            display: none;
+        }
+        
+        body.browse-mode .browse-grid-container {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .browse-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Browse Card */
+        .browse-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            animation: fadeInUp 0.5s ease backwards;
+        }
+        
+        .browse-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .browse-card .game-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: block;
+            height: 80px;
+        }
+        
+        .browse-card .game-title {
+            font-size: 20px;
+            font-weight: 200;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .browse-card .game-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .browse-card.hidden {
+            display: none;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Hide carousel elements in browse mode */
+        body.browse-mode .carousel-container,
+        body.browse-mode .dots-container,
+        body.browse-mode .instructions,
+        body.browse-mode .random-game-button,
+        body.browse-mode .browse-toggle {
+            display: none;
+        }
+        
+        body.browse-mode .browse-search-bar {
+            display: flex !important;
+        }
+        
+        @media (max-width: 768px) {
+            .browse-controls {
+                bottom: 320px;
+            }
+            
+            .browse-search-bar {
+                top: 140px;
+                flex-direction: column;
+                gap: 10px;
+                width: 90%;
+            }
+            
+            .search-input {
+                width: 250px;
+                font-size: 13px;
+            }
+            
+            .browse-grid-container {
+                padding: 20px;
+                top: 200px;
+            }
+            
+            .browse-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .browse-card {
+                padding: 20px;
+            }
+            
+            .browse-card .game-icon {
+                font-size: 60px;
+                height: 60px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -600,6 +839,20 @@
         <h1 class="logo">ARCADE</h1>
         <p class="subtitle">Classic Games Collection</p>
     </header>
+    
+    <!-- Browse/Search Controls -->
+    <div class="browse-controls">
+        <button class="browse-toggle" onclick="toggleBrowseMode()">
+            <span class="browse-icon">📚</span>
+            <span class="browse-text">Browse All</span>
+        </button>
+    </div>
+    
+    <!-- Search bar for browse mode -->
+    <div class="browse-search-bar" style="display: none;">
+        <input type="text" class="search-input" placeholder="Search games..." oninput="searchGames(this.value)">
+        <button class="close-browse" onclick="closeBrowseMode()">✕ Close</button>
+    </div>
 
     <div class="carousel-container">
         <button class="nav-button nav-prev" onclick="navigate(-1)">‹</button>
@@ -674,6 +927,11 @@
         <span class="random-icon">🎲</span>
         <span class="random-text">Random Game</span>
     </button>
+    
+    <!-- Browse Mode Grid -->
+    <div class="browse-grid-container">
+        <div class="browse-grid" id="browseGrid"></div>
+    </div>
 
     <script>
         const cards = document.querySelectorAll('.game-card');
@@ -866,6 +1124,89 @@
         // setInterval(() => {
         //     navigate(1);
         // }, 5000);
+        
+        // Browse mode functionality
+        const gameData = [
+            { title: 'Tetris', icon: '▦', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html' },
+            { title: 'Breakout', icon: '▬', color: '#fbbf24', description: 'Smash through colorful bricks with precision and skill', url: 'breakout.html' },
+            { title: 'Frogger', icon: '🐸', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html' },
+            { title: 'Missile Command', icon: '⟟', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html', isNew: true },
+            { title: 'Snake', icon: '▪', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html', isNew: true },
+            { title: 'JezzBall', icon: '◈', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html', isNew: true }
+        ];
+        
+        let browseMode = false;
+        let searchTerm = '';
+        
+        function toggleBrowseMode() {
+            browseMode = true;
+            document.body.classList.add('browse-mode');
+            initializeBrowseGrid();
+            // Focus search after a short delay
+            setTimeout(() => {
+                const searchInput = document.querySelector('.search-input');
+                if (searchInput) searchInput.focus();
+            }, 300);
+        }
+        
+        function closeBrowseMode() {
+            browseMode = false;
+            document.body.classList.remove('browse-mode');
+            document.querySelector('.search-input').value = '';
+            searchTerm = '';
+        }
+        
+        function initializeBrowseGrid() {
+            const grid = document.getElementById('browseGrid');
+            grid.innerHTML = '';
+            
+            gameData.forEach((game, index) => {
+                const card = document.createElement('div');
+                card.className = 'browse-card';
+                card.style.animationDelay = `${index * 0.05}s`;
+                
+                card.innerHTML = `
+                    ${game.isNew ? '<span class="new-badge">New</span>' : ''}
+                    <div class="game-icon ${game.title.toLowerCase().replace(' ', '')}" style="color: ${game.color}">${game.icon}</div>
+                    <h3 class="game-title">${game.title}</h3>
+                    <p class="game-description">${game.description}</p>
+                `;
+                
+                card.addEventListener('click', () => {
+                    transitionToGame(game.url);
+                });
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        function searchGames(term) {
+            searchTerm = term.toLowerCase();
+            const cards = document.querySelectorAll('.browse-card');
+            
+            cards.forEach((card, index) => {
+                const title = card.querySelector('.game-title').textContent.toLowerCase();
+                const description = card.querySelector('.game-description').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.classList.remove('hidden');
+                    card.style.animationDelay = `${index * 0.05}s`;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && !browseMode) {
+                e.preventDefault();
+                toggleBrowseMode();
+            } else if (e.key === 'Escape' && browseMode) {
+                e.preventDefault();
+                closeBrowseMode();
+            }
+        });
     </script>
 </body>
 </html>
