@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JezzBall</title>
+    <script src="transition-common.js"></script>
     <style>
         * {
             margin: 0;
@@ -393,85 +394,114 @@
                 const prevX = this.x;
                 const prevY = this.y;
                 
-                // Move ball based on delta time
-                this.x += this.dx * deltaTime;
-                this.y += this.dy * deltaTime;
+                // Calculate intended movement
+                const moveX = this.dx * deltaTime;
+                const moveY = this.dy * deltaTime;
                 
-                // Bounce off boundaries
-                if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
-                    this.dx = -this.dx;
-                    this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
-                    playSound('bounce');
-                }
-                if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
-                    this.dy = -this.dy;
-                    this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
-                    playSound('bounce');
-                }
+                // Use continuous collision detection with ray casting
+                // Ensure we take enough steps to not miss any collisions
+                const moveDistance = Math.sqrt(moveX * moveX + moveY * moveY);
+                const steps = Math.max(1, Math.ceil(moveDistance / (this.radius * 0.5)));
+                const stepX = moveX / steps;
+                const stepY = moveY / steps;
                 
-                // Check collision with walls using grid
-                if (this.checkGridCollision()) {
-                    // Restore previous position
-                    this.x = prevX;
-                    this.y = prevY;
+                let collisionX = false;
+                let collisionY = false;
+                
+                // Check collision along the path
+                for (let i = 1; i <= steps; i++) {
+                    const testX = prevX + stepX * i;
+                    const testY = prevY + stepY * i;
                     
-                    // Determine bounce direction by testing each axis
-                    const testX = prevX + this.dx;
-                    const testY = prevY + this.dy;
-                    
-                    // Test horizontal movement
+                    // Test movement
                     this.x = testX;
-                    this.y = prevY;
-                    if (this.checkGridCollision()) {
-                        this.dx = -this.dx;
-                    }
-                    
-                    // Test vertical movement
-                    this.x = prevX;
                     this.y = testY;
-                    if (this.checkGridCollision()) {
+                    
+                    // Check boundaries first
+                    if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
+                        this.dx = -this.dx;
+                        this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+                        collisionX = true;
+                        playSound('bounce');
+                    }
+                    if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
                         this.dy = -this.dy;
+                        this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+                        collisionY = true;
+                        playSound('bounce');
                     }
                     
-                    // Apply the bounce
-                    this.x = prevX + this.dx * deltaTime;
-                    this.y = prevY + this.dy * deltaTime;
-                    
-                    playSound('bounce');
+                    // Check wall collision
+                    if (this.checkGridCollision()) {
+                        // Back up to previous safe position
+                        this.x = prevX + stepX * (i - 1);
+                        this.y = prevY + stepY * (i - 1);
+                        
+                        // Determine which direction caused the collision
+                        const testOnlyX = prevX + stepX * i;
+                        const testOnlyY = prevY + stepY * i;
+                        
+                        // Test X movement only
+                        this.x = testOnlyX;
+                        this.y = prevY + stepY * (i - 1);
+                        if (this.checkGridCollision()) {
+                            this.dx = -this.dx;
+                            collisionX = true;
+                        }
+                        
+                        // Test Y movement only
+                        this.x = prevX + stepX * (i - 1);
+                        this.y = testOnlyY;
+                        if (this.checkGridCollision()) {
+                            this.dy = -this.dy;
+                            collisionY = true;
+                        }
+                        
+                        // Set final position
+                        this.x = prevX + stepX * (i - 1);
+                        this.y = prevY + stepY * (i - 1);
+                        
+                        playSound('bounce');
+                        break;
+                    }
+                }
+                
+                // If no collision occurred during stepping, apply remaining movement
+                if (!collisionX && !collisionY) {
+                    this.x = prevX + moveX;
+                    this.y = prevY + moveY;
                 }
             }
             
             checkGridCollision() {
                 // Check the grid cells that the ball overlaps
+                // Use ceiling for negative coordinates to ensure we check all cells
                 const leftGrid = Math.floor((this.x - this.radius) / CELL_SIZE);
-                const rightGrid = Math.floor((this.x + this.radius) / CELL_SIZE);
+                const rightGrid = Math.ceil((this.x + this.radius) / CELL_SIZE);
                 const topGrid = Math.floor((this.y - this.radius) / CELL_SIZE);
-                const bottomGrid = Math.floor((this.y + this.radius) / CELL_SIZE);
+                const bottomGrid = Math.ceil((this.y + this.radius) / CELL_SIZE);
                 
-                // Check all cells the ball touches
-                for (let y = topGrid; y <= bottomGrid; y++) {
-                    for (let x = leftGrid; x <= rightGrid; x++) {
-                        // Check bounds
-                        if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) {
-                            // Check if cell contains a wall
-                            if (grid[y][x] === 1) {
-                                // Precise collision check with this cell
-                                const cellX = x * CELL_SIZE;
-                                const cellY = y * CELL_SIZE;
-                                
-                                // Find closest point on cell to ball center
-                                const closestX = Math.max(cellX, Math.min(this.x, cellX + CELL_SIZE));
-                                const closestY = Math.max(cellY, Math.min(this.y, cellY + CELL_SIZE));
-                                
-                                // Check distance
-                                const distance = Math.sqrt(
-                                    (this.x - closestX) * (this.x - closestX) +
-                                    (this.y - closestY) * (this.y - closestY)
-                                );
-                                
-                                if (distance < this.radius) {
-                                    return true;
-                                }
+                // Check all cells the ball might touch
+                for (let y = Math.max(0, topGrid); y < Math.min(GRID_HEIGHT, bottomGrid); y++) {
+                    for (let x = Math.max(0, leftGrid); x < Math.min(GRID_WIDTH, rightGrid); x++) {
+                        // Check if cell contains a wall
+                        if (grid[y][x] === 1) {
+                            // Precise collision check with this cell
+                            const cellLeft = x * CELL_SIZE;
+                            const cellRight = (x + 1) * CELL_SIZE;
+                            const cellTop = y * CELL_SIZE;
+                            const cellBottom = (y + 1) * CELL_SIZE;
+                            
+                            // Find closest point on cell to ball center
+                            const closestX = Math.max(cellLeft, Math.min(this.x, cellRight));
+                            const closestY = Math.max(cellTop, Math.min(this.y, cellBottom));
+                            
+                            // Check distance
+                            const distanceSquared = (this.x - closestX) * (this.x - closestX) +
+                                                  (this.y - closestY) * (this.y - closestY);
+                            
+                            if (distanceSquared < this.radius * this.radius) {
+                                return true;
                             }
                         }
                     }
@@ -1179,7 +1209,7 @@
                     }
                     break;
                 case 'escape':
-                    window.location.href = 'index.html';
+                    transitionToMenu();
                     break;
             }
         });

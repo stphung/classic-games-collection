@@ -303,6 +303,142 @@
             text-transform: uppercase;
         }
         
+        /* Random game button */
+        .random-game-button {
+            position: absolute;
+            bottom: 140px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 30px;
+            padding: 12px 28px;
+            color: #666;
+            font-size: 14px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .random-game-button:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        
+        .random-game-button:active {
+            transform: translateY(0);
+        }
+        
+        .random-icon {
+            font-size: 18px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        
+        .random-game-button:hover .random-icon {
+            transform: rotate(180deg);
+        }
+        
+        /* Transition overlay */
+        .transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .transition-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .transition-content {
+            text-align: center;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+        }
+        
+        .transition-overlay.active .transition-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .transition-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            position: relative;
+            animation: pulse-ring 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .transition-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+        
+        .transition-text {
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Fade in animation on page load */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        body.transitioning {
+            overflow: hidden;
+        }
+        
         /* Patch notes */
         .patch-notes {
             position: fixed;
@@ -466,11 +602,29 @@
             .game-title {
                 font-size: 24px;
             }
+            
+            .random-game-button {
+                bottom: 300px;
+                font-size: 13px;
+                padding: 10px 20px;
+            }
+            
+            .random-icon {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="bg-pattern"></div>
+    
+    <!-- Transition overlay -->
+    <div class="transition-overlay">
+        <div class="transition-content">
+            <div class="transition-icon"></div>
+            <div class="transition-text">Loading Game...</div>
+        </div>
+    </div>
     
     <div class="patch-notes">
         <div class="patch-title">
@@ -502,7 +656,7 @@
                 <div class="game-icon tetris">▦</div>
                 <h2 class="game-title">Tetris</h2>
                 <p class="game-description">Stack falling blocks to clear lines in this timeless puzzle classic</p>
-                <a href="tetris.html" class="play-button">Play</a>
+                <a href="tetris.html" class="play-button" onclick="event.preventDefault(); transitionToGame('tetris.html')">Play</a>
             </div>
 
             <!-- Breakout -->
@@ -510,7 +664,7 @@
                 <div class="game-icon breakout">▬</div>
                 <h2 class="game-title">Breakout</h2>
                 <p class="game-description">Smash through colorful bricks with precision and skill</p>
-                <a href="breakout.html" class="play-button">Play</a>
+                <a href="breakout.html" class="play-button" onclick="event.preventDefault(); transitionToGame('breakout.html')">Play</a>
             </div>
 
             <!-- Frogger -->
@@ -518,7 +672,7 @@
                 <div class="game-icon frogger">🐸</div>
                 <h2 class="game-title">Frogger</h2>
                 <p class="game-description">Navigate dangerous roads and rivers to reach safety</p>
-                <a href="frogger.html" class="play-button">Play</a>
+                <a href="frogger.html" class="play-button" onclick="event.preventDefault(); transitionToGame('frogger.html')">Play</a>
             </div>
 
             <!-- Missile Command -->
@@ -527,7 +681,7 @@
                 <div class="game-icon missile">⟟</div>
                 <h2 class="game-title">Missile Command</h2>
                 <p class="game-description">Defend your cities from incoming missile attacks</p>
-                <a href="missilecommand.html" class="play-button">Play</a>
+                <a href="missilecommand.html" class="play-button" onclick="event.preventDefault(); transitionToGame('missilecommand.html')">Play</a>
             </div>
 
             <!-- Snake -->
@@ -536,7 +690,7 @@
                 <div class="game-icon snake">▪</div>
                 <h2 class="game-title">Snake</h2>
                 <p class="game-description">Guide the snake to grow longer without hitting walls</p>
-                <a href="snake.html" class="play-button">Play</a>
+                <a href="snake.html" class="play-button" onclick="event.preventDefault(); transitionToGame('snake.html')">Play</a>
             </div>
 
             <!-- JezzBall -->
@@ -545,7 +699,7 @@
                 <div class="game-icon jezzball">◈</div>
                 <h2 class="game-title">JezzBall</h2>
                 <p class="game-description">Trap bouncing balls by building walls strategically</p>
-                <a href="jezzball.html" class="play-button">Play</a>
+                <a href="jezzball.html" class="play-button" onclick="event.preventDefault(); transitionToGame('jezzball.html')">Play</a>
             </div>
         </div>
     </div>
@@ -560,6 +714,11 @@
     </div>
 
     <p class="instructions">Use arrow keys or click to navigate</p>
+    
+    <button class="random-game-button" onclick="selectRandomGame()">
+        <span class="random-icon">🎲</span>
+        <span class="random-text">Random Game</span>
+    </button>
 
     <script>
         const cards = document.querySelectorAll('.game-card');
@@ -623,7 +782,7 @@
                 if (activeCard) {
                     savePosition();
                     const gameUrl = activeCard.dataset.game;
-                    window.location.href = gameUrl;
+                    transitionToGame(gameUrl);
                 }
             }
         });
@@ -658,14 +817,95 @@
                     updateCarousel();
                     savePosition();
                 } else {
-                    // Save position when clicking active card to play
+                    // Save position and transition when clicking active card to play
+                    e.preventDefault();
                     savePosition();
+                    const gameUrl = card.dataset.game;
+                    transitionToGame(gameUrl);
                 }
             });
         });
 
         // Initialize
         updateCarousel();
+        
+        // Add fade-in effect on page load
+        window.addEventListener('load', () => {
+            document.body.style.animation = 'fadeIn 0.8s ease-out';
+        });
+        
+        // Transition to game
+        function transitionToGame(gameUrl) {
+            const overlay = document.querySelector('.transition-overlay');
+            const activeCard = document.querySelector('.game-card.active');
+            const gameTitle = activeCard ? activeCard.querySelector('.game-title').textContent : 'Game';
+            
+            // Update transition text
+            document.querySelector('.transition-text').textContent = `Loading ${gameTitle}...`;
+            
+            // Add transitioning class to body
+            document.body.classList.add('transitioning');
+            
+            // Activate overlay
+            overlay.classList.add('active');
+            
+            // Navigate after transition
+            setTimeout(() => {
+                window.location.href = gameUrl;
+            }, 800);
+        }
+
+        // Random game selection
+        function selectRandomGame() {
+            const randomIndex = Math.floor(Math.random() * cards.length);
+            const totalSpins = cards.length * 2 + randomIndex; // Spin through all games twice plus the random position
+            let spinsCompleted = 0;
+            
+            // Disable button during animation
+            const button = document.querySelector('.random-game-button');
+            button.disabled = true;
+            button.style.opacity = '0.5';
+            
+            // Animate with variable speed
+            function spin() {
+                navigate(1);
+                spinsCompleted++;
+                
+                if (spinsCompleted >= totalSpins) {
+                    savePosition();
+                    
+                    // Re-enable button
+                    button.disabled = false;
+                    button.style.opacity = '1';
+                    
+                    // Navigate to the game after a short pause
+                    setTimeout(() => {
+                        const activeCard = document.querySelector('.game-card.active');
+                        if (activeCard) {
+                            const gameUrl = activeCard.dataset.game;
+                            transitionToGame(gameUrl);
+                        }
+                    }, 1000);
+                } else {
+                    // Calculate delay based on progress
+                    let delay = 50;
+                    const remaining = totalSpins - spinsCompleted;
+                    
+                    if (remaining < 8) {
+                        // Slow down dramatically near the end
+                        delay = 100 + (8 - remaining) * 30;
+                    } else if (spinsCompleted < 10) {
+                        // Start slow to build anticipation
+                        delay = 80;
+                    }
+                    
+                    setTimeout(spin, delay);
+                }
+            }
+            
+            // Start the spinning
+            spin();
+        }
 
         // Auto-rotate (optional - uncomment to enable)
         // setInterval(() => {

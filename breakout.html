@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Breakout</title>
+    <script src="transition-common.js"></script>
     <style>
         * {
             margin: 0;
@@ -926,7 +927,7 @@
         // Keyboard event listener for ESC key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                window.location.href = 'index.html';
+                transitionToMenu();
                 return;
             }
         });
