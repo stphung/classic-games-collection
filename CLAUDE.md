@@ -1,3 +1,4 @@
+- All pages should have the same submit idea button on the top right
 - All games follow a similar glassmorphic modern style to create a cohesive experience across this project
 - All games have a dedicated card on the launcher (index.html)
 - All games have the same home button that can be activated by the escape button to navigate back to the index page

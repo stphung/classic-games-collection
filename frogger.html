@@ -343,10 +343,49 @@
             content: '←';
             font-size: 18px;
         }
+
+        .submit-idea {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            color: #e5e5e5;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .submit-idea:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
+                        0 0 30px rgba(120, 119, 198, 0.2);
+        }
+
+        .submit-idea-icon {
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
     <a href="index.html" class="back-button" title="Press ESC to go back">Home</a>
+    <a href="https://github.com/stphung/classic-games-collection/issues/new" target="_blank" class="submit-idea">
+        <span class="submit-idea-icon">💡</span>
+        <span>Submit Idea</span>
+    </a>
     <div class="game-container">
         <div class="game-board">
             <canvas id="canvas" width="600" height="750"></canvas>

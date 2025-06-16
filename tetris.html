@@ -319,6 +319,41 @@
             transform: translateX(-3px);
         }
 
+        .submit-idea {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-idea:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 32px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .submit-idea-icon {
+            font-size: 16px;
+        }
+
         .mute-control {
             position: fixed;
             bottom: 20px;
@@ -359,6 +394,10 @@
 </head>
 <body>
     <a href="index.html" class="back-button" title="Press ESC to go back">Home</a>
+    <a href="https://github.com/stphung/classic-games-collection/issues/new" target="_blank" class="submit-idea">
+        <span class="submit-idea-icon">💡</span>
+        <span>Submit Idea</span>
+    </a>
     <div class="mute-control">
         <label class="mute-label">
             <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
