@@ -1534,26 +1534,28 @@
                 
                 // Handle endless mode scrolling - only when frog moves forward
                 if (gameMode === 'endless') {
-                    // Check if frog has moved too far up and needs screen to scroll
-                    if (frog.y <= 7) {  // When frog reaches upper part of screen
-                        // Scroll the world down to keep frog in view
-                        const scrollAmount = GRID_SIZE;
-                        scrollOffset += scrollAmount;
-                        
-                        // Move frog back down to maintain position on screen
-                        frog.y += 1;
-                        frog.targetY += 1;
-                        
-                        // Update distance traveled
-                        distanceTraveled += 1;
+                    // Update distance and score based on frog's absolute position
+                    const frogAbsoluteY = 14 - frog.y + distanceTraveled;  // Frog's position in the infinite level
+                    const newDistance = Math.max(distanceTraveled, frogAbsoluteY);
+                    
+                    if (newDistance > distanceTraveled) {
+                        distanceTraveled = newDistance;
                         document.getElementById('distanceIndicator').textContent = Math.floor(distanceTraveled) + 'm';
-                        
-                        // Update score based on distance
                         score = Math.floor(distanceTraveled * 10);
                         
                         // Update lives display to show distance
                         const livesDisplay = document.getElementById('livesDisplay');
                         livesDisplay.innerHTML = `<div style="color: #4ade80; font-size: 20px;">${Math.floor(distanceTraveled)}m</div>`;
+                    }
+                    
+                    // Check if frog has moved too far up and needs screen to scroll
+                    if (frog.y <= 7) {  // When frog reaches upper part of screen
+                        // Scroll the world down to keep frog in view
+                        scrollOffset += GRID_SIZE;
+                        
+                        // Move frog back down to maintain position on screen
+                        frog.y += 1;
+                        frog.targetY += 1;
                         
                         // Generate new lane at the top
                         generateNewLane();
@@ -1746,7 +1748,6 @@
                         if (gameMode === 'endless' || frog.targetY > 0) {
                             frog.targetY--;
                             if (gameMode === 'classic' && frog.targetY < 6) score += 10;
-                            if (gameMode === 'endless') score += 10;  // Bonus for moving forward
                             playSoundEffect('hop');
                         }
                         break;
