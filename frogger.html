@@ -1588,9 +1588,8 @@
                         isScrolling = true;
                         scrollTarget = scrollOffset + GRID_SIZE;
                         
-                        // Move frog back down to maintain logical position
-                        frog.y += 1;
-                        frog.targetY += 1;
+                        // After scrolling completes, the frog should be at approximately y=8 on screen
+                        // This happens automatically because scroll offset increases
                     }
                     
                     // Check if frog has fallen too far behind
