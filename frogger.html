@@ -1532,7 +1532,7 @@
 
                 updateObstacles();
                 
-                // Handle endless mode scrolling - only when frog moves forward
+                // Handle endless mode scrolling - only when frog completes movement
                 if (gameMode === 'endless') {
                     // Update distance and score based on frog's absolute position
                     const frogAbsoluteY = 14 - frog.y + distanceTraveled;  // Frog's position in the infinite level
@@ -1549,7 +1549,8 @@
                     }
                     
                     // Check if frog has moved too far up and needs screen to scroll
-                    if (frog.y <= 7) {  // When frog reaches upper part of screen
+                    // Only trigger when frog is not currently moving (completed the move)
+                    if (frog.y <= 7 && frog.x === frog.targetX && frog.y === frog.targetY) {
                         // Scroll the world down to keep frog in view
                         scrollOffset += GRID_SIZE;
                         
