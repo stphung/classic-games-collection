@@ -774,6 +774,7 @@
         let gameMode = 'classic'; // 'classic' or 'endless'
         let scrollOffset = 0;
         let distanceTraveled = 0;
+        let maxFrogProgress = 0; // Track frog's maximum forward progress
         let endlessLanes = [];
         let scrollSpeed = 0;
         let baseScrollSpeed = 50; // pixels per second
@@ -1569,18 +1570,21 @@
                         }
                     }
                     
-                    // Update distance and score based on frog's absolute position
-                    const frogAbsoluteY = 14 - frog.y + distanceTraveled;
-                    const newDistance = Math.max(distanceTraveled, frogAbsoluteY);
+                    // Update distance and score only when frog makes forward progress
+                    // Calculate frog's current position in the infinite level
+                    const currentFrogProgress = (scrollOffset / GRID_SIZE) + (14 - frog.y);
                     
-                    if (newDistance > distanceTraveled) {
-                        distanceTraveled = newDistance;
-                        document.getElementById('distanceIndicator').textContent = Math.floor(distanceTraveled) + 'm';
-                        score = Math.floor(distanceTraveled * 10);
+                    // Only update if frog has reached a new maximum forward position
+                    if (currentFrogProgress > maxFrogProgress) {
+                        maxFrogProgress = currentFrogProgress;
+                        distanceTraveled = Math.floor(maxFrogProgress);
+                        score = distanceTraveled * 10;
+                        
+                        document.getElementById('distanceIndicator').textContent = distanceTraveled + 'm';
                         
                         // Update lives display to show distance
                         const livesDisplay = document.getElementById('livesDisplay');
-                        livesDisplay.innerHTML = `<div style="color: #4ade80; font-size: 20px;">${Math.floor(distanceTraveled)}m</div>`;
+                        livesDisplay.innerHTML = `<div style="color: #4ade80; font-size: 20px;">${distanceTraveled}m</div>`;
                     }
                     
                     // Check if frog has moved close to the top (around 90% from top) and needs screen to scroll
@@ -1859,6 +1863,7 @@
                 timeLeft = 999;
                 scrollOffset = 0;
                 distanceTraveled = 0;
+                maxFrogProgress = 0;
                 isScrolling = false;
                 scrollTarget = 0;
                 generateEndlessLanes();
