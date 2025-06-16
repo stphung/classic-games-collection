@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JezzBall</title>
     <script src="transition-common.js"></script>
+    <script src="submit-idea-button.js"></script>
+    <script src="home-button.js"></script>
     <style>
         * {
             margin: 0;
@@ -147,34 +149,6 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
-        .submit-idea {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .submit-idea:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .submit-idea-icon {
-            font-size: 16px;
-        }
 
         .game-over-screen, .start-screen {
             position: absolute;
@@ -277,11 +251,6 @@
     </style>
 </head>
 <body>
-    <a href="index.html" class="home-button" title="Press ESC to go back">← Home</a>
-    <a href="https://github.com/stphung/classic-games-collection/issues/new" target="_blank" class="submit-idea">
-        <span class="submit-idea-icon">💡</span>
-        <span>Submit Idea</span>
-    </a>
     
     <div class="game-container">
         <div class="game-header">
