@@ -2,24 +2,58 @@
 
 🎮 **[Play the games here!](https://stphung.github.io/classic-games-collection/)**
 
-A collection of classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
+A collection of four classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
 
 ## Games Included
 
 ### 🟦 Tetris
 The timeless block-stacking puzzle game. Arrange falling tetrominoes to clear lines and score points.
+- **How to Play**: 
+  - Use ← → to move pieces left/right
+  - Use ↑ to rotate pieces
+  - Use ↓ for soft drop (faster fall)
+  - Press Space for hard drop (instant placement)
+  - Clear complete horizontal lines to score points
+  - Game speeds up as you progress through levels
 - **Controls**: Arrow keys to move/rotate, Space for hard drop, P to pause
 - **Features**: Next piece preview, level progression, score tracking
 
 ### 🔴 Breakout
 Smash through bricks with precision and skill using your paddle and ball.
+- **How to Play**:
+  - Move your mouse to control the paddle
+  - Keep the ball in play by bouncing it off your paddle
+  - Break all bricks to complete the level
+  - Different colored bricks give different points
+  - Don't let the ball fall off the bottom!
+  - Choose your difficulty at the start
 - **Controls**: Mouse to move paddle
-- **Features**: Multiple difficulty levels, particle effects, power-ups
+- **Features**: Multiple difficulty levels, particle effects, speed selection
 
 ### 🐸 Frogger
 Navigate through busy streets and treacherous rivers to reach safety.
+- **How to Play**:
+  - Guide your frog across roads avoiding cars
+  - Jump on logs to cross the river safely
+  - Reach the lily pads at the top to score
+  - In 2-player mode, first to get 3 frogs home wins
+  - Watch out for the timer!
+  - Use the speed slider to adjust game difficulty
 - **Controls**: Arrow keys to move (Player 1), WASD (Player 2 in two-player mode)
 - **Features**: Two-player mode, adjustable game speed, retro sound effects
+
+### 🚀 Missile Command
+Defend your cities from incoming missile attacks using anti-ballistic missiles.
+- **How to Play**:
+  - Click anywhere on screen to launch a defensive missile
+  - Your missiles explode at the click location
+  - Use explosions to destroy incoming enemy missiles
+  - Protect your 6 cities from destruction
+  - Ammo refills automatically every 2 seconds
+  - Survive increasingly difficult waves
+  - Watch for splitting missiles in later waves!
+- **Controls**: Click to fire missiles, Space to pause
+- **Features**: Wave progression, auto-refilling ammo, particle effects, splitting missiles
 
 ## Features
 

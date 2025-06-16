@@ -12,48 +12,165 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: #141414;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
             color: #e5e5e5;
-            overflow-x: hidden;
             min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        .header {
-            padding: 20px 50px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+        /* Background with animated gradient */
+        body::before {
+            content: '';
             position: fixed;
-            width: 100%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%);
+            animation: gradientShift 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+        }
+
+        /* Compact header */
+        .header {
+            padding: 20px 40px;
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
             top: 0;
             z-index: 1000;
-            transition: background 0.3s;
-        }
-
-        .header.scrolled {
-            background: rgba(20, 20, 20, 0.95);
-            backdrop-filter: blur(10px);
         }
 
         .logo {
-            font-size: 32px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #e50914 0%, #b00711 100%);
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
-        .hero {
-            padding: 60px 0 40px;
+        .header-subtitle {
+            font-size: 14px;
+            color: #666;
+            font-weight: 300;
+        }
+
+        /* Main container */
+        .container {
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Games grid */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        /* Game card with glassmorphism */
+        .game-card {
+            position: relative;
+            height: 380px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(
+                circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                rgba(255, 255, 255, 0.1) 0%,
+                transparent 50%
+            );
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 60px rgba(120, 119, 198, 0.2);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Game preview area */
+        .game-preview {
+            height: 200px;
+            background: rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(ellipse at center top, #2a2a2a 0%, #141414 50%);
             position: relative;
             overflow: hidden;
         }
 
-        .hero::before {
+        .game-icon {
+            font-size: 80px;
+            opacity: 0.6;
+            transition: all 0.3s;
+            filter: drop-shadow(0 0 20px currentColor);
+        }
+
+        .game-card:hover .game-icon {
+            transform: scale(1.2) rotate(5deg);
+            opacity: 0.8;
+        }
+
+        /* Icon colors */
+        .tetris-card .game-icon {
+            color: #667eea;
+        }
+
+        .breakout-card .game-icon {
+            color: #f59e0b;
+        }
+
+        .frogger-card .game-icon {
+            color: #10b981;
+        }
+
+        .missile-card .game-icon {
+            color: #ef4444;
+        }
+
+        /* Animated background pattern for preview */
+        .game-preview::after {
             content: '';
             position: absolute;
             top: -50%;
@@ -63,492 +180,368 @@
             background: repeating-linear-gradient(
                 45deg,
                 transparent,
-                transparent 10px,
-                rgba(255, 255, 255, 0.01) 10px,
-                rgba(255, 255, 255, 0.01) 20px
+                transparent 20px,
+                rgba(255, 255, 255, 0.03) 20px,
+                rgba(255, 255, 255, 0.03) 40px
             );
-            animation: drift 20s linear infinite;
+            animation: slidePattern 20s linear infinite;
         }
 
-        @keyframes drift {
+        @keyframes slidePattern {
             to {
-                transform: translate(20px, 20px);
+                transform: translate(40px, 40px);
             }
         }
 
-        .hero-content {
-            text-align: center;
-            z-index: 1;
-        }
-
-        .hero-title {
-            font-size: 48px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #fff 0%, #999 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
-        }
-
-        .hero-subtitle {
-            font-size: 20px;
-            color: #999;
-            margin-bottom: 0;
-        }
-
-        .games-section {
-            padding: 40px 0 80px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .section-title {
-            font-size: 28px;
-            margin-bottom: 30px;
-            font-weight: normal;
-            padding: 0 50px;
-        }
-
-        .carousel-container {
-            position: relative;
-            height: 400px;
-            display: flex;
-            align-items: center;
-        }
-
-        .games-carousel {
-            display: flex;
-            gap: 40px;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 0 50px;
-        }
-
-        .game-card {
-            position: relative;
-            min-width: 400px;
-            height: 300px;
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            background: #1a1a1a;
-            opacity: 0.4;
-            transform: scale(0.85);
-        }
-
-        .game-card.active {
-            opacity: 1;
-            transform: scale(1);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-        }
-
-        .game-card.adjacent {
-            opacity: 0.7;
-            transform: scale(0.9);
-        }
-
-        .game-thumbnail {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-        }
-
-        .game-icon {
-            font-size: 80px;
-            opacity: 0.3;
-            transition: opacity 0.3s, transform 0.3s;
-        }
-
-        .game-card:hover .game-icon {
-            opacity: 0.5;
-            transform: scale(1.1);
-        }
-
-        .tetris-icon {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .breakout-icon {
-            background: linear-gradient(135deg, #666 0%, #999 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
+        /* Game info */
         .game-info {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 30px;
-            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0) 100%);
-            opacity: 0;
-            transition: opacity 0.5s;
+            padding: 25px;
+            position: relative;
         }
 
-        .game-card.active .game-info {
-            opacity: 1;
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
         }
 
         .game-title {
             font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .game-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .puzzle-badge {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.4);
+            color: #818cf8;
+        }
+
+        .action-badge {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+        }
+
+        .arcade-badge {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .strategy-badge {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #f87171;
         }
 
         .game-description {
+            color: #999;
             font-size: 14px;
-            color: #999;
-            margin-bottom: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
         }
 
-        .play-button {
-            background: #e50914;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .play-button:hover {
-            background: #f40612;
-        }
-
-        .play-icon {
-            width: 0;
-            height: 0;
-            border-left: 8px solid white;
-            border-top: 5px solid transparent;
-            border-bottom: 5px solid transparent;
-        }
-
-        .coming-soon {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid #444;
-        }
-
-        .carousel-controls {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
+        .game-stats {
             display: flex;
-            align-items: center;
             gap: 20px;
-            color: #999;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .stat-icon {
             font-size: 16px;
         }
 
-        .control-hint {
+        /* Play indicator */
+        .play-indicator {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .key-icon {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-family: monospace;
-        }
-
-        .nav-dots {
-            display: flex;
-            gap: 10px;
-            margin: 0 30px;
-        }
-
-        .nav-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.8);
             transition: all 0.3s;
         }
 
-        .nav-dot.active {
-            width: 24px;
-            border-radius: 4px;
-            background: #e50914;
+        .game-card:hover .play-indicator {
+            opacity: 1;
+            transform: scale(1);
         }
 
-        .footer {
-            padding: 50px;
-            text-align: center;
-            color: #666;
-            border-top: 1px solid #333;
-            margin-top: 100px;
+        .play-arrow {
+            width: 0;
+            height: 0;
+            border-left: 10px solid rgba(255, 255, 255, 0.8);
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            margin-left: 2px;
         }
 
-        .game-card.unavailable {
-            cursor: not-allowed;
-        }
-        
-        .game-card.unavailable .game-thumbnail {
-            filter: grayscale(1);
-            opacity: 0.5;
-        }
-
+        /* Responsive design */
         @media (max-width: 768px) {
-            .header {
-                padding: 15px 20px;
-            }
-
-            .hero-title {
-                font-size: 48px;
-            }
-
-            .hero-subtitle {
-                font-size: 18px;
-            }
-
-            .games-section {
-                padding: 40px 20px;
+            .container {
+                padding: 20px;
             }
 
             .games-grid {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+        }
+
+        /* Loading animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
         }
     </style>
 </head>
 <body>
-    <header class="header" id="header">
-        <div class="logo">ARCADE</div>
+    <header class="header">
+        <div>
+            <div class="logo">Arcade</div>
+            <div class="header-subtitle">Classic Games Collection</div>
+        </div>
     </header>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1 class="hero-title">Classic Games Collection</h1>
-            <p class="hero-subtitle">Play timeless arcade games with a modern twist</p>
+    <div class="container">
+        <div class="games-grid">
+            <!-- Tetris Card -->
+            <div class="game-card tetris-card" data-game="tetris.html">
+                <div class="game-preview">
+                    <div class="game-icon">▦</div>
+                </div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">Tetris</h3>
+                        <span class="game-badge puzzle-badge">Puzzle</span>
+                    </div>
+                    <p class="game-description">The classic block-stacking puzzle game. Arrange falling blocks to clear lines and score points.</p>
+                    <div class="game-stats">
+                        <div class="stat">
+                            <span class="stat-icon">⭐</span>
+                            <span>Classic</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">🎮</span>
+                            <span>Keyboard</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">⏱</span>
+                            <span>Endless</span>
+                        </div>
+                    </div>
+                    <div class="play-indicator">
+                        <div class="play-arrow"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breakout Card -->
+            <div class="game-card breakout-card" data-game="breakout.html">
+                <div class="game-preview">
+                    <div class="game-icon">▬</div>
+                </div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">Breakout</h3>
+                        <span class="game-badge action-badge">Action</span>
+                    </div>
+                    <p class="game-description">Smash through colorful bricks with your paddle and ball. Don't let the ball fall!</p>
+                    <div class="game-stats">
+                        <div class="stat">
+                            <span class="stat-icon">🏆</span>
+                            <span>High Score</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">🎮</span>
+                            <span>Mouse</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">💥</span>
+                            <span>Power-ups</span>
+                        </div>
+                    </div>
+                    <div class="play-indicator">
+                        <div class="play-arrow"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frogger Card -->
+            <div class="game-card frogger-card" data-game="frogger.html">
+                <div class="game-preview">
+                    <div class="game-icon">🐸</div>
+                </div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">Frogger</h3>
+                        <span class="game-badge arcade-badge">Arcade</span>
+                    </div>
+                    <p class="game-description">Guide your frog across busy roads and treacherous rivers to reach safety.</p>
+                    <div class="game-stats">
+                        <div class="stat">
+                            <span class="stat-icon">❤️</span>
+                            <span>3 Lives</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">🎮</span>
+                            <span>Arrows</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">🎯</span>
+                            <span>Levels</span>
+                        </div>
+                    </div>
+                    <div class="play-indicator">
+                        <div class="play-arrow"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Missile Command Card -->
+            <div class="game-card missile-card" data-game="missilecommand.html">
+                <div class="game-preview">
+                    <div class="game-icon">⟟</div>
+                </div>
+                <div class="game-info">
+                    <div class="game-header">
+                        <h3 class="game-title">Missile Command</h3>
+                        <span class="game-badge strategy-badge">Strategy</span>
+                    </div>
+                    <p class="game-description">Defend your cities from incoming missile attacks. Strategic timing is crucial!</p>
+                    <div class="game-stats">
+                        <div class="stat">
+                            <span class="stat-icon">🏙️</span>
+                            <span>6 Cities</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">🎮</span>
+                            <span>Mouse</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">🚀</span>
+                            <span>Waves</span>
+                        </div>
+                    </div>
+                    <div class="play-indicator">
+                        <div class="play-arrow"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </section>
-
-    <section class="games-section">
-        <h2 class="section-title">Available Games</h2>
-        <div class="carousel-container">
-            <div class="games-carousel" id="gamesCarousel">
-                <div class="game-card" data-game="tetris.html">
-                <div class="game-thumbnail">
-                    <div class="game-icon tetris-icon">▦</div>
-                </div>
-                <div class="game-info">
-                    <h3 class="game-title">Tetris</h3>
-                    <p class="game-description">The classic block-stacking puzzle game</p>
-                    <button class="play-button">
-                        <span class="play-icon"></span>
-                        Play Now
-                    </button>
-                </div>
-            </div>
-
-            <div class="game-card" data-game="breakout.html">
-                <div class="game-thumbnail">
-                    <div class="game-icon breakout-icon">▬</div>
-                </div>
-                <div class="game-info">
-                    <h3 class="game-title">Breakout</h3>
-                    <p class="game-description">Smash through bricks with precision and skill</p>
-                    <button class="play-button">
-                        <span class="play-icon"></span>
-                        Play Now
-                    </button>
-                </div>
-            </div>
-
-            <div class="game-card" data-game="frogger.html">
-                <div class="game-thumbnail">
-                    <div class="game-icon" style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🐸</div>
-                </div>
-                <div class="game-info">
-                    <h3 class="game-title">Frogger</h3>
-                    <p class="game-description">Cross roads and rivers to reach safety</p>
-                    <button class="play-button">
-                        <span class="play-icon"></span>
-                        Play Now
-                    </button>
-                </div>
-            </div>
-
-            <div class="game-card unavailable">
-                <div class="game-thumbnail">
-                    <div class="game-icon" style="color: #444;">◎</div>
-                </div>
-                <span class="coming-soon">Coming Soon</span>
-                <div class="game-info">
-                    <h3 class="game-title">Pac-Man</h3>
-                    <p class="game-description">Navigate mazes and avoid ghosts</p>
-                </div>
-            </div>
-
-            <div class="game-card unavailable">
-                <div class="game-thumbnail">
-                    <div class="game-icon" style="color: #444;">▲</div>
-                </div>
-                <span class="coming-soon">Coming Soon</span>
-                <div class="game-info">
-                    <h3 class="game-title">Asteroids</h3>
-                    <p class="game-description">Blast asteroids in deep space</p>
-                </div>
-            </div>
-
-            <div class="game-card unavailable">
-                <div class="game-thumbnail">
-                    <div class="game-icon" style="color: #444;">✦</div>
-                </div>
-                <span class="coming-soon">Coming Soon</span>
-                <div class="game-info">
-                    <h3 class="game-title">Space Invaders</h3>
-                    <p class="game-description">Defend Earth from alien invasion</p>
-                </div>
-            </div>
-            </div>
-            <div class="carousel-controls">
-                <div class="control-hint">
-                    <span class="key-icon">←</span>
-                    <span>Previous</span>
-                </div>
-                <div class="nav-dots" id="navDots"></div>
-                <div class="control-hint">
-                    <span>Next</span>
-                    <span class="key-icon">→</span>
-                </div>
-                <div class="control-hint" style="margin-left: 20px;">
-                    <span class="key-icon">Enter</span>
-                    <span>Play</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer class="footer">
-        <p>&copy; 2025 Arcade Collection. Built with HTML5 Canvas.</p>
-    </footer>
+    </div>
 
     <script>
-        // Header scroll effect
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('header');
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        });
-
-        // Carousel functionality
-        const carousel = document.getElementById('gamesCarousel');
-        const cards = carousel.querySelectorAll('.game-card');
-        const navDotsContainer = document.getElementById('navDots');
-        let currentIndex = 0;
-
-        // Create navigation dots
-        cards.forEach((_, index) => {
-            const dot = document.createElement('div');
-            dot.className = 'nav-dot';
-            if (index === 0) dot.classList.add('active');
-            navDotsContainer.appendChild(dot);
-        });
-
-        const navDots = navDotsContainer.querySelectorAll('.nav-dot');
-
-        function updateCarousel() {
-            // Calculate offset to center the active card
-            const cardWidth = 400;
-            const gap = 40;
-            const viewportWidth = window.innerWidth;
-            const offset = (viewportWidth / 2) - (cardWidth / 2) - currentIndex * (cardWidth + gap);
-            
-            carousel.style.transform = `translateX(${offset}px)`;
-
-            // Update card states
-            cards.forEach((card, index) => {
-                card.classList.remove('active', 'adjacent');
-                if (index === currentIndex) {
-                    card.classList.add('active');
-                } else if (Math.abs(index - currentIndex) === 1) {
-                    card.classList.add('adjacent');
-                }
+        // Mouse tracking for glassmorphism effect
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                card.style.setProperty('--mouse-x', `${x}%`);
+                card.style.setProperty('--mouse-y', `${y}%`);
             });
 
-            // Update navigation dots
-            navDots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentIndex);
-            });
-        }
-
-        function navigateCarousel(direction) {
-            if (direction === 'next' && currentIndex < cards.length - 1) {
-                currentIndex++;
-            } else if (direction === 'prev' && currentIndex > 0) {
-                currentIndex--;
-            }
-            updateCarousel();
-        }
-
-        function launchCurrentGame() {
-            const activeCard = cards[currentIndex];
-            const gameUrl = activeCard.getAttribute('data-game');
-            if (gameUrl && !activeCard.classList.contains('unavailable')) {
-                window.location.href = gameUrl;
-            }
-        }
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            switch(e.key) {
-                case 'ArrowLeft':
-                    navigateCarousel('prev');
-                    break;
-                case 'ArrowRight':
-                    navigateCarousel('next');
-                    break;
-                case 'Enter':
-                    launchCurrentGame();
-                    break;
-            }
-        });
-
-        // Mouse click on cards
-        cards.forEach((card, index) => {
+            // Click handler for entire card
             card.addEventListener('click', () => {
-                if (index === currentIndex) {
-                    launchCurrentGame();
-                } else {
-                    currentIndex = index;
-                    updateCarousel();
+                const gameUrl = card.getAttribute('data-game');
+                if (gameUrl) {
+                    // Add loading animation
+                    card.classList.add('loading');
+                    
+                    // Navigate after a brief delay for visual feedback
+                    setTimeout(() => {
+                        window.location.href = gameUrl;
+                    }, 300);
+                }
+            });
+
+            // Keyboard focus styles
+            card.setAttribute('tabindex', '0');
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    card.click();
                 }
             });
         });
 
-        // Initialize carousel
-        updateCarousel();
+        // Add subtle parallax effect on scroll
+        let ticking = false;
+        function updateParallax() {
+            const scrolled = window.pageYOffset;
+            const parallax = scrolled * 0.5;
+            document.body.style.setProperty('--scroll-y', `${parallax}px`);
+            ticking = false;
+        }
 
-        // Resize handler
-        window.addEventListener('resize', updateCarousel);
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(updateParallax);
+                ticking = true;
+            }
+        });
+
+        // Intersection observer for fade-in animation
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        // Apply initial state and observe
+        document.querySelectorAll('.game-card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `all 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1}s`;
+            observer.observe(card);
+        });
     </script>
 </body>
 </html>

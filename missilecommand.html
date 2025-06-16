@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Missile Command</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #e5e5e5;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated gradient background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%);
+            animation: gradientShift 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+        }
+
+        .game-container {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .game-container:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
+                        0 0 60px rgba(120, 119, 198, 0.2);
+        }
+
+        .game-board {
+            position: relative;
+        }
+
+        #canvas {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(15, 15, 15, 0.8);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            cursor: crosshair;
+        }
+
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 200px;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .info-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .info-box h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+        }
+
+        .info-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .ammo-display {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .ammo-refill-timer {
+            margin-top: 10px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .ammo-refill-progress {
+            height: 100%;
+            background: linear-gradient(to right, #ef4444, #f87171);
+            transition: width 0.1s linear;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+            filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4));
+        }
+
+        .ammo-icon {
+            width: 8px;
+            height: 20px;
+            background: linear-gradient(to top, #ef4444 0%, #f87171 100%);
+            border-radius: 2px;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+            filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4));
+            transition: opacity 0.3s;
+        }
+
+        .ammo-icon.used {
+            opacity: 0.2;
+            background: #333;
+            box-shadow: none;
+        }
+
+        .controls {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #999;
+        }
+
+        .controls-key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+            font-family: monospace;
+            color: #fff;
+        }
+
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .game-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .overlay-title {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.3));
+        }
+
+        .overlay-message {
+            font-size: 20px;
+            margin-bottom: 30px;
+            color: #888;
+        }
+
+        .play-button {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: #e5e5e5;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
+                        0 0 30px rgba(239, 68, 68, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            color: #e5e5e5;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(-5px) translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
+                        0 0 30px rgba(120, 119, 198, 0.2);
+        }
+
+        .mute-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .mute-control:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .mute-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            color: #999;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mute-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #f59e0b;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">← HOME</a>
+    
+    <div class="game-container">
+        <div class="game-board">
+            <canvas id="canvas" width="800" height="600"></canvas>
+            <div class="game-overlay" id="startScreen">
+                <h1 class="overlay-title">Missile Command</h1>
+                <p class="overlay-message">Defend your cities from incoming missiles</p>
+                <button class="play-button" onclick="startGame()">Start Game</button>
+            </div>
+            <div class="game-overlay" id="gameOverScreen">
+                <h1 class="overlay-title">Game Over</h1>
+                <p class="overlay-message">Final Score: <span id="finalScore">0</span></p>
+                <button class="play-button" onclick="resetGame()">Play Again</button>
+            </div>
+        </div>
+        <div class="info-panel">
+            <div class="info-box">
+                <h3>Score</h3>
+                <div class="info-value" id="score">0</div>
+            </div>
+            <div class="info-box">
+                <h3>Wave</h3>
+                <div class="info-value" id="wave">1</div>
+            </div>
+            <div class="info-box">
+                <h3>Ammo</h3>
+                <div class="ammo-display" id="ammoDisplay"></div>
+                <div class="ammo-refill-timer">
+                    <div class="ammo-refill-progress" id="ammoRefillProgress"></div>
+                </div>
+            </div>
+            <div class="info-box">
+                <h3>Cities</h3>
+                <div class="info-value" id="cities">6</div>
+            </div>
+            <div class="info-box">
+                <h3>Controls</h3>
+                <div class="controls">
+                    <div><span class="controls-key">Click</span> Fire Missile</div>
+                    <div><span class="controls-key">Space</span> Pause</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mute-control">
+        <label class="mute-label">
+            <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
+            Mute Background Music
+        </label>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Web Audio API setup
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let musicInterval;
+        let isMuted = false;
+
+        // Game state
+        let gameRunning = false;
+        let isPaused = false;
+        let score = 0;
+        let wave = 1;
+        let maxAmmo = 15;  // More ammo to start
+        let currentAmmo = maxAmmo;
+        let lastAmmoRefill = 0;
+        let waveInProgress = false;
+        const AMMO_REFILL_RATE = 2000; // Constant refill rate - 2 seconds
+        
+        // Game objects
+        let cities = [];
+        let batteries = [];
+        let enemyMissiles = [];
+        let playerMissiles = [];
+        let explosions = [];
+        let particles = [];
+        
+        // Game constants
+        const CITY_WIDTH = 60;
+        const CITY_HEIGHT = 40;
+        const BATTERY_WIDTH = 50;
+        const BATTERY_HEIGHT = 30;
+        const EXPLOSION_MAX_RADIUS = 60;
+        const MISSILE_SPEED = 0.3;  // Much slower start speed
+        const PLAYER_MISSILE_SPEED = 10;  // Faster player missiles
+        
+        // Initialize cities
+        function initCities() {
+            cities = [];
+            const cityPositions = [100, 200, 300, 500, 600, 700];
+            cityPositions.forEach(x => {
+                cities.push({
+                    x: x - CITY_WIDTH / 2,
+                    y: canvas.height - CITY_HEIGHT - 30,
+                    width: CITY_WIDTH,
+                    height: CITY_HEIGHT,
+                    destroyed: false
+                });
+            });
+            document.getElementById('cities').textContent = cities.filter(c => !c.destroyed).length;
+        }
+        
+        // Initialize batteries
+        function initBatteries() {
+            batteries = [];
+            const batteryPositions = [50, 400, 750];
+            batteryPositions.forEach(x => {
+                batteries.push({
+                    x: x - BATTERY_WIDTH / 2,
+                    y: canvas.height - BATTERY_HEIGHT - 30,
+                    width: BATTERY_WIDTH,
+                    height: BATTERY_HEIGHT
+                });
+            });
+        }
+        
+        // Create enemy missile
+        function createEnemyMissile() {
+            const startX = Math.random() * canvas.width;
+            const targets = [...cities.filter(c => !c.destroyed), ...batteries];
+            if (targets.length === 0) return;
+            
+            const target = targets[Math.floor(Math.random() * targets.length)];
+            const targetX = target.x + target.width / 2;
+            const targetY = target.y + target.height / 2;
+            
+            const dx = targetX - startX;
+            const dy = targetY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            const newMissile = {
+                startX: startX,
+                startY: 0,
+                x: startX,
+                y: 0,
+                targetX: targetX,
+                targetY: targetY,
+                vx: (dx / distance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15),  // Faster progression
+                vy: (dy / distance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15),
+                trail: [],
+                canSplit: wave >= 7 && Math.random() < 0.3  // 30% chance to split at wave 7+
+            };
+            
+            enemyMissiles.push(newMissile);
+        }
+        
+        // Create player missile
+        function firePlayerMissile(targetX, targetY) {
+            if (currentAmmo <= 0 || !gameRunning || isPaused) return;
+            
+            currentAmmo--;
+            updateAmmoDisplay();
+            
+            // Find closest battery
+            let closestBattery = batteries[0];
+            let minDistance = Infinity;
+            
+            batteries.forEach(battery => {
+                const dist = Math.abs(battery.x + battery.width / 2 - targetX);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestBattery = battery;
+                }
+            });
+            
+            const startX = closestBattery.x + closestBattery.width / 2;
+            const startY = closestBattery.y;
+            
+            const dx = targetX - startX;
+            const dy = targetY - startY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            playerMissiles.push({
+                x: startX,
+                y: startY,
+                targetX: targetX,
+                targetY: targetY,
+                vx: (dx / distance) * PLAYER_MISSILE_SPEED,
+                vy: (dy / distance) * PLAYER_MISSILE_SPEED,
+                trail: []
+            });
+            
+            playSoundEffect('launch');
+        }
+        
+        // Create explosion
+        function createExplosion(x, y, isPlayer = false) {
+            explosions.push({
+                x: x,
+                y: y,
+                radius: 0,
+                maxRadius: isPlayer ? EXPLOSION_MAX_RADIUS : 30,
+                growing: true,
+                isPlayer: isPlayer
+            });
+            
+            // Create particles
+            for (let i = 0; i < 20; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    life: 1,
+                    color: isPlayer ? '#ff6b6b' : '#ffa500'
+                });
+            }
+            
+            playSoundEffect(isPlayer ? 'explosion' : 'impact');
+        }
+        
+        // Draw functions
+        function drawBackground() {
+            // Dark gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, 'rgba(5, 5, 5, 0.95)');
+            gradient.addColorStop(0.7, 'rgba(10, 10, 10, 0.95)');
+            gradient.addColorStop(1, 'rgba(26, 10, 26, 0.95)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Stars
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 73) % canvas.width;
+                const y = (i * 37) % (canvas.height * 0.6);
+                const size = (i % 3) * 0.5 + 0.5;
+                ctx.fillRect(x, y, size, size);
+            }
+            
+            // Ground with glow
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, canvas.height - 30, canvas.width, 30);
+            
+            // Ground highlight with glow
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fillRect(0, canvas.height - 30, canvas.width, 2);
+            ctx.shadowBlur = 0;
+        }
+        
+        function drawCity(city) {
+            if (city.destroyed) return;
+            
+            // City building
+            const gradient = ctx.createLinearGradient(city.x, city.y, city.x, city.y + city.height);
+            gradient.addColorStop(0, '#444');
+            gradient.addColorStop(1, '#222');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(city.x, city.y, city.width, city.height);
+            
+            // Windows
+            ctx.fillStyle = 'rgba(255, 255, 100, 0.8)';
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 4; col++) {
+                    const windowX = city.x + 8 + col * 12;
+                    const windowY = city.y + 8 + row * 10;
+                    ctx.fillRect(windowX, windowY, 8, 6);
+                }
+            }
+            
+            // City glow
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(255, 255, 100, 0.3)';
+            ctx.strokeStyle = 'rgba(255, 255, 100, 0.2)';
+            ctx.strokeRect(city.x, city.y, city.width, city.height);
+            ctx.shadowBlur = 0;
+        }
+        
+        function drawBattery(battery) {
+            // Battery base
+            const gradient = ctx.createLinearGradient(battery.x, battery.y, battery.x, battery.y + battery.height);
+            gradient.addColorStop(0, '#666');
+            gradient.addColorStop(1, '#333');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(battery.x, battery.y, battery.width, battery.height);
+            
+            // Launcher
+            ctx.fillStyle = '#888';
+            ctx.fillRect(battery.x + battery.width/2 - 5, battery.y - 10, 10, 15);
+            
+            // Battery glow
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(255, 107, 107, 0.3)';
+            ctx.strokeStyle = 'rgba(255, 107, 107, 0.3)';
+            ctx.strokeRect(battery.x, battery.y, battery.width, battery.height);
+            ctx.shadowBlur = 0;
+        }
+        
+        function drawMissile(missile, isPlayer = false) {
+            // Different colors for higher waves
+            let missileColor = 'rgba(255, 165, 0, 0.8)';
+            let headColor = '#ffa500';
+            
+            if (!isPlayer) {
+                if (wave >= 10) {
+                    missileColor = 'rgba(255, 0, 255, 0.8)';  // Purple for high waves
+                    headColor = '#ff00ff';
+                } else if (wave >= 5) {
+                    missileColor = 'rgba(255, 255, 0, 0.8)';  // Yellow for mid waves
+                    headColor = '#ffff00';
+                }
+            }
+            
+            // Missile trail
+            ctx.strokeStyle = isPlayer ? 'rgba(239, 68, 68, 0.8)' : missileColor;
+            ctx.lineWidth = isPlayer ? 3 : (2 + Math.floor(wave / 5));  // Thicker trails at higher waves
+            ctx.beginPath();
+            
+            if (missile.trail.length > 0) {
+                ctx.moveTo(missile.trail[0].x, missile.trail[0].y);
+                for (let i = 1; i < missile.trail.length; i++) {
+                    ctx.lineTo(missile.trail[i].x, missile.trail[i].y);
+                }
+            }
+            ctx.lineTo(missile.x, missile.y);
+            ctx.stroke();
+            
+            // Missile head
+            ctx.fillStyle = isPlayer ? '#ef4444' : headColor;
+            ctx.beginPath();
+            const missileSize = isPlayer ? 4 : (3 + Math.floor(wave / 10));  // Bigger missiles at higher waves
+            ctx.arc(missile.x, missile.y, missileSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Enhanced glow effect
+            ctx.shadowBlur = 15 + Math.floor(wave / 5);
+            ctx.shadowColor = isPlayer ? '#ef4444' : headColor;
+            ctx.fill();
+            
+            // Double glow for extra intensity
+            ctx.shadowBlur = 25 + Math.floor(wave / 3);
+            ctx.shadowColor = isPlayer ? 'rgba(239, 68, 68, 0.5)' : headColor;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+        
+        function drawExplosion(explosion) {
+            const alpha = explosion.growing ? 0.8 : 0.8 * (explosion.radius / explosion.maxRadius);
+            
+            // Explosion circle
+            const gradient = ctx.createRadialGradient(explosion.x, explosion.y, 0, explosion.x, explosion.y, explosion.radius);
+            gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+            gradient.addColorStop(0.3, `rgba(255, 165, 0, ${alpha})`);
+            gradient.addColorStop(0.6, `rgba(255, 107, 107, ${alpha * 0.8})`);
+            gradient.addColorStop(1, `rgba(255, 0, 0, 0)`);
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(explosion.x, explosion.y, explosion.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Enhanced glow effect
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = explosion.isPlayer ? '#ef4444' : '#ffa500';
+            ctx.fill();
+            
+            // Outer glow ring
+            ctx.shadowBlur = 60;
+            ctx.shadowColor = explosion.isPlayer ? 'rgba(239, 68, 68, 0.6)' : 'rgba(255, 165, 0, 0.6)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+        
+        function drawParticle(particle) {
+            ctx.globalAlpha = particle.life;
+            ctx.fillStyle = particle.color;
+            ctx.fillRect(particle.x - 2, particle.y - 2, 4, 4);
+            ctx.globalAlpha = 1;
+        }
+        
+        // Update functions
+        function updateMissiles() {
+            // Update enemy missiles
+            for (let i = enemyMissiles.length - 1; i >= 0; i--) {
+                const missile = enemyMissiles[i];
+                missile.x += missile.vx;
+                missile.y += missile.vy;
+                
+                // Add to trail
+                missile.trail.push({ x: missile.x, y: missile.y });
+                if (missile.trail.length > 30) {
+                    missile.trail.shift();
+                }
+                
+                // Check for missile split
+                if (missile.canSplit && missile.y > canvas.height * 0.3 && missile.y < canvas.height * 0.4) {
+                    missile.canSplit = false;  // Only split once
+                    
+                    // Create two split missiles
+                    for (let j = 0; j < 2; j++) {
+                        const targets = [...cities.filter(c => !c.destroyed), ...batteries];
+                        if (targets.length > 0) {
+                            const target = targets[Math.floor(Math.random() * targets.length)];
+                            const splitTargetX = target.x + target.width / 2;
+                            const splitTargetY = target.y + target.height / 2;
+                            
+                            const splitDx = splitTargetX - missile.x;
+                            const splitDy = splitTargetY - missile.y;
+                            const splitDistance = Math.sqrt(splitDx * splitDx + splitDy * splitDy);
+                            
+                            enemyMissiles.push({
+                                startX: missile.x,
+                                startY: missile.y,
+                                x: missile.x,
+                                y: missile.y,
+                                targetX: splitTargetX,
+                                targetY: splitTargetY,
+                                vx: (splitDx / splitDistance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15),
+                                vy: (splitDy / splitDistance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15),
+                                trail: [{x: missile.x, y: missile.y}],
+                                canSplit: false
+                            });
+                        }
+                    }
+                }
+                
+                // Check if missile reached target
+                if (missile.y >= missile.targetY) {
+                    createExplosion(missile.x, missile.y, false);
+                    enemyMissiles.splice(i, 1);
+                    
+                    // Check for city/battery destruction
+                    cities.forEach(city => {
+                        if (!city.destroyed && 
+                            missile.x >= city.x - 10 && 
+                            missile.x <= city.x + city.width + 10 &&
+                            missile.y >= city.y - 10) {
+                            city.destroyed = true;
+                        }
+                    });
+                }
+            }
+            
+            // Update player missiles
+            for (let i = playerMissiles.length - 1; i >= 0; i--) {
+                const missile = playerMissiles[i];
+                missile.x += missile.vx;
+                missile.y += missile.vy;
+                
+                // Add to trail
+                missile.trail.push({ x: missile.x, y: missile.y });
+                if (missile.trail.length > 20) {
+                    missile.trail.shift();
+                }
+                
+                // Check if missile reached target
+                const dist = Math.sqrt(
+                    Math.pow(missile.x - missile.targetX, 2) + 
+                    Math.pow(missile.y - missile.targetY, 2)
+                );
+                
+                if (dist < 5 || missile.y < missile.targetY) {
+                    createExplosion(missile.x, missile.y, true);
+                    playerMissiles.splice(i, 1);
+                }
+            }
+        }
+        
+        function updateExplosions() {
+            for (let i = explosions.length - 1; i >= 0; i--) {
+                const explosion = explosions[i];
+                
+                if (explosion.growing) {
+                    explosion.radius += 3;
+                    if (explosion.radius >= explosion.maxRadius) {
+                        explosion.growing = false;
+                    }
+                } else {
+                    explosion.radius -= 1;
+                    if (explosion.radius <= 0) {
+                        explosions.splice(i, 1);
+                        continue;
+                    }
+                }
+                
+                // Check for missile interceptions
+                if (explosion.isPlayer) {
+                    for (let j = enemyMissiles.length - 1; j >= 0; j--) {
+                        const missile = enemyMissiles[j];
+                        const dist = Math.sqrt(
+                            Math.pow(missile.x - explosion.x, 2) + 
+                            Math.pow(missile.y - explosion.y, 2)
+                        );
+                        
+                        if (dist < explosion.radius) {
+                            score += 100;
+                            updateScore();
+                            createExplosion(missile.x, missile.y, false);
+                            enemyMissiles.splice(j, 1);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.vy += 0.3;
+                particle.life -= 0.02;
+                
+                if (particle.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+        
+        // Game flow
+        function checkWaveComplete() {
+            if (waveInProgress && enemyMissiles.length === 0 && explosions.length === 0) {
+                // Wave complete - bonus for surviving cities
+                waveInProgress = false;
+                const survivingCities = cities.filter(c => !c.destroyed).length;
+                score += survivingCities * 100;
+                updateScore();
+                
+                wave++;
+                // Don't fully refill ammo, just add bonus ammo
+                currentAmmo = Math.min(currentAmmo + 5, maxAmmo);
+                updateAmmoDisplay();
+                updateWave();
+                playSoundEffect('waveComplete');
+                
+                // Spawn new wave
+                setTimeout(() => {
+                    waveInProgress = true;
+                    const missileCount = Math.min(3 + wave * 2, 20);  // More missiles per wave
+                    const spawnDelay = Math.max(2500 - wave * 150, 300);  // Faster spawn rate
+                    
+                    // Add wave patterns for variety
+                    if (wave % 3 === 0) {
+                        // Wave of 3: Simultaneous launch from multiple positions
+                        for (let burst = 0; burst < Math.ceil(missileCount / 3); burst++) {
+                            setTimeout(() => {
+                                for (let i = 0; i < 3; i++) {
+                                    createEnemyMissile();
+                                }
+                            }, burst * spawnDelay * 3);
+                        }
+                    } else if (wave % 5 === 0) {
+                        // Wave of 5: Full barrage
+                        for (let i = 0; i < missileCount; i++) {
+                            setTimeout(() => createEnemyMissile(), i * 100);  // Rapid fire
+                        }
+                    } else {
+                        // Normal wave pattern
+                        for (let i = 0; i < missileCount; i++) {
+                            setTimeout(() => createEnemyMissile(), i * spawnDelay);
+                        }
+                    }
+                }, 2000);
+            }
+        }
+        
+        function checkGameOver() {
+            const activeCities = cities.filter(c => !c.destroyed).length;
+            if (activeCities === 0) {
+                gameOver();
+            }
+            document.getElementById('cities').textContent = activeCities;
+        }
+        
+        // Sound functions
+        function playSoundEffect(type) {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            const now = audioContext.currentTime;
+            
+            switch(type) {
+                case 'launch':
+                    const launchOsc = audioContext.createOscillator();
+                    const launchGain = audioContext.createGain();
+                    launchOsc.type = 'sawtooth';
+                    launchOsc.frequency.setValueAtTime(200, now);
+                    launchOsc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+                    launchGain.gain.setValueAtTime(0.3, now);
+                    launchGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    launchOsc.connect(launchGain);
+                    launchGain.connect(audioContext.destination);
+                    launchOsc.start(now);
+                    launchOsc.stop(now + 0.2);
+                    break;
+                    
+                case 'explosion':
+                    // Create noise for explosion
+                    const bufferSize = audioContext.sampleRate * 0.5;
+                    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() - 0.5) * 2 * Math.exp(-i / bufferSize * 5);
+                    }
+                    
+                    const explosionSource = audioContext.createBufferSource();
+                    explosionSource.buffer = buffer;
+                    
+                    const explosionFilter = audioContext.createBiquadFilter();
+                    explosionFilter.type = 'lowpass';
+                    explosionFilter.frequency.setValueAtTime(3000, now);
+                    explosionFilter.frequency.exponentialRampToValueAtTime(400, now + 0.5);
+                    
+                    const explosionGain = audioContext.createGain();
+                    explosionGain.gain.setValueAtTime(0.5, now);
+                    explosionGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    
+                    explosionSource.connect(explosionFilter);
+                    explosionFilter.connect(explosionGain);
+                    explosionGain.connect(audioContext.destination);
+                    explosionSource.start(now);
+                    break;
+                    
+                case 'impact':
+                    const impactOsc = audioContext.createOscillator();
+                    const impactGain = audioContext.createGain();
+                    impactOsc.type = 'sine';
+                    impactOsc.frequency.setValueAtTime(150, now);
+                    impactOsc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+                    impactGain.gain.setValueAtTime(0.3, now);
+                    impactGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    impactOsc.connect(impactGain);
+                    impactGain.connect(audioContext.destination);
+                    impactOsc.start(now);
+                    impactOsc.stop(now + 0.1);
+                    break;
+                    
+                case 'waveComplete':
+                    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+                    notes.forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                        gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.start(now + i * 0.1);
+                        osc.stop(now + i * 0.1 + 0.3);
+                    });
+                    break;
+            }
+        }
+        
+        function playBackgroundMusic() {
+            if (isMuted || !gameRunning) return;
+            
+            const now = audioContext.currentTime;
+            const bassDuration = 0.2;
+            
+            // Bass line pattern
+            const bassNotes = [55, 0, 55, 0, 82.5, 0, 82.5, 0]; // A1, rest, A1, rest, E2, rest, E2, rest
+            
+            bassNotes.forEach((freq, i) => {
+                if (freq > 0) {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + i * bassDuration);
+                    
+                    gain.gain.setValueAtTime(0, now + i * bassDuration);
+                    gain.gain.linearRampToValueAtTime(0.1, now + i * bassDuration + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + (i + 1) * bassDuration);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc.start(now + i * bassDuration);
+                    osc.stop(now + (i + 1) * bassDuration);
+                }
+            });
+            
+            // Ominous pad
+            const padOsc = audioContext.createOscillator();
+            const padGain = audioContext.createGain();
+            padOsc.type = 'sawtooth';
+            padOsc.frequency.setValueAtTime(110, now); // A2
+            padGain.gain.setValueAtTime(0.03, now);
+            
+            const padFilter = audioContext.createBiquadFilter();
+            padFilter.type = 'lowpass';
+            padFilter.frequency.setValueAtTime(200, now);
+            
+            padOsc.connect(padFilter);
+            padFilter.connect(padGain);
+            padGain.connect(audioContext.destination);
+            
+            padOsc.start(now);
+            padOsc.stop(now + bassNotes.length * bassDuration);
+        }
+        
+        function startMusic() {
+            if (!isMuted) {
+                playBackgroundMusic();
+                musicInterval = setInterval(playBackgroundMusic, 1600);
+            }
+        }
+        
+        function stopMusic() {
+            if (musicInterval) {
+                clearInterval(musicInterval);
+                musicInterval = null;
+            }
+        }
+        
+        // UI updates
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+        
+        function updateWave() {
+            document.getElementById('wave').textContent = wave;
+        }
+        
+        function updateAmmoDisplay() {
+            const ammoDisplay = document.getElementById('ammoDisplay');
+            ammoDisplay.innerHTML = '';
+            
+            for (let i = 0; i < maxAmmo; i++) {
+                const ammoIcon = document.createElement('div');
+                ammoIcon.className = 'ammo-icon';
+                if (i >= currentAmmo) {
+                    ammoIcon.classList.add('used');
+                }
+                ammoDisplay.appendChild(ammoIcon);
+            }
+        }
+        
+        // Game loop
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+            
+            if (!isPaused) {
+                // Ammo refill mechanic
+                if (currentAmmo < maxAmmo) {
+                    const timeSinceRefill = timestamp - lastAmmoRefill;
+                    const refillProgress = Math.min(timeSinceRefill / AMMO_REFILL_RATE, 1);
+                    
+                    // Update refill progress bar
+                    const progressBar = document.getElementById('ammoRefillProgress');
+                    progressBar.style.width = (refillProgress * 100) + '%';
+                    
+                    if (timeSinceRefill > AMMO_REFILL_RATE) {
+                        currentAmmo++;
+                        lastAmmoRefill = timestamp;
+                        updateAmmoDisplay();
+                    }
+                } else {
+                    // Hide progress bar when ammo is full
+                    document.getElementById('ammoRefillProgress').style.width = '0%';
+                }
+                
+                updateMissiles();
+                updateExplosions();
+                updateParticles();
+                checkWaveComplete();
+                checkGameOver();
+            }
+            
+            // Draw everything
+            drawBackground();
+            cities.forEach(drawCity);
+            batteries.forEach(drawBattery);
+            enemyMissiles.forEach(missile => drawMissile(missile, false));
+            playerMissiles.forEach(missile => drawMissile(missile, true));
+            explosions.forEach(drawExplosion);
+            particles.forEach(drawParticle);
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Game controls
+        function startGame() {
+            document.getElementById('startScreen').classList.remove('active');
+            gameRunning = true;
+            isPaused = false;
+            score = 0;
+            wave = 1;
+            currentAmmo = maxAmmo;
+            
+            initCities();
+            initBatteries();
+            enemyMissiles = [];
+            playerMissiles = [];
+            explosions = [];
+            particles = [];
+            
+            updateScore();
+            updateWave();
+            updateAmmoDisplay();
+            startMusic();
+            
+            // Initialize ammo refill timer
+            lastAmmoRefill = performance.now();
+            
+            // Start first wave - much easier
+            setTimeout(() => {
+                waveInProgress = true;
+                for (let i = 0; i < 4; i++) {  // Only 4 missiles to start
+                    setTimeout(() => createEnemyMissile(), i * 2000);  // 2 seconds apart
+                }
+            }, 1500);  // Give player time to prepare
+            
+            gameLoop(performance.now());
+        }
+        
+        function gameOver() {
+            gameRunning = false;
+            stopMusic();
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverScreen').classList.add('active');
+            
+            // Game over sound
+            const now = audioContext.currentTime;
+            const notes = [440, 392, 349, 311]; // A4, G4, F4, D#4
+            notes.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freq, now + i * 0.2);
+                gain.gain.setValueAtTime(0.2, now + i * 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.4);
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.start(now + i * 0.2);
+                osc.stop(now + i * 0.2 + 0.4);
+            });
+        }
+        
+        function resetGame() {
+            document.getElementById('gameOverScreen').classList.remove('active');
+            startGame();
+        }
+        
+        // Event listeners
+        canvas.addEventListener('click', (e) => {
+            if (!gameRunning || isPaused) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            firePlayerMissile(x, y);
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            // ESC key to return to index.html
+            if (e.key === 'Escape') {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            if (e.key === ' ') {
+                e.preventDefault();
+                isPaused = !isPaused;
+                if (isPaused) {
+                    stopMusic();
+                } else if (gameRunning) {
+                    startMusic();
+                }
+            }
+        });
+        
+        // Mute control
+        const muteCheckbox = document.getElementById('muteCheckbox');
+        muteCheckbox.addEventListener('change', (e) => {
+            isMuted = e.target.checked;
+            if (isMuted) {
+                stopMusic();
+            } else if (gameRunning && !isPaused) {
+                startMusic();
+            }
+        });
+        
+        // Initialize
+        document.getElementById('startScreen').classList.add('active');
+        // Ensure initial values are set
+        wave = 1;
+        score = 0;
+        currentAmmo = maxAmmo;
+        updateAmmoDisplay();
+        updateWave();
+        updateScore();
+        document.getElementById('cities').textContent = '6';
+    </script>
+</body>
+</html>

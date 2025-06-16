@@ -12,24 +12,70 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0a0a;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             color: white;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg at 50% 50%,
+                #4f46e5,
+                #06b6d4,
+                #10b981,
+                #f59e0b,
+                #ef4444,
+                #4f46e5
+            );
+            animation: spin 20s linear infinite;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+        }
+
+        @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         .game-container {
             display: flex;
             gap: 30px;
             align-items: center;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 24px;
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 40px rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .game-container:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                inset 0 0 50px rgba(255, 255, 255, 0.08),
+                0 0 30px rgba(79, 70, 229, 0.3);
         }
 
         .game-board {
@@ -37,9 +83,12 @@
         }
 
         #canvas {
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.3);
         }
 
         .info-panel {
@@ -50,31 +99,78 @@
         }
 
         .info-box {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.05) 0%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .info-box:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.2),
+                0 0 20px rgba(79, 70, 229, 0.2);
+        }
+
+        .info-box:hover::before {
+            opacity: 1;
         }
 
         .info-box h3 {
             margin-bottom: 10px;
-            font-size: 18px;
+            font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            opacity: 0.6;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
         }
 
         .score {
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.6) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
         }
 
         .next-piece-canvas {
             width: 100px;
             height: 80px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             margin-top: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
         .controls {
@@ -84,11 +180,22 @@
 
         .controls-key {
             display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 2px 8px;
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
             margin-right: 5px;
-            font-family: monospace;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .controls-key:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.3);
         }
 
         .game-over {
@@ -96,106 +203,164 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            padding: 30px;
-            border-radius: 10px;
+            background: rgba(10, 10, 10, 0.8);
+            padding: 40px;
+            border-radius: 20px;
             text-align: center;
             display: none;
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                inset 0 0 40px rgba(255, 255, 255, 0.05);
         }
 
         .game-over h2 {
             margin-bottom: 20px;
             font-size: 32px;
+            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.6) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .final-score {
+            font-size: 20px;
+            opacity: 0.8;
+            margin-bottom: 20px;
         }
 
         .play-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: rgba(79, 70, 229, 0.2);
             color: white;
-            border: none;
+            border: 1px solid rgba(79, 70, 229, 0.3);
             padding: 12px 30px;
-            font-size: 18px;
-            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .play-button:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            background: rgba(79, 70, 229, 0.3);
+            border-color: rgba(79, 70, 229, 0.5);
+            box-shadow: 
+                0 10px 30px rgba(79, 70, 229, 0.3),
+                0 0 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .play-button:hover::before {
+            opacity: 1;
         }
 
         .back-button {
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(255, 255, 255, 0.05);
             color: white;
             text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 12px 24px;
+            border-radius: 12px;
             font-size: 14px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
+            font-weight: 600;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
             z-index: 1000;
             display: flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         }
 
         .back-button:hover {
-            background: rgba(0, 0, 0, 0.9);
-            border-color: rgba(255, 255, 255, 0.4);
-            transform: translateX(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 32px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(79, 70, 229, 0.3);
         }
 
         .back-button::before {
             content: '←';
             font-size: 18px;
+            transition: transform 0.3s ease;
         }
 
-        .mute-checkbox {
+        .back-button:hover::before {
+            transform: translateX(-3px);
+        }
+
+        .mute-control {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 15px;
-            border-radius: 25px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .mute-control:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .mute-label {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: white;
+            gap: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 1000;
+            user-select: none;
+            color: #999;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .mute-checkbox:hover {
-            background: rgba(0, 0, 0, 0.9);
-            border-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-        }
-
-        .mute-checkbox input[type="checkbox"] {
+        .mute-checkbox {
             width: 18px;
             height: 18px;
+            accent-color: #f59e0b;
             cursor: pointer;
-            accent-color: #667eea;
         }
     </style>
 </head>
 <body>
     <a href="index.html" class="back-button">Home</a>
-    <label class="mute-checkbox">
-        <input type="checkbox" id="muteCheckbox">
-        Mute Music
-    </label>
+    <div class="mute-control">
+        <label class="mute-label">
+            <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
+            Mute Background Music
+        </label>
+    </div>
     <div class="game-container">
         <div class="game-board">
             <canvas id="canvas" width="300" height="600"></canvas>
@@ -242,73 +407,255 @@
         let musicGainNode = null;
         let musicOscillators = [];
         let musicStarted = false;
+        let masterGainNode = audioContext.createGain();
+        masterGainNode.connect(audioContext.destination);
+        masterGainNode.gain.setValueAtTime(0.7, audioContext.currentTime);
 
-        // Sound functions
-        function playSound(frequency, duration, type = 'sine', gain = 0.1) {
+        // Create reverb effect
+        function createReverb() {
+            const convolver = audioContext.createConvolver();
+            const length = audioContext.sampleRate * 2;
+            const impulse = audioContext.createBuffer(2, length, audioContext.sampleRate);
+            
+            for (let channel = 0; channel < 2; channel++) {
+                const channelData = impulse.getChannelData(channel);
+                for (let i = 0; i < length; i++) {
+                    channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2);
+                }
+            }
+            
+            convolver.buffer = impulse;
+            return convolver;
+        }
+
+        const reverb = createReverb();
+        const reverbGain = audioContext.createGain();
+        reverbGain.gain.setValueAtTime(0.15, audioContext.currentTime);
+        reverb.connect(reverbGain);
+        reverbGain.connect(masterGainNode);
+
+        // Enhanced sound functions
+        function playSound(frequency, duration, type = 'sine', gain = 0.1, useReverb = false) {
+            if (isMuted) return;
+            
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
             
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            
+            if (useReverb) {
+                gainNode.connect(reverb);
+            }
+            gainNode.connect(masterGainNode);
+            
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(2000, audioContext.currentTime);
             
             oscillator.type = type;
             oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
             gainNode.gain.setValueAtTime(gain, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
             
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + duration);
         }
 
-        // Sound effects
+        // Enhanced sound effects
         function playRotateSound() {
-            playSound(800, 0.05, 'square', 0.05);
+            if (isMuted) return;
+            // Quick satisfying click with multiple layers
+            playSound(1200, 0.02, 'square', 0.04);
+            playSound(2400, 0.01, 'sine', 0.03);
+            // Add a subtle pop
+            setTimeout(() => {
+                playSound(800, 0.03, 'triangle', 0.02);
+            }, 10);
         }
 
         function playMoveSound() {
-            playSound(200, 0.03, 'triangle', 0.03);
+            if (isMuted) return;
+            // Subtle whoosh/slide sound
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(masterGainNode);
+            
+            osc.type = 'sawtooth';
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(400, audioContext.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.05);
+            filter.Q.setValueAtTime(5, audioContext.currentTime);
+            
+            gain.gain.setValueAtTime(0.02, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.05);
+            
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.05);
         }
 
         function playLockSound() {
-            playSound(150, 0.1, 'sawtooth', 0.08);
-            playSound(100, 0.15, 'sine', 0.06);
+            if (isMuted) return;
+            // Impactful thud with multiple layers
+            playSound(80, 0.15, 'sine', 0.1);
+            playSound(120, 0.1, 'square', 0.05);
+            playSound(40, 0.2, 'sine', 0.08);
+            
+            // Add a crisp top layer
+            setTimeout(() => {
+                playSound(200, 0.05, 'triangle', 0.03);
+            }, 20);
         }
 
-        function playLineClearSound() {
-            const sweepTime = 0.3;
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
+        function playLineClearSound(linesCleared = 1) {
+            if (isMuted) return;
+            // Epic cascading sound that scales with lines cleared
+            const baseFreq = 300;
+            const freqMultiplier = 1 + (linesCleared * 0.3);
             
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+            for (let i = 0; i < linesCleared; i++) {
+                setTimeout(() => {
+                    const freq = baseFreq * freqMultiplier * (1 + i * 0.5);
+                    playSound(freq, 0.3, 'sawtooth', 0.1, true);
+                    playSound(freq * 1.5, 0.2, 'square', 0.05, true);
+                    playSound(freq * 2, 0.15, 'sine', 0.08, true);
+                }, i * 50);
+            }
             
-            oscillator.type = 'sawtooth';
-            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + sweepTime);
+            // Add sparkle effect
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    playSound(1000 + Math.random() * 1000, 0.1, 'sine', 0.02, true);
+                }, i * 30);
+            }
+        }
+
+        function playTetrisSound() {
+            if (isMuted) return;
+            // Special celebratory sound for 4 lines
+            const melody = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+            melody.forEach((freq, i) => {
+                setTimeout(() => {
+                    playSound(freq, 0.4, 'square', 0.15, true);
+                    playSound(freq * 0.5, 0.4, 'sine', 0.1, true);
+                    playSound(freq * 2, 0.2, 'triangle', 0.05, true);
+                }, i * 80);
+            });
             
-            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + sweepTime);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + sweepTime);
+            // Add bass boom
+            setTimeout(() => {
+                playSound(65.41, 0.8, 'sine', 0.2); // C2
+            }, 100);
         }
 
         function playLevelUpSound() {
-            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-            notes.forEach((freq, i) => {
+            if (isMuted) return;
+            // Triumphant fanfare
+            const fanfare = [
+                { freq: 523.25, delay: 0 },    // C5
+                { freq: 659.25, delay: 100 },  // E5
+                { freq: 783.99, delay: 200 },  // G5
+                { freq: 1046.50, delay: 300 }, // C6
+                { freq: 783.99, delay: 400 },  // G5
+                { freq: 1046.50, delay: 500 }, // C6
+                { freq: 1318.51, delay: 600 }  // E6
+            ];
+            
+            fanfare.forEach(({ freq, delay }) => {
                 setTimeout(() => {
-                    playSound(freq, 0.2, 'square', 0.1);
-                }, i * 100);
+                    playSound(freq, 0.3, 'square', 0.12, true);
+                    playSound(freq * 0.5, 0.3, 'triangle', 0.08);
+                    playSound(freq * 2, 0.15, 'sine', 0.04, true);
+                }, delay);
             });
+            
+            // Add timpani roll
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    playSound(82.41, 0.05, 'sine', 0.1); // E2
+                }, i * 50);
+            }
         }
 
         function playGameOverSound() {
-            const notes = [523.25, 415.30, 349.23, 261.63]; // C5, G#4, F4, C4
-            notes.forEach((freq, i) => {
+            if (isMuted) return;
+            // Dramatic descending melody
+            const notes = [
+                { freq: 1046.50, delay: 0 },    // C6
+                { freq: 830.61, delay: 200 },   // G#5
+                { freq: 698.46, delay: 400 },   // F5
+                { freq: 523.25, delay: 600 },   // C5
+                { freq: 415.30, delay: 800 },   // G#4
+                { freq: 349.23, delay: 1000 },  // F4
+                { freq: 261.63, delay: 1200 },  // C4
+                { freq: 130.81, delay: 1400 }   // C3
+            ];
+            
+            notes.forEach(({ freq, delay }) => {
                 setTimeout(() => {
-                    playSound(freq, 0.3, 'sine', 0.15);
-                }, i * 150);
+                    playSound(freq, 0.5, 'sine', 0.15, true);
+                    playSound(freq * 0.5, 0.5, 'triangle', 0.1);
+                }, delay);
             });
+            
+            // Add low rumble
+            setTimeout(() => {
+                playSound(55, 1.5, 'sine', 0.2);
+            }, 500);
+        }
+
+        function playSoftDropSound() {
+            if (isMuted) return;
+            // Subtle downward whoosh
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(masterGainNode);
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(400, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(0.02, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+            
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.1);
+        }
+
+        function playHardDropSound() {
+            if (isMuted) return;
+            // Dramatic slam with echo
+            playSound(40, 0.3, 'sine', 0.2);
+            playSound(80, 0.2, 'square', 0.1);
+            playSound(160, 0.1, 'sawtooth', 0.05);
+            
+            // Add metallic ring
+            setTimeout(() => {
+                playSound(1200, 0.4, 'triangle', 0.03, true);
+                playSound(2400, 0.3, 'sine', 0.02, true);
+            }, 50);
+            
+            // Echo effect
+            setTimeout(() => {
+                playSound(40, 0.2, 'sine', 0.05);
+            }, 100);
+        }
+
+        function playWarningSound() {
+            if (isMuted) return;
+            // Pulsing warning beep
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    playSound(880, 0.1, 'square', 0.05);
+                    playSound(440, 0.1, 'sawtooth', 0.03);
+                }, i * 150);
+            }
         }
 
         // Background music
@@ -317,12 +664,12 @@
             musicStarted = true;
 
             musicGainNode = audioContext.createGain();
-            musicGainNode.connect(audioContext.destination);
-            musicGainNode.gain.setValueAtTime(isMuted ? 0 : 0.05, audioContext.currentTime);
+            musicGainNode.connect(masterGainNode);
+            musicGainNode.gain.setValueAtTime(isMuted ? 0 : 0.08, audioContext.currentTime);
 
-            // Tetris-style music pattern
+            // Enhanced Tetris theme with multiple layers
             const melody = [
-                // Main theme pattern (simplified Korobeiniki-inspired)
+                // Main theme (Korobeiniki-inspired) - more complete version
                 { note: 659.25, duration: 0.25 }, // E5
                 { note: 493.88, duration: 0.125 }, // B4
                 { note: 523.25, duration: 0.125 }, // C5
@@ -342,84 +689,247 @@
                 { note: 523.25, duration: 0.25 }, // C5
                 { note: 440.00, duration: 0.25 }, // A4
                 { note: 440.00, duration: 0.5 }, // A4
+                { note: 0, duration: 0.25 }, // Rest
+                { note: 587.33, duration: 0.375 }, // D5
+                { note: 698.46, duration: 0.125 }, // F5
+                { note: 880.00, duration: 0.25 }, // A5
+                { note: 783.99, duration: 0.125 }, // G5
+                { note: 698.46, duration: 0.125 }, // F5
+                { note: 659.25, duration: 0.375 }, // E5
+                { note: 523.25, duration: 0.125 }, // C5
+                { note: 659.25, duration: 0.25 }, // E5
+                { note: 587.33, duration: 0.125 }, // D5
+                { note: 523.25, duration: 0.125 }, // C5
+                { note: 493.88, duration: 0.75 }, // B4
             ];
 
             const bassline = [
-                // Bass pattern
-                { note: 164.81, duration: 0.5 }, // E3
-                { note: 164.81, duration: 0.5 }, // E3
-                { note: 146.83, duration: 0.5 }, // D3
-                { note: 146.83, duration: 0.5 }, // D3
-                { note: 130.81, duration: 0.5 }, // C3
-                { note: 130.81, duration: 0.5 }, // C3
-                { note: 123.47, duration: 0.5 }, // B2
-                { note: 123.47, duration: 0.5 }, // B2
-                { note: 110.00, duration: 0.5 }, // A2
-                { note: 110.00, duration: 0.5 }, // A2
+                // Enhanced bass pattern with walking bass
+                { note: 164.81, duration: 0.25 }, // E3
+                { note: 164.81, duration: 0.25 }, // E3
+                { note: 164.81, duration: 0.25 }, // E3
+                { note: 164.81, duration: 0.25 }, // E3
+                { note: 146.83, duration: 0.25 }, // D3
+                { note: 146.83, duration: 0.25 }, // D3
+                { note: 146.83, duration: 0.25 }, // D3
+                { note: 146.83, duration: 0.25 }, // D3
+                { note: 130.81, duration: 0.25 }, // C3
+                { note: 130.81, duration: 0.25 }, // C3
+                { note: 130.81, duration: 0.25 }, // C3
+                { note: 130.81, duration: 0.25 }, // C3
+                { note: 123.47, duration: 0.25 }, // B2
+                { note: 123.47, duration: 0.25 }, // B2
+                { note: 146.83, duration: 0.25 }, // D3
+                { note: 164.81, duration: 0.25 }, // E3
+                { note: 110.00, duration: 0.25 }, // A2
+                { note: 110.00, duration: 0.25 }, // A2
+                { note: 110.00, duration: 0.25 }, // A2
+                { note: 110.00, duration: 0.25 }, // A2
             ];
 
-            let melodyTime = 0;
-            let bassTime = 0;
-            const tempo = 120; // BPM
+            const harmony = [
+                // Harmony layer
+                { note: 329.63, duration: 0.5 }, // E4
+                { note: 329.63, duration: 0.5 }, // E4
+                { note: 293.66, duration: 0.5 }, // D4
+                { note: 293.66, duration: 0.5 }, // D4
+                { note: 261.63, duration: 0.5 }, // C4
+                { note: 261.63, duration: 0.5 }, // C4
+                { note: 246.94, duration: 0.5 }, // B3
+                { note: 246.94, duration: 0.5 }, // B3
+                { note: 220.00, duration: 1.0 }, // A3
+            ];
+
+            // Percussion pattern (simulated with noise and filtered tones)
+            const percussion = [
+                { type: 'kick', delay: 0 },
+                { type: 'hat', delay: 0.125 },
+                { type: 'snare', delay: 0.25 },
+                { type: 'hat', delay: 0.375 },
+                { type: 'kick', delay: 0.5 },
+                { type: 'hat', delay: 0.625 },
+                { type: 'snare', delay: 0.75 },
+                { type: 'hat', delay: 0.875 },
+            ];
+
+            let currentTime = 0;
+            const tempo = 125; // Slightly faster for energy
             const beatDuration = 60 / tempo;
+            let loopInterval;
 
-            function scheduleMelody() {
+            function playPercussion(type, time) {
+                if (type === 'kick') {
+                    // Kick drum
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(musicGainNode);
+                    
+                    osc.frequency.setValueAtTime(60, time);
+                    osc.frequency.exponentialRampToValueAtTime(40, time + 0.05);
+                    
+                    gain.gain.setValueAtTime(0.15, time);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+                    
+                    osc.start(time);
+                    osc.stop(time + 0.1);
+                    musicOscillators.push(osc);
+                } else if (type === 'snare') {
+                    // Snare drum (noise burst)
+                    const bufferSize = audioContext.sampleRate * 0.05;
+                    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    
+                    const noise = audioContext.createBufferSource();
+                    const filter = audioContext.createBiquadFilter();
+                    const gain = audioContext.createGain();
+                    
+                    noise.buffer = buffer;
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(musicGainNode);
+                    
+                    filter.type = 'highpass';
+                    filter.frequency.setValueAtTime(3000, time);
+                    
+                    gain.gain.setValueAtTime(0.05, time);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+                    
+                    noise.start(time);
+                    noise.stop(time + 0.05);
+                } else if (type === 'hat') {
+                    // Hi-hat
+                    const osc = audioContext.createOscillator();
+                    const filter = audioContext.createBiquadFilter();
+                    const gain = audioContext.createGain();
+                    
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(musicGainNode);
+                    
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(8000, time);
+                    
+                    filter.type = 'highpass';
+                    filter.frequency.setValueAtTime(7000, time);
+                    
+                    gain.gain.setValueAtTime(0.02, time);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.03);
+                    
+                    osc.start(time);
+                    osc.stop(time + 0.03);
+                    musicOscillators.push(osc);
+                }
+            }
+
+            function scheduleMusic() {
+                const startTime = audioContext.currentTime;
+                currentTime = 0;
+
+                // Schedule melody
                 melody.forEach(({ note, duration }) => {
-                    const oscillator = audioContext.createOscillator();
-                    const noteGain = audioContext.createGain();
-                    
-                    oscillator.connect(noteGain);
-                    noteGain.connect(musicGainNode);
-                    
-                    oscillator.type = 'square';
-                    oscillator.frequency.setValueAtTime(note, audioContext.currentTime + melodyTime);
-                    
-                    noteGain.gain.setValueAtTime(0.05, audioContext.currentTime + melodyTime);
-                    noteGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + melodyTime + duration * beatDuration);
-                    
-                    oscillator.start(audioContext.currentTime + melodyTime);
-                    oscillator.stop(audioContext.currentTime + melodyTime + duration * beatDuration);
-                    
-                    musicOscillators.push(oscillator);
-                    melodyTime += duration * beatDuration;
+                    if (note > 0) {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        const vibrato = audioContext.createOscillator();
+                        const vibratoGain = audioContext.createGain();
+                        
+                        // Add subtle vibrato
+                        vibrato.frequency.setValueAtTime(5, startTime + currentTime);
+                        vibratoGain.gain.setValueAtTime(2, startTime + currentTime);
+                        vibrato.connect(vibratoGain);
+                        vibratoGain.connect(osc.frequency);
+                        
+                        osc.connect(gain);
+                        gain.connect(musicGainNode);
+                        
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(note, startTime + currentTime);
+                        
+                        gain.gain.setValueAtTime(0.06, startTime + currentTime);
+                        gain.gain.setValueAtTime(0.05, startTime + currentTime + 0.01);
+                        gain.gain.exponentialRampToValueAtTime(0.001, startTime + currentTime + duration * beatDuration * 0.9);
+                        
+                        vibrato.start(startTime + currentTime);
+                        osc.start(startTime + currentTime);
+                        vibrato.stop(startTime + currentTime + duration * beatDuration);
+                        osc.stop(startTime + currentTime + duration * beatDuration);
+                        
+                        musicOscillators.push(osc);
+                    }
+                    currentTime += duration * beatDuration;
                 });
-            }
 
-            function scheduleBass() {
+                // Schedule bass
+                currentTime = 0;
                 bassline.forEach(({ note, duration }) => {
-                    const oscillator = audioContext.createOscillator();
-                    const noteGain = audioContext.createGain();
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
                     
-                    oscillator.connect(noteGain);
-                    noteGain.connect(musicGainNode);
+                    osc.connect(gain);
+                    gain.connect(musicGainNode);
                     
-                    oscillator.type = 'triangle';
-                    oscillator.frequency.setValueAtTime(note, audioContext.currentTime + bassTime);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(note, startTime + currentTime);
                     
-                    noteGain.gain.setValueAtTime(0.08, audioContext.currentTime + bassTime);
+                    gain.gain.setValueAtTime(0.08, startTime + currentTime);
+                    gain.gain.setValueAtTime(0.07, startTime + currentTime + 0.01);
                     
-                    oscillator.start(audioContext.currentTime + bassTime);
-                    oscillator.stop(audioContext.currentTime + bassTime + duration * beatDuration);
+                    osc.start(startTime + currentTime);
+                    osc.stop(startTime + currentTime + duration * beatDuration);
                     
-                    musicOscillators.push(oscillator);
-                    bassTime += duration * beatDuration;
+                    musicOscillators.push(osc);
+                    currentTime += duration * beatDuration;
                 });
+
+                // Schedule harmony
+                currentTime = 0;
+                harmony.forEach(({ note, duration }) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(musicGainNode);
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(note, startTime + currentTime);
+                    
+                    gain.gain.setValueAtTime(0.03, startTime + currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + currentTime + duration * beatDuration);
+                    
+                    osc.start(startTime + currentTime);
+                    osc.stop(startTime + currentTime + duration * beatDuration);
+                    
+                    musicOscillators.push(osc);
+                    currentTime += duration * beatDuration;
+                });
+
+                // Schedule percussion
+                for (let i = 0; i < 8; i++) {
+                    percussion.forEach(({ type, delay }) => {
+                        playPercussion(type, startTime + (i * beatDuration) + (delay * beatDuration));
+                    });
+                }
             }
 
-            // Schedule initial patterns
-            scheduleMelody();
-            scheduleBass();
+            // Initial schedule
+            scheduleMusic();
 
             // Loop the music
-            const loopInterval = setInterval(() => {
+            const totalDuration = melody.reduce((sum, { duration }) => sum + duration, 0) * beatDuration;
+            loopInterval = setInterval(() => {
                 if (!gameRunning) {
                     clearInterval(loopInterval);
                     stopBackgroundMusic();
                     return;
                 }
 
-                melodyTime = 0;
-                bassTime = 0;
+                // Clean up old oscillators
                 musicOscillators = musicOscillators.filter(osc => {
                     try {
                         return osc.context.currentTime < osc.stopTime;
@@ -428,9 +938,8 @@
                     }
                 });
                 
-                scheduleMelody();
-                scheduleBass();
-            }, melody.reduce((sum, { duration }) => sum + duration, 0) * beatDuration * 1000);
+                scheduleMusic();
+            }, totalDuration * 1000);
         }
 
         function stopBackgroundMusic() {
@@ -444,10 +953,13 @@
         }
 
         // Mute checkbox handler
-        document.getElementById('muteCheckbox').addEventListener('change', (e) => {
+        const muteCheckbox = document.getElementById('muteCheckbox');
+        muteCheckbox.addEventListener('change', (e) => {
             isMuted = e.target.checked;
-            if (musicGainNode) {
-                musicGainNode.gain.setValueAtTime(isMuted ? 0 : 0.05, audioContext.currentTime);
+            if (isMuted) {
+                stopMusic();
+            } else if (gameRunning) {
+                startMusic();
             }
         });
 
@@ -471,13 +983,13 @@
         ];
 
         const COLORS = [
-            '#00f0f0',
-            '#f0f000',
-            '#a000f0',
-            '#f0a000',
-            '#0000f0',
-            '#00f000',
-            '#f00000'
+            '#06b6d4', // Cyan
+            '#fbbf24', // Amber
+            '#a855f7', // Purple
+            '#f97316', // Orange
+            '#3b82f6', // Blue
+            '#10b981', // Emerald
+            '#ef4444'  // Red
         ];
 
         let board = [];
@@ -592,11 +1104,27 @@
                 gameOver();
             }
             
+            // Check if stack is getting high (top 5 rows have pieces)
+            let highStack = false;
+            for (let y = 0; y < 5; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (board[y][x]) {
+                        highStack = true;
+                        break;
+                    }
+                }
+                if (highStack) break;
+            }
+            
+            if (highStack) {
+                playWarningSound();
+            }
+            
             drawNextPiece();
         }
 
         function drawBoard() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             for (let y = 0; y < ROWS; y++) {
@@ -608,7 +1136,7 @@
             }
             
             for (let x = 0; x <= COLS; x++) {
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
                 ctx.beginPath();
                 ctx.moveTo(x * BLOCK_SIZE, 0);
                 ctx.lineTo(x * BLOCK_SIZE, canvas.height);
@@ -627,13 +1155,20 @@
             ctx.fillStyle = color;
             ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
             
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, 5);
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, 5, BLOCK_SIZE - 1);
+            // Add glow effect
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 10;
+            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+            ctx.shadowBlur = 0;
+            
+            // Highlight effects
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, 3);
+            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, 3, BLOCK_SIZE - 1);
             
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            ctx.fillRect(x * BLOCK_SIZE + BLOCK_SIZE - 5, y * BLOCK_SIZE, 4, BLOCK_SIZE - 1);
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE + BLOCK_SIZE - 5, BLOCK_SIZE - 1, 4);
+            ctx.fillRect(x * BLOCK_SIZE + BLOCK_SIZE - 3, y * BLOCK_SIZE, 2, BLOCK_SIZE - 1);
+            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE + BLOCK_SIZE - 3, BLOCK_SIZE - 1, 2);
         }
 
         function drawPiece() {
@@ -649,7 +1184,7 @@
         }
 
         function drawNextPiece() {
-            nextCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            nextCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
             
             if (!nextPiece) return;
@@ -683,8 +1218,13 @@
         }
 
         function hardDrop() {
+            let dropped = false;
             while (currentPiece.move(0, 1)) {
                 score += 2;
+                dropped = true;
+            }
+            if (dropped) {
+                playHardDropSound();
             }
             updateScore();
         }
@@ -702,7 +1242,11 @@
             }
             
             if (linesCleared > 0) {
-                playLineClearSound();
+                if (linesCleared === 4) {
+                    playTetrisSound();
+                } else {
+                    playLineClearSound(linesCleared);
+                }
                 lines += linesCleared;
                 score += [40, 100, 300, 1200][linesCleared - 1] * level;
                 
@@ -791,6 +1335,7 @@
                     drop();
                     score++;
                     updateScore();
+                    playSoftDropSound();
                     break;
                 case 'ArrowUp':
                     currentPiece.rotate();

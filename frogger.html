@@ -12,24 +12,53 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: #e0e0e0;
+            color: #e5e5e5;
+            position: relative;
+        }
+
+        /* Animated gradient background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%);
+            animation: gradientShift 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
         }
 
         .game-container {
             display: flex;
             gap: 30px;
             align-items: center;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
             padding: 30px;
             border-radius: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .game-container:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
+                        0 0 60px rgba(120, 119, 198, 0.2);
         }
 
         .game-board {
@@ -37,9 +66,9 @@
         }
 
         #canvas {
-            border: 2px solid #333;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            background: #0f0f0f;
+            background: rgba(15, 15, 15, 0.8);
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             width: 600px;
             height: 750px;
@@ -54,10 +83,17 @@
 
         .info-box {
             background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
             padding: 15px;
             border-radius: 10px;
-            backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .info-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
         }
 
         .info-box h3 {
@@ -83,9 +119,10 @@
         .life-icon {
             width: 20px;
             height: 20px;
-            background: #4CAF50;
+            background: #10b981;
             border-radius: 50%;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+            filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.4));
         }
 
         .controls {
@@ -114,7 +151,8 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
             border-radius: 10px;
             opacity: 0;
             pointer-events: none;
@@ -131,9 +169,10 @@
             margin-bottom: 20px;
             text-transform: uppercase;
             letter-spacing: 3px;
-            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.3));
         }
 
         .overlay-message {
@@ -143,32 +182,43 @@
         }
 
         .play-button {
-            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
-            color: white;
-            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: #e5e5e5;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 15px 40px;
             font-size: 20px;
             border-radius: 30px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
             letter-spacing: 2px;
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .play-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 7px 20px rgba(76, 175, 80, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
+                        0 0 30px rgba(16, 185, 129, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
         }
         .speed-control {
             position: absolute;
             bottom: 30px;
             right: 30px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
             padding: 15px;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .speed-control:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
 
         .speed-control label {
@@ -195,19 +245,19 @@
             appearance: none;
             width: 16px;
             height: 16px;
-            background: #4CAF50;
+            background: #10b981;
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
         }
 
         .speed-slider::-moz-range-thumb {
             width: 16px;
             height: 16px;
-            background: #4CAF50;
+            background: #10b981;
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
         }
 
         .speed-value {
@@ -218,9 +268,21 @@
         }
         
         .mute-control {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .mute-control:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
         
         .mute-label {
@@ -238,7 +300,7 @@
         .mute-checkbox {
             width: 18px;
             height: 18px;
-            accent-color: #4CAF50;
+            accent-color: #f59e0b;
             cursor: pointer;
         }
 
@@ -246,8 +308,9 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: #e0e0e0;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            color: #e5e5e5;
             text-decoration: none;
             padding: 10px 20px;
             border-radius: 25px;
@@ -255,22 +318,21 @@
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
         }
 
         .back-button:hover {
-            background: rgba(0, 0, 0, 0.95);
-            border-color: rgba(76, 175, 80, 0.5);
-            transform: translateX(-5px);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7),
-                        0 0 20px rgba(76, 175, 80, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(-5px) translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
+                        0 0 30px rgba(120, 119, 198, 0.2);
         }
 
         .back-button::before {
@@ -332,13 +394,14 @@
             <label>Game Speed</label>
             <input type="range" class="speed-slider" id="speedSlider" min="0.2" max="2" step="0.1" value="1">
             <div class="speed-value" id="speedValue">1.0x</div>
-            <div class="mute-control">
-                <label class="mute-label">
-                    <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
-                    Mute Background Music
-                </label>
-            </div>
         </div>
+    </div>
+    
+    <div class="mute-control">
+        <label class="mute-label">
+            <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
+            Mute Background Music
+        </label>
     </div>
 
     <script>
@@ -809,6 +872,10 @@
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.fillRect(car.x + 3, car.y + 8, car.width, car.height);
             
+            // Add glow effect to car
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = car.color;
+            
             // Car body
             const gradient = ctx.createLinearGradient(car.x, car.y, car.x, car.y + car.height);
             gradient.addColorStop(0, car.color);
@@ -866,6 +933,9 @@
             ctx.fillStyle = '#1a1a1a';
             ctx.fillRect(car.x + 10, car.y + car.height + 3, 15, 5);
             ctx.fillRect(car.x + car.width - 25, car.y + car.height + 3, 15, 5);
+            
+            // Reset shadow
+            ctx.shadowBlur = 0;
         }
 
         function drawLog(log) {
