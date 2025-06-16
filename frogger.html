@@ -962,7 +962,8 @@
                             width: lane.carWidth,
                             height: 40,
                             speed: lane.speed * (0.9 + level * 0.03),
-                            color: `hsl(${Math.random() * 360}, 70%, 50%)`
+                            color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                            laneY: lane.y
                         });
                     }
                 } else if (lane.type === 'water') {
@@ -973,7 +974,8 @@
                             y: lane.y * GRID_SIZE,
                             width: lane.logWidth,
                             height: 40,
-                            speed: lane.speed * (0.9 + level * 0.03)
+                            speed: lane.speed * (0.9 + level * 0.03),
+                            laneY: lane.y
                         });
                     }
                 }
@@ -1263,8 +1265,8 @@
             ctx.lineWidth = 1;
             for (let r = 3; r < 8; r += 2) {
                 ctx.beginPath();
-                ctx.arc(log.x + 10, log.y + 25, r, 0, Math.PI * 2);
-                ctx.arc(log.x + log.width - 10, log.y + 25, r, 0, Math.PI * 2);
+                ctx.arc(log.x + 10, y + 25, r, 0, Math.PI * 2);
+                ctx.arc(log.x + log.width - 10, y + 25, r, 0, Math.PI * 2);
                 ctx.stroke();
             }
         }
@@ -1535,18 +1537,24 @@
                         generateNewLane();
                         
                         // Shift all entities down
-                        cars.forEach(car => car.y += GRID_SIZE);
-                        logs.forEach(log => log.y += GRID_SIZE);
+                        cars.forEach(car => {
+                            car.y += GRID_SIZE;
+                            car.laneY++;
+                        });
+                        logs.forEach(log => {
+                            log.y += GRID_SIZE;
+                            log.laneY++;
+                        });
                         endlessLanes.forEach(lane => lane.y++);
                         
                         // Remove old lanes and obstacles that are off screen
-                        endlessLanes = endlessLanes.filter(lane => lane.y * GRID_SIZE + scrollOffset < canvas.height + GRID_SIZE);
-                        cars = cars.filter(car => car.y < canvas.height + 100);
-                        logs = logs.filter(log => log.y < canvas.height + 100);
+                        endlessLanes = endlessLanes.filter(lane => lane.y * GRID_SIZE + scrollOffset < 750 + GRID_SIZE);
+                        cars = cars.filter(car => car.y < 750 + 100);
+                        logs = logs.filter(log => log.y < 750 + 100);
                     }
                     
                     // Check if frog has fallen too far behind
-                    if (frog.y * GRID_SIZE + scrollOffset > canvas.height - GRID_SIZE) {
+                    if (frog.y * GRID_SIZE + scrollOffset > 750 - GRID_SIZE) {
                         endlessGameOver();
                     }
                 }
@@ -1822,7 +1830,7 @@
             
             if (currentLane && currentLane.type === 'road') {
                 for (let car of cars) {
-                    if (car.y === frogY &&
+                    if (Math.abs(car.y - frogY) < 1 &&
                         frogX + frogSize/2 > car.x &&
                         frogX - frogSize/2 < car.x + car.width) {
                         playSoundEffect('crash');
@@ -1836,7 +1844,7 @@
             if (currentLane && currentLane.type === 'water') {
                 let onLog = false;
                 for (let log of logs) {
-                    if (log.y === frogY &&
+                    if (Math.abs(log.y - frogY) < 1 &&
                         frogX > log.x &&
                         frogX < log.x + log.width) {
                         onLog = true;
