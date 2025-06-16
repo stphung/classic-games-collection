@@ -156,10 +156,46 @@
             content: '←';
             font-size: 18px;
         }
+
+        .mute-checkbox {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .mute-checkbox:hover {
+            background: rgba(0, 0, 0, 0.9);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .mute-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
     </style>
 </head>
 <body>
     <a href="index.html" class="back-button">Home</a>
+    <label class="mute-checkbox">
+        <input type="checkbox" id="muteCheckbox">
+        Mute Music
+    </label>
     <div class="game-container">
         <div class="game-board">
             <canvas id="canvas" width="300" height="600"></canvas>
@@ -200,6 +236,221 @@
     </div>
 
     <script>
+        // Initialize Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let isMuted = false;
+        let musicGainNode = null;
+        let musicOscillators = [];
+        let musicStarted = false;
+
+        // Sound functions
+        function playSound(frequency, duration, type = 'sine', gain = 0.1) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(gain, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        // Sound effects
+        function playRotateSound() {
+            playSound(800, 0.05, 'square', 0.05);
+        }
+
+        function playMoveSound() {
+            playSound(200, 0.03, 'triangle', 0.03);
+        }
+
+        function playLockSound() {
+            playSound(150, 0.1, 'sawtooth', 0.08);
+            playSound(100, 0.15, 'sine', 0.06);
+        }
+
+        function playLineClearSound() {
+            const sweepTime = 0.3;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + sweepTime);
+            
+            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + sweepTime);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + sweepTime);
+        }
+
+        function playLevelUpSound() {
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            notes.forEach((freq, i) => {
+                setTimeout(() => {
+                    playSound(freq, 0.2, 'square', 0.1);
+                }, i * 100);
+            });
+        }
+
+        function playGameOverSound() {
+            const notes = [523.25, 415.30, 349.23, 261.63]; // C5, G#4, F4, C4
+            notes.forEach((freq, i) => {
+                setTimeout(() => {
+                    playSound(freq, 0.3, 'sine', 0.15);
+                }, i * 150);
+            });
+        }
+
+        // Background music
+        function startBackgroundMusic() {
+            if (musicStarted) return;
+            musicStarted = true;
+
+            musicGainNode = audioContext.createGain();
+            musicGainNode.connect(audioContext.destination);
+            musicGainNode.gain.setValueAtTime(isMuted ? 0 : 0.05, audioContext.currentTime);
+
+            // Tetris-style music pattern
+            const melody = [
+                // Main theme pattern (simplified Korobeiniki-inspired)
+                { note: 659.25, duration: 0.25 }, // E5
+                { note: 493.88, duration: 0.125 }, // B4
+                { note: 523.25, duration: 0.125 }, // C5
+                { note: 587.33, duration: 0.25 }, // D5
+                { note: 523.25, duration: 0.125 }, // C5
+                { note: 493.88, duration: 0.125 }, // B4
+                { note: 440.00, duration: 0.25 }, // A4
+                { note: 440.00, duration: 0.125 }, // A4
+                { note: 523.25, duration: 0.125 }, // C5
+                { note: 659.25, duration: 0.25 }, // E5
+                { note: 587.33, duration: 0.125 }, // D5
+                { note: 523.25, duration: 0.125 }, // C5
+                { note: 493.88, duration: 0.375 }, // B4
+                { note: 523.25, duration: 0.125 }, // C5
+                { note: 587.33, duration: 0.25 }, // D5
+                { note: 659.25, duration: 0.25 }, // E5
+                { note: 523.25, duration: 0.25 }, // C5
+                { note: 440.00, duration: 0.25 }, // A4
+                { note: 440.00, duration: 0.5 }, // A4
+            ];
+
+            const bassline = [
+                // Bass pattern
+                { note: 164.81, duration: 0.5 }, // E3
+                { note: 164.81, duration: 0.5 }, // E3
+                { note: 146.83, duration: 0.5 }, // D3
+                { note: 146.83, duration: 0.5 }, // D3
+                { note: 130.81, duration: 0.5 }, // C3
+                { note: 130.81, duration: 0.5 }, // C3
+                { note: 123.47, duration: 0.5 }, // B2
+                { note: 123.47, duration: 0.5 }, // B2
+                { note: 110.00, duration: 0.5 }, // A2
+                { note: 110.00, duration: 0.5 }, // A2
+            ];
+
+            let melodyTime = 0;
+            let bassTime = 0;
+            const tempo = 120; // BPM
+            const beatDuration = 60 / tempo;
+
+            function scheduleMelody() {
+                melody.forEach(({ note, duration }) => {
+                    const oscillator = audioContext.createOscillator();
+                    const noteGain = audioContext.createGain();
+                    
+                    oscillator.connect(noteGain);
+                    noteGain.connect(musicGainNode);
+                    
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(note, audioContext.currentTime + melodyTime);
+                    
+                    noteGain.gain.setValueAtTime(0.05, audioContext.currentTime + melodyTime);
+                    noteGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + melodyTime + duration * beatDuration);
+                    
+                    oscillator.start(audioContext.currentTime + melodyTime);
+                    oscillator.stop(audioContext.currentTime + melodyTime + duration * beatDuration);
+                    
+                    musicOscillators.push(oscillator);
+                    melodyTime += duration * beatDuration;
+                });
+            }
+
+            function scheduleBass() {
+                bassline.forEach(({ note, duration }) => {
+                    const oscillator = audioContext.createOscillator();
+                    const noteGain = audioContext.createGain();
+                    
+                    oscillator.connect(noteGain);
+                    noteGain.connect(musicGainNode);
+                    
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(note, audioContext.currentTime + bassTime);
+                    
+                    noteGain.gain.setValueAtTime(0.08, audioContext.currentTime + bassTime);
+                    
+                    oscillator.start(audioContext.currentTime + bassTime);
+                    oscillator.stop(audioContext.currentTime + bassTime + duration * beatDuration);
+                    
+                    musicOscillators.push(oscillator);
+                    bassTime += duration * beatDuration;
+                });
+            }
+
+            // Schedule initial patterns
+            scheduleMelody();
+            scheduleBass();
+
+            // Loop the music
+            const loopInterval = setInterval(() => {
+                if (!gameRunning) {
+                    clearInterval(loopInterval);
+                    stopBackgroundMusic();
+                    return;
+                }
+
+                melodyTime = 0;
+                bassTime = 0;
+                musicOscillators = musicOscillators.filter(osc => {
+                    try {
+                        return osc.context.currentTime < osc.stopTime;
+                    } catch {
+                        return false;
+                    }
+                });
+                
+                scheduleMelody();
+                scheduleBass();
+            }, melody.reduce((sum, { duration }) => sum + duration, 0) * beatDuration * 1000);
+        }
+
+        function stopBackgroundMusic() {
+            musicOscillators.forEach(osc => {
+                try {
+                    osc.stop();
+                } catch {}
+            });
+            musicOscillators = [];
+            musicStarted = false;
+        }
+
+        // Mute checkbox handler
+        document.getElementById('muteCheckbox').addEventListener('change', (e) => {
+            isMuted = e.target.checked;
+            if (musicGainNode) {
+                musicGainNode.gain.setValueAtTime(isMuted ? 0 : 0.05, audioContext.currentTime);
+            }
+        });
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const nextCanvas = document.getElementById('nextCanvas');
@@ -265,6 +516,8 @@
                 
                 if (this.collides()) {
                     this.shape = oldShape;
+                } else {
+                    playRotateSound();
                 }
             }
 
@@ -276,6 +529,9 @@
                     this.x -= dx;
                     this.y -= dy;
                     return false;
+                }
+                if (dx !== 0) {
+                    playMoveSound();
                 }
                 return true;
             }
@@ -318,6 +574,7 @@
         function init() {
             board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
             spawnPiece();
+            startBackgroundMusic();
             gameLoop();
         }
 
@@ -419,6 +676,7 @@
         function drop() {
             if (!currentPiece.move(0, 1)) {
                 currentPiece.lock();
+                playLockSound();
                 clearLines();
                 spawnPiece();
             }
@@ -444,12 +702,17 @@
             }
             
             if (linesCleared > 0) {
+                playLineClearSound();
                 lines += linesCleared;
                 score += [40, 100, 300, 1200][linesCleared - 1] * level;
                 
+                const oldLevel = level;
                 if (lines >= level * 10) {
                     level++;
                     dropTime = Math.max(100, dropTime - 100);
+                    if (level > oldLevel) {
+                        playLevelUpSound();
+                    }
                 }
                 
                 updateScore();
@@ -480,6 +743,8 @@
 
         function gameOver() {
             gameRunning = false;
+            playGameOverSound();
+            stopBackgroundMusic();
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOver').style.display = 'block';
         }
@@ -495,6 +760,7 @@
             isPaused = false;
             currentPiece = null;
             nextPiece = null;
+            musicStarted = false;
             document.getElementById('gameOver').style.display = 'none';
             updateScore();
             init();
