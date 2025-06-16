@@ -349,7 +349,7 @@
 
     <script>
         const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false }); // Disable alpha for performance
 
         // Web Audio API setup
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -366,6 +366,11 @@
         let lastAmmoRefill = 0;
         let waveInProgress = false;
         const AMMO_REFILL_RATE = 2000; // Constant refill rate - 2 seconds
+        let animationId = null;
+        let lastFrameTime = 0;
+        let deltaTime = 0;
+        const TARGET_FPS = 60;
+        const FRAME_TIME = 1000 / TARGET_FPS;
         
         // Game objects
         let cities = [];
@@ -374,6 +379,12 @@
         let playerMissiles = [];
         let explosions = [];
         let particles = [];
+        
+        // Object pools for performance
+        const missilePool = [];
+        const explosionPool = [];
+        const particlePool = [];
+        const MAX_POOL_SIZE = 50;
         
         // Game constants
         const CITY_WIDTH = 60;
@@ -428,18 +439,25 @@
             const dy = targetY;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            const newMissile = {
-                startX: startX,
-                startY: 0,
-                x: startX,
-                y: 0,
-                targetX: targetX,
-                targetY: targetY,
-                vx: (dx / distance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15),  // Faster progression
-                vy: (dy / distance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15),
-                trail: [],
-                canSplit: wave >= 7 && Math.random() < 0.3  // 30% chance to split at wave 7+
-            };
+            // Try to reuse from pool
+            let newMissile = missilePool.pop();
+            if (!newMissile) {
+                newMissile = {
+                    trail: new Array(20)
+                };
+            }
+            
+            // Initialize missile properties
+            newMissile.startX = startX;
+            newMissile.startY = 0;
+            newMissile.x = startX;
+            newMissile.y = 0;
+            newMissile.targetX = targetX;
+            newMissile.targetY = targetY;
+            newMissile.vx = (dx / distance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15);  // Faster progression
+            newMissile.vy = (dy / distance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15);
+            newMissile.trail.length = 0;
+            newMissile.canSplit = wave >= 7 && Math.random() < 0.3;  // 30% chance to split at wave 7+
             
             enemyMissiles.push(newMissile);
         }
@@ -470,40 +488,61 @@
             const dy = targetY - startY;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            playerMissiles.push({
-                x: startX,
-                y: startY,
-                targetX: targetX,
-                targetY: targetY,
-                vx: (dx / distance) * PLAYER_MISSILE_SPEED,
-                vy: (dy / distance) * PLAYER_MISSILE_SPEED,
-                trail: []
-            });
+            // Try to reuse from pool
+            let missile = missilePool.pop();
+            if (!missile) {
+                missile = {
+                    trail: new Array(15)
+                };
+            }
+            
+            missile.x = startX;
+            missile.y = startY;
+            missile.targetX = targetX;
+            missile.targetY = targetY;
+            missile.vx = (dx / distance) * PLAYER_MISSILE_SPEED;
+            missile.vy = (dy / distance) * PLAYER_MISSILE_SPEED;
+            missile.trail.length = 0;
+            
+            playerMissiles.push(missile);
             
             playSoundEffect('launch');
         }
         
         // Create explosion
         function createExplosion(x, y, isPlayer = false) {
-            explosions.push({
-                x: x,
-                y: y,
-                radius: 0,
-                maxRadius: isPlayer ? EXPLOSION_MAX_RADIUS : 30,
-                growing: true,
-                isPlayer: isPlayer
-            });
+            // Try to reuse from pool
+            let explosion = explosionPool.pop();
+            if (!explosion) {
+                explosion = {};
+            }
             
-            // Create particles
-            for (let i = 0; i < 20; i++) {
-                particles.push({
-                    x: x,
-                    y: y,
-                    vx: (Math.random() - 0.5) * 8,
-                    vy: (Math.random() - 0.5) * 8,
-                    life: 1,
-                    color: isPlayer ? '#ff6b6b' : '#ffa500'
-                });
+            // Initialize explosion properties
+            explosion.x = x;
+            explosion.y = y;
+            explosion.radius = 0;
+            explosion.maxRadius = isPlayer ? EXPLOSION_MAX_RADIUS : 30;
+            explosion.growing = true;
+            explosion.isPlayer = isPlayer;
+            
+            explosions.push(explosion);
+            
+            // Create fewer particles for performance
+            const particleCount = isPlayer ? 12 : 8;
+            for (let i = 0; i < particleCount; i++) {
+                let particle = particlePool.pop();
+                if (!particle) {
+                    particle = {};
+                }
+                
+                particle.x = x;
+                particle.y = y;
+                particle.vx = (Math.random() - 0.5) * 8;
+                particle.vy = (Math.random() - 0.5) * 8;
+                particle.life = 1;
+                particle.color = isPlayer ? '#ff6b6b' : '#ffa500';
+                
+                particles.push(particle);
             }
             
             playSoundEffect(isPlayer ? 'explosion' : 'impact');
@@ -519,25 +558,33 @@
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Stars
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            for (let i = 0; i < 50; i++) {
-                const x = (i * 73) % canvas.width;
-                const y = (i * 37) % (canvas.height * 0.6);
-                const size = (i % 3) * 0.5 + 0.5;
-                ctx.fillRect(x, y, size, size);
+            // Pre-calculate stars positions once
+            if (!this.starPositions) {
+                this.starPositions = [];
+                for (let i = 0; i < 30; i++) { // Reduced star count
+                    this.starPositions.push({
+                        x: (i * 73) % canvas.width,
+                        y: (i * 37) % (canvas.height * 0.6),
+                        size: (i % 3) * 0.5 + 0.5
+                    });
+                }
             }
+            
+            // Draw stars in batch
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            for (const star of this.starPositions) {
+                ctx.rect(star.x, star.y, star.size, star.size);
+            }
+            ctx.fill();
             
             // Ground with glow
             ctx.fillStyle = '#1a1a1a';
             ctx.fillRect(0, canvas.height - 30, canvas.width, 30);
             
-            // Ground highlight with glow
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = 'rgba(255, 255, 255, 0.2)';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            // Ground highlight without glow for performance
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
             ctx.fillRect(0, canvas.height - 30, canvas.width, 2);
-            ctx.shadowBlur = 0;
         }
         
         function drawCity(city) {
@@ -550,22 +597,21 @@
             ctx.fillStyle = gradient;
             ctx.fillRect(city.x, city.y, city.width, city.height);
             
-            // Windows
+            // Windows - draw all at once
             ctx.fillStyle = 'rgba(255, 255, 100, 0.8)';
+            ctx.beginPath();
             for (let row = 0; row < 3; row++) {
                 for (let col = 0; col < 4; col++) {
                     const windowX = city.x + 8 + col * 12;
                     const windowY = city.y + 8 + row * 10;
-                    ctx.fillRect(windowX, windowY, 8, 6);
+                    ctx.rect(windowX, windowY, 8, 6);
                 }
             }
+            ctx.fill();
             
-            // City glow
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = 'rgba(255, 255, 100, 0.3)';
-            ctx.strokeStyle = 'rgba(255, 255, 100, 0.2)';
+            // Simple city border without glow
+            ctx.strokeStyle = 'rgba(255, 255, 100, 0.3)';
             ctx.strokeRect(city.x, city.y, city.width, city.height);
-            ctx.shadowBlur = 0;
         }
         
         function drawBattery(battery) {
@@ -580,12 +626,9 @@
             ctx.fillStyle = '#888';
             ctx.fillRect(battery.x + battery.width/2 - 5, battery.y - 10, 10, 15);
             
-            // Battery glow
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = 'rgba(255, 107, 107, 0.3)';
-            ctx.strokeStyle = 'rgba(255, 107, 107, 0.3)';
+            // Simple battery border without glow
+            ctx.strokeStyle = 'rgba(255, 107, 107, 0.4)';
             ctx.strokeRect(battery.x, battery.y, battery.width, battery.height);
-            ctx.shadowBlur = 0;
         }
         
         function drawMissile(missile, isPlayer = false) {
@@ -603,19 +646,20 @@
                 }
             }
             
-            // Missile trail
-            ctx.strokeStyle = isPlayer ? 'rgba(239, 68, 68, 0.8)' : missileColor;
-            ctx.lineWidth = isPlayer ? 3 : (2 + Math.floor(wave / 5));  // Thicker trails at higher waves
-            ctx.beginPath();
-            
-            if (missile.trail.length > 0) {
+            // Missile trail - optimized drawing
+            if (missile.trail.length > 1) {
+                ctx.strokeStyle = isPlayer ? 'rgba(239, 68, 68, 0.8)' : missileColor;
+                ctx.lineWidth = isPlayer ? 3 : (2 + Math.floor(wave / 5));  // Thicker trails at higher waves
+                ctx.beginPath();
                 ctx.moveTo(missile.trail[0].x, missile.trail[0].y);
-                for (let i = 1; i < missile.trail.length; i++) {
+                
+                // Skip every other point for performance
+                for (let i = 2; i < missile.trail.length; i += 2) {
                     ctx.lineTo(missile.trail[i].x, missile.trail[i].y);
                 }
+                ctx.lineTo(missile.x, missile.y);
+                ctx.stroke();
             }
-            ctx.lineTo(missile.x, missile.y);
-            ctx.stroke();
             
             // Missile head
             ctx.fillStyle = isPlayer ? '#ef4444' : headColor;
@@ -624,16 +668,9 @@
             ctx.arc(missile.x, missile.y, missileSize, 0, Math.PI * 2);
             ctx.fill();
             
-            // Enhanced glow effect
-            ctx.shadowBlur = 15 + Math.floor(wave / 5);
+            // Glow is handled in batch now
             ctx.shadowColor = isPlayer ? '#ef4444' : headColor;
             ctx.fill();
-            
-            // Double glow for extra intensity
-            ctx.shadowBlur = 25 + Math.floor(wave / 3);
-            ctx.shadowColor = isPlayer ? 'rgba(239, 68, 68, 0.5)' : headColor;
-            ctx.fill();
-            ctx.shadowBlur = 0;
         }
         
         function drawExplosion(explosion) {
@@ -651,16 +688,9 @@
             ctx.arc(explosion.x, explosion.y, explosion.radius, 0, Math.PI * 2);
             ctx.fill();
             
-            // Enhanced glow effect
-            ctx.shadowBlur = 40;
+            // Glow is handled in batch now
             ctx.shadowColor = explosion.isPlayer ? '#ef4444' : '#ffa500';
             ctx.fill();
-            
-            // Outer glow ring
-            ctx.shadowBlur = 60;
-            ctx.shadowColor = explosion.isPlayer ? 'rgba(239, 68, 68, 0.6)' : 'rgba(255, 165, 0, 0.6)';
-            ctx.fill();
-            ctx.shadowBlur = 0;
         }
         
         function drawParticle(particle) {
@@ -671,17 +701,20 @@
         }
         
         // Update functions
-        function updateMissiles() {
+        function updateMissiles(dt) {
+            const timeScale = dt / FRAME_TIME;
             // Update enemy missiles
             for (let i = enemyMissiles.length - 1; i >= 0; i--) {
                 const missile = enemyMissiles[i];
-                missile.x += missile.vx;
-                missile.y += missile.vy;
+                missile.x += missile.vx * timeScale;
+                missile.y += missile.vy * timeScale;
                 
-                // Add to trail
-                missile.trail.push({ x: missile.x, y: missile.y });
-                if (missile.trail.length > 30) {
-                    missile.trail.shift();
+                // Add to trail less frequently for performance
+                if (Math.random() < 0.7) { // Only add 70% of the time
+                    missile.trail.push({ x: missile.x, y: missile.y });
+                    if (missile.trail.length > 20) { // Shorter trail
+                        missile.trail.shift();
+                    }
                 }
                 
                 // Check for missile split
@@ -700,18 +733,27 @@
                             const splitDy = splitTargetY - missile.y;
                             const splitDistance = Math.sqrt(splitDx * splitDx + splitDy * splitDy);
                             
-                            enemyMissiles.push({
-                                startX: missile.x,
-                                startY: missile.y,
-                                x: missile.x,
-                                y: missile.y,
-                                targetX: splitTargetX,
-                                targetY: splitTargetY,
-                                vx: (splitDx / splitDistance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15),
-                                vy: (splitDy / splitDistance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15),
-                                trail: [{x: missile.x, y: missile.y}],
-                                canSplit: false
-                            });
+                            // Try to reuse from pool for split missiles
+                            let splitMissile = missilePool.pop();
+                            if (!splitMissile) {
+                                splitMissile = {
+                                    trail: new Array(20)
+                                };
+                            }
+                            
+                            splitMissile.startX = missile.x;
+                            splitMissile.startY = missile.y;
+                            splitMissile.x = missile.x;
+                            splitMissile.y = missile.y;
+                            splitMissile.targetX = splitTargetX;
+                            splitMissile.targetY = splitTargetY;
+                            splitMissile.vx = (splitDx / splitDistance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15);
+                            splitMissile.vy = (splitDy / splitDistance) * MISSILE_SPEED * (1 + (wave - 1) * 0.15);
+                            splitMissile.trail.length = 0;
+                            splitMissile.trail.push({x: missile.x, y: missile.y});
+                            splitMissile.canSplit = false;
+                            
+                            enemyMissiles.push(splitMissile);
                         }
                     }
                 }
@@ -721,90 +763,124 @@
                     createExplosion(missile.x, missile.y, false);
                     enemyMissiles.splice(i, 1);
                     
+                    // Return to pool
+                    if (missilePool.length < MAX_POOL_SIZE) {
+                        missilePool.push(missile);
+                    }
+                    
                     // Check for city/battery destruction
-                    cities.forEach(city => {
+                    // Optimized collision check
+                    for (let j = 0; j < cities.length; j++) {
+                        const city = cities[j];
                         if (!city.destroyed && 
                             missile.x >= city.x - 10 && 
                             missile.x <= city.x + city.width + 10 &&
                             missile.y >= city.y - 10) {
                             city.destroyed = true;
+                            break; // One missile can only destroy one city
                         }
-                    });
+                    }
                 }
             }
             
             // Update player missiles
             for (let i = playerMissiles.length - 1; i >= 0; i--) {
                 const missile = playerMissiles[i];
-                missile.x += missile.vx;
-                missile.y += missile.vy;
+                missile.x += missile.vx * timeScale;
+                missile.y += missile.vy * timeScale;
                 
-                // Add to trail
-                missile.trail.push({ x: missile.x, y: missile.y });
-                if (missile.trail.length > 20) {
-                    missile.trail.shift();
+                // Add to trail less frequently
+                if (Math.random() < 0.8) {
+                    missile.trail.push({ x: missile.x, y: missile.y });
+                    if (missile.trail.length > 15) { // Shorter trail
+                        missile.trail.shift();
+                    }
                 }
                 
                 // Check if missile reached target
-                const dist = Math.sqrt(
-                    Math.pow(missile.x - missile.targetX, 2) + 
-                    Math.pow(missile.y - missile.targetY, 2)
-                );
+                const dx = missile.x - missile.targetX;
+                const dy = missile.y - missile.targetY;
+                const distSq = dx * dx + dy * dy;
                 
-                if (dist < 5 || missile.y < missile.targetY) {
+                if (distSq < 25 || missile.y < missile.targetY) { // 5*5 = 25
                     createExplosion(missile.x, missile.y, true);
                     playerMissiles.splice(i, 1);
+                    
+                    // Return to pool
+                    if (missilePool.length < MAX_POOL_SIZE) {
+                        missilePool.push(missile);
+                    }
                 }
             }
         }
         
-        function updateExplosions() {
+        function updateExplosions(dt) {
+            const timeScale = dt / FRAME_TIME;
             for (let i = explosions.length - 1; i >= 0; i--) {
                 const explosion = explosions[i];
                 
                 if (explosion.growing) {
-                    explosion.radius += 3;
+                    explosion.radius += 3 * timeScale;
                     if (explosion.radius >= explosion.maxRadius) {
                         explosion.growing = false;
                     }
                 } else {
-                    explosion.radius -= 1;
+                    explosion.radius -= 1 * timeScale;
                     if (explosion.radius <= 0) {
                         explosions.splice(i, 1);
+                        
+                        // Return to pool
+                        if (explosionPool.length < MAX_POOL_SIZE) {
+                            explosionPool.push(explosion);
+                        }
                         continue;
                     }
                 }
                 
                 // Check for missile interceptions
                 if (explosion.isPlayer) {
+                    const expX = explosion.x;
+                    const expY = explosion.y;
+                    const expRadiusSq = explosion.radius * explosion.radius; // Square for faster comparison
+                    
                     for (let j = enemyMissiles.length - 1; j >= 0; j--) {
                         const missile = enemyMissiles[j];
-                        const dist = Math.sqrt(
-                            Math.pow(missile.x - explosion.x, 2) + 
-                            Math.pow(missile.y - explosion.y, 2)
-                        );
+                        const dx = missile.x - expX;
+                        const dy = missile.y - expY;
+                        const distSq = dx * dx + dy * dy; // No sqrt for performance
                         
-                        if (dist < explosion.radius) {
+                        if (distSq < expRadiusSq) {
                             score += 100;
                             updateScore();
                             createExplosion(missile.x, missile.y, false);
                             enemyMissiles.splice(j, 1);
+                            
+                            // Return to pool
+                            if (missilePool.length < MAX_POOL_SIZE) {
+                                missilePool.push(missile);
+                            }
                         }
                     }
                 }
             }
         }
         
-        function updateParticles() {
+        function updateParticles(dt) {
+            const timeScale = dt / FRAME_TIME;
             for (let i = particles.length - 1; i >= 0; i--) {
                 const particle = particles[i];
-                particle.x += particle.vx;
-                particle.y += particle.vy;
-                particle.vy += 0.3;
-                particle.life -= 0.02;
+                particle.x += particle.vx * timeScale;
+                particle.y += particle.vy * timeScale;
+                particle.vy += 0.3 * timeScale;
+                particle.life -= 0.02 * timeScale;
                 
                 if (particle.life <= 0) {
                     particles.splice(i, 1);
+                    
+                    // Return to pool
+                    if (particlePool.length < MAX_POOL_SIZE) {
+                        particlePool.push(particle);
+                    }
                 }
             }
         }
@@ -1033,7 +1109,28 @@
         
         // Game loop
         function gameLoop(timestamp) {
-            if (!gameRunning) return;
+            if (!gameRunning) {
+                cancelAnimationFrame(animationId);
+                return;
+            }
+            
+            // Calculate delta time
+            if (lastFrameTime === 0) {
+                lastFrameTime = timestamp;
+            }
+            deltaTime = timestamp - lastFrameTime;
+            
+            // Skip frame if too slow
+            if (deltaTime > 33) { // Skip if slower than 30fps
+                lastFrameTime = timestamp;
+                animationId = requestAnimationFrame(gameLoop);
+                return;
+            }
+            
+            lastFrameTime = timestamp;
+            
+            // Limit delta time to prevent large jumps
+            deltaTime = Math.min(deltaTime, 100);
             
             if (!isPaused) {
                 // Ammo refill mechanic
@@ -1055,23 +1152,51 @@
                     document.getElementById('ammoRefillProgress').style.width = '0%';
                 }
                 
-                updateMissiles();
-                updateExplosions();
-                updateParticles();
+                updateMissiles(deltaTime);
+                updateExplosions(deltaTime);
+                updateParticles(deltaTime);
                 checkWaveComplete();
                 checkGameOver();
             }
             
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
             // Draw everything
             drawBackground();
+            
+            // Draw cities and batteries
             cities.forEach(drawCity);
             batteries.forEach(drawBattery);
-            enemyMissiles.forEach(missile => drawMissile(missile, false));
-            playerMissiles.forEach(missile => drawMissile(missile, true));
-            explosions.forEach(drawExplosion);
-            particles.forEach(drawParticle);
             
-            requestAnimationFrame(gameLoop);
+            // Draw all missiles with batched shadow settings
+            if (enemyMissiles.length > 0 || playerMissiles.length > 0) {
+                ctx.save();
+                ctx.shadowBlur = 15;
+                
+                // Draw enemy missiles
+                enemyMissiles.forEach(missile => drawMissile(missile, false));
+                
+                // Draw player missiles
+                playerMissiles.forEach(missile => drawMissile(missile, true));
+                
+                ctx.restore();
+            }
+            
+            // Draw explosions with batched shadow settings
+            if (explosions.length > 0) {
+                ctx.save();
+                ctx.shadowBlur = 30;
+                explosions.forEach(drawExplosion);
+                ctx.restore();
+            }
+            
+            // Draw particles (no shadows needed)
+            if (particles.length > 0) {
+                particles.forEach(drawParticle);
+            }
+            
+            animationId = requestAnimationFrame(gameLoop);
         }
         
         // Game controls
@@ -1106,11 +1231,16 @@
                 }
             }, 1500);  // Give player time to prepare
             
-            gameLoop(performance.now());
+            lastFrameTime = 0;
+            animationId = requestAnimationFrame(gameLoop);
         }
         
         function gameOver() {
             gameRunning = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
             stopMusic();
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOverScreen').classList.add('active');

@@ -2,7 +2,7 @@
 
 🎮 **[Play the games here!](https://stphung.github.io/classic-games-collection/)**
 
-A collection of four classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
+A collection of five classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
 
 ## Games Included
 
@@ -54,6 +54,17 @@ Defend your cities from incoming missile attacks using anti-ballistic missiles.
   - Watch for splitting missiles in later waves!
 - **Controls**: Click to fire missiles, Space to pause
 - **Features**: Wave progression, auto-refilling ammo, particle effects, splitting missiles
+
+### 🐍 Snake
+The classic snake game where you grow longer by eating food while avoiding collisions.
+- **How to Play**:
+  - Guide the snake to eat the red food pellets
+  - Each food item eaten makes the snake grow longer
+  - Avoid hitting the walls or your own tail
+  - The game speeds up as you score more points
+  - Try to beat your high score!
+- **Controls**: Arrow keys or WASD to change direction, ESC to return home
+- **Features**: High score tracking, increasing difficulty, smooth controls, glowing visual effects
 
 ## Features
 

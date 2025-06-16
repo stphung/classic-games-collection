@@ -4,3 +4,4 @@
 - All games have 8-bit style retro sound effects
 - All games have 8-bit music with a consistent mute music button that mutes only the music at the bottom right of the page
 - README should always have the instructions on how to play each game
+- Always do a basic review on the game logic to ensure it won't run into obvious problems on start
