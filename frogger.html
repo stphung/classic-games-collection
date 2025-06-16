@@ -777,6 +777,9 @@
         let endlessLanes = [];
         let scrollSpeed = 0;
         let baseScrollSpeed = 50; // pixels per second
+        let isScrolling = false;
+        let scrollTarget = 0;
+        let scrollAnimationSpeed = 300; // pixels per second
         let highScoreEndless = localStorage.getItem('froggerEndlessHighScore') || 0;
 
         const lanes = [
@@ -1532,10 +1535,39 @@
 
                 updateObstacles();
                 
-                // Handle endless mode scrolling - only when frog completes movement
+                // Handle endless mode scrolling
                 if (gameMode === 'endless') {
+                    // Handle smooth scrolling animation
+                    if (isScrolling && scrollTarget > scrollOffset) {
+                        const scrollAmount = scrollAnimationSpeed * deltaTime;
+                        scrollOffset = Math.min(scrollOffset + scrollAmount, scrollTarget);
+                        
+                        // Check if scrolling is complete
+                        if (scrollOffset >= scrollTarget) {
+                            scrollOffset = scrollTarget;
+                            isScrolling = false;
+                            
+                            // Generate new lane and clean up now that scrolling is complete
+                            generateNewLane();
+                            
+                            // Remove old lanes and obstacles that are off screen
+                            endlessLanes = endlessLanes.filter(lane => {
+                                const renderY = (lane.y * GRID_SIZE) + scrollOffset;
+                                return renderY > -GRID_SIZE && renderY < 800;
+                            });
+                            cars = cars.filter(car => {
+                                const renderY = car.y + scrollOffset;
+                                return renderY > -100 && renderY < 850;
+                            });
+                            logs = logs.filter(log => {
+                                const renderY = log.y + scrollOffset;
+                                return renderY > -100 && renderY < 850;
+                            });
+                        }
+                    }
+                    
                     // Update distance and score based on frog's absolute position
-                    const frogAbsoluteY = 14 - frog.y + distanceTraveled;  // Frog's position in the infinite level
+                    const frogAbsoluteY = 14 - frog.y + distanceTraveled;
                     const newDistance = Math.max(distanceTraveled, frogAbsoluteY);
                     
                     if (newDistance > distanceTraveled) {
@@ -1549,37 +1581,20 @@
                     }
                     
                     // Check if frog has moved too far up on screen and needs screen to scroll
-                    // Only trigger when frog is not currently moving (completed the move)
+                    // Only trigger when frog is not currently moving and not already scrolling
                     const frogScreenY = (frog.y * GRID_SIZE + scrollOffset) / GRID_SIZE;
-                    if (frogScreenY <= 7 && frog.x === frog.targetX && frog.y === frog.targetY) {
-                        // Scroll the world down to keep frog in view
-                        scrollOffset += GRID_SIZE;
+                    if (frogScreenY <= 7 && frog.x === frog.targetX && frog.y === frog.targetY && !isScrolling) {
+                        // Start smooth scrolling
+                        isScrolling = true;
+                        scrollTarget = scrollOffset + GRID_SIZE;
                         
-                        // Move frog back down to maintain position on screen
+                        // Move frog back down to maintain logical position
                         frog.y += 1;
                         frog.targetY += 1;
-                        
-                        // Generate new lane at the top (with negative y to account for scroll)
-                        generateNewLane();
-                        
-                        // Remove old lanes and obstacles that are off screen
-                        // Filter based on rendered position, not raw position
-                        endlessLanes = endlessLanes.filter(lane => {
-                            const renderY = (lane.y * GRID_SIZE) + scrollOffset;
-                            return renderY > -GRID_SIZE && renderY < 800;
-                        });
-                        cars = cars.filter(car => {
-                            const renderY = car.y + scrollOffset;
-                            return renderY > -100 && renderY < 850;
-                        });
-                        logs = logs.filter(log => {
-                            const renderY = log.y + scrollOffset;
-                            return renderY > -100 && renderY < 850;
-                        });
                     }
                     
                     // Check if frog has fallen too far behind
-                    if (frog.y > 15) {  // Allow some margin below the screen
+                    if (frog.y > 15) {
                         endlessGameOver();
                     }
                 }
@@ -1842,6 +1857,8 @@
                 timeLeft = 999;
                 scrollOffset = 0;
                 distanceTraveled = 0;
+                isScrolling = false;
+                scrollTarget = 0;
                 generateEndlessLanes();
                 
                 // Reset frog position for endless mode
