@@ -780,7 +780,9 @@
             targetY: 14,
             animationSpeed: 8,
             color: '#4CAF50',
-            homeFrogs: []
+            homeFrogs: [],
+            drowning: false,
+            drowningProgress: 0
         };
         
         let frog2 = {
@@ -793,7 +795,9 @@
             targetY: 14,
             animationSpeed: 8,
             color: '#FF9800',
-            homeFrogs: []
+            homeFrogs: [],
+            drowning: false,
+            drowningProgress: 0
         };
 
         let cars = [];
@@ -1125,6 +1129,30 @@
             
             ctx.save();
             ctx.translate(x + GRID_SIZE/2, y + GRID_SIZE/2);
+            
+            // Handle drowning animation
+            if (frogObj && frogObj.drowning) {
+                // Classic drowning effect - sinking circles
+                const drowningAlpha = 1 - frogObj.drowningProgress;
+                ctx.globalAlpha = drowningAlpha;
+                
+                // Draw expanding ripples
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 3; i++) {
+                    const rippleSize = (frogObj.drowningProgress * 30) + (i * 15);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, rippleSize, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                // Draw sinking frog getting smaller
+                const sinkScale = 1 - (frogObj.drowningProgress * 0.7);
+                ctx.scale(sinkScale, sinkScale);
+                
+                // Rotate slightly as it sinks
+                ctx.rotate(frogObj.drowningProgress * Math.PI * 0.5);
+            }
             
             // Determine animation state
             let direction = 'up';
@@ -1678,13 +1706,11 @@
                         break;
                     }
                 }
-                if (!onLog) {
+                if (!onLog && !frog.drowning) {
                     playSoundEffect('splash');
-                    if (gameMode === 'endless') {
-                        endlessGameOver();
-                    } else {
-                        loseLife();
-                    }
+                    frog.drowning = true;
+                    frog.drowningProgress = 0;
+                    // Don't immediately lose life - let the drowning animation play
                 }
             }
 
@@ -1768,6 +1794,8 @@
             frog.y = 14;
             frog.targetX = 6;
             frog.targetY = 14;
+            frog.drowning = false;
+            frog.drowningProgress = 0;
         }
         
         function resetFrog2Position() {
@@ -1775,6 +1803,8 @@
             frog2.y = 14;
             frog2.targetX = 5;
             frog2.targetY = 14;
+            frog2.drowning = false;
+            frog2.drowningProgress = 0;
         }
 
         function levelComplete() {
@@ -1942,6 +1972,21 @@
                     frog.jumping = false;
                 }
                 
+                // Handle drowning animation
+                if (frog.drowning) {
+                    frog.drowningProgress += deltaTime * 2; // 0.5 seconds to complete
+                    if (frog.drowningProgress >= 1) {
+                        // Animation complete, now lose life
+                        if (gameMode === 'endless') {
+                            endlessGameOver();
+                        } else {
+                            loseLife();
+                        }
+                        frog.drowning = false;
+                        frog.drowningProgress = 0;
+                    }
+                }
+                
                 // Smooth frog2 movement in two player mode
                 if (twoPlayerMode) {
                     if (frog2.x !== frog2.targetX || frog2.y !== frog2.targetY) {
@@ -1965,6 +2010,18 @@
                         frog2.jumpProgress = 1 - Math.max(Math.abs(dx2), Math.abs(dy2));
                     } else {
                         frog2.jumping = false;
+                    }
+                    
+                    // Handle drowning animation for player 2
+                    if (frog2.drowning) {
+                        frog2.drowningProgress += deltaTime * 2; // 0.5 seconds to complete
+                        if (frog2.drowningProgress >= 1) {
+                            // Animation complete, now reset position
+                            resetFrog2Position();
+                            createParticles(frog2.x * GRID_SIZE, frog2.y * GRID_SIZE, '#ff0000');
+                            frog2.drowning = false;
+                            frog2.drowningProgress = 0;
+                        }
                     }
                 }
                 
@@ -2074,8 +2131,8 @@
 
             if (isPaused || winner) return;
 
-            // Player 1 controls (arrows)
-            if (frog.x === frog.targetX && frog.y === frog.targetY) {
+            // Player 1 controls (arrows) - disable when drowning
+            if (frog.x === frog.targetX && frog.y === frog.targetY && !frog.drowning) {
                 switch(e.key) {
                     case 'ArrowUp':
                         if (gameMode === 'endless' || frog.targetY > 0) {
@@ -2105,8 +2162,8 @@
                 }
             }
 
-            // Player 2 controls (WASD) - only in two player mode
-            if (twoPlayerMode && frog2.x === frog2.targetX && frog2.y === frog2.targetY) {
+            // Player 2 controls (WASD) - only in two player mode and not drowning
+            if (twoPlayerMode && frog2.x === frog2.targetX && frog2.y === frog2.targetY && !frog2.drowning) {
                 switch(e.key.toLowerCase()) {
                     case 'w':
                         if (frog2.targetY > 0) {
@@ -2270,10 +2327,11 @@
                         break;
                     }
                 }
-                if (!onLog) {
+                if (!onLog && !frog2.drowning) {
                     playSoundEffect('splash');
-                    resetFrog2Position();
-                    createParticles(frogX, frogY, '#ff0000');
+                    frog2.drowning = true;
+                    frog2.drowningProgress = 0;
+                    // Don't immediately reset - let the drowning animation play
                 }
             }
 
