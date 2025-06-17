@@ -591,28 +591,28 @@
             // Play ambient melody - soft and sparse
             let melodyTime = 0;
             melody.forEach(note => {
-                playNote(note.note, note.duration, now + melodyTime, note.wave, 0.08); // Audible but gentle
+                playNote(note.note, note.duration, now + melodyTime, note.wave, 0.04); // Reduced by half
                 melodyTime += note.duration;
             });
             
             // Play deep bass drone - foundation
             let bassTime = 0;
             bassLine.forEach(note => {
-                playNote(note.note, note.duration, now + bassTime, note.wave, 0.1); // Deep and present
+                playNote(note.note, note.duration, now + bassTime, note.wave, 0.05); // Reduced by half
                 bassTime += note.duration;
             });
             
             // Play ambient texture - mid layer
             let textureTime = 0;
             ambientTexture.forEach(note => {
-                playNote(note.note, note.duration, now + textureTime, note.wave, 0.05); // Soft support
+                playNote(note.note, note.duration, now + textureTime, note.wave, 0.025); // Reduced by half
                 textureTime += note.duration;
             });
             
             // Play high shimmer - ethereal top layer
             let shimmerTime = 0;
             shimmerLayer.forEach(note => {
-                playNote(note.note, note.duration, now + shimmerTime, note.wave, 0.03); // Subtle sparkle
+                playNote(note.note, note.duration, now + shimmerTime, note.wave, 0.015); // Reduced by half
                 shimmerTime += note.duration;
             });
         }
@@ -2270,6 +2270,13 @@
         function startGame(isTwoPlayer) {
             // Stop any existing music before starting new game
             stopMusic();
+            
+            // Resume audio context on user interaction
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    console.log('Audio context resumed');
+                });
+            }
             
             document.getElementById('startScreen').classList.remove('active');
             gameRunning = true;
