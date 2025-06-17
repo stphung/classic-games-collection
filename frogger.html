@@ -1621,9 +1621,11 @@
             const collisionSize = visualFrogSize * 0.9;
 
             // Find current lane based on game mode
+            // Use Math.round to handle mid-jump positions correctly
+            const frogLaneY = Math.round(frog.y);
             const currentLane = gameMode === 'endless' 
-                ? endlessLanes.find(lane => lane.y === Math.floor(frog.y))
-                : lanes.find(lane => lane.y === frog.y);
+                ? endlessLanes.find(lane => lane.y === frogLaneY)
+                : lanes.find(lane => lane.y === frogLaneY);
             
             if (currentLane && currentLane.type === 'road') {
                 for (let car of cars) {
@@ -1654,12 +1656,7 @@
                     // Only check logs in the same lane as the frog
                     if (log.laneY !== currentLane.y) continue;
                     
-                    // Check collision with adjusted Y position for endless mode  
-                    const logY = log.y;  // Log Y is already in screen coordinates
-                    const frogActualY = frogY;  // Frog Y is already in screen coordinates
-                    
-                    // Check if frog overlaps with log - require at least 60% of frog to be on log
-                    // frogX is already in pixels, use same pattern as car collision
+                    // Check if frog overlaps with log - require at least 50% overlap (more forgiving)
                     const frogLeft = frogX - collisionSize/2;
                     const frogRight = frogX + collisionSize/2;
                     const overlapStart = Math.max(frogLeft, log.x);
@@ -1667,8 +1664,8 @@
                     const overlapWidth = Math.max(0, overlapEnd - overlapStart);
                     const frogOnLogPercent = overlapWidth / collisionSize;
                     
-                    // For logs, we just need to check if we're in the same lane row
-                    if (frogOnLogPercent >= 0.6) {
+                    // Reduced from 0.6 to 0.5 for more forgiving gameplay
+                    if (frogOnLogPercent >= 0.5) {
                         onLog = true;
                         const logMovement = log.speed * speedMultiplier / GRID_SIZE;
                         frog.x += logMovement;
@@ -2232,7 +2229,9 @@
             // Add small margin for fair gameplay (10% smaller hitbox)
             const collisionSize = visualFrogSize * 0.9;
 
-            const currentLane = lanes.find(lane => lane.y === frog2.y);
+            // Use Math.round to handle mid-jump positions correctly
+            const frogLaneY = Math.round(frog2.y);
+            const currentLane = lanes.find(lane => lane.y === frogLaneY);
             
             if (currentLane && currentLane.type === 'road') {
                 for (let car of cars) {
@@ -2265,8 +2264,8 @@
                     const overlapWidth = Math.max(0, overlapEnd - overlapStart);
                     const frogOnLogPercent = overlapWidth / collisionSize;
                     
-                    // For logs, we just need to check if we're in the same lane row
-                    if (frogOnLogPercent >= 0.6) {
+                    // Reduced from 0.6 to 0.5 for more forgiving gameplay
+                    if (frogOnLogPercent >= 0.5) {
                         onLog = true;
                         const logMovement = log.speed * speedMultiplier / GRID_SIZE;
                         frog2.x += logMovement;
