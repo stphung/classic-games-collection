@@ -913,7 +913,6 @@
 
             <!-- Frogger -->
             <div class="game-card" data-game="frogger.html">
-                <span class="updated-badge">Updated</span>
                 <div class="game-icon frogger">🐸</div>
                 <h2 class="game-title">Frogger</h2>
                 <p class="game-description">Navigate dangerous roads and rivers to reach safety</p>
@@ -922,7 +921,6 @@
 
             <!-- Missile Command -->
             <div class="game-card" data-game="missilecommand.html">
-                <span class="new-badge">New</span>
                 <div class="game-icon missile">⟟</div>
                 <h2 class="game-title">Missile Command</h2>
                 <p class="game-description">Defend your cities from incoming missile attacks</p>
@@ -931,7 +929,6 @@
 
             <!-- Snake -->
             <div class="game-card" data-game="snake.html">
-                <span class="new-badge">New</span>
                 <div class="game-icon snake">▪</div>
                 <h2 class="game-title">Snake</h2>
                 <p class="game-description">Guide the snake to grow longer without hitting walls</p>
@@ -940,7 +937,6 @@
 
             <!-- JezzBall -->
             <div class="game-card" data-game="jezzball.html">
-                <span class="new-badge">New</span>
                 <div class="game-icon jezzball">◈</div>
                 <h2 class="game-title">JezzBall</h2>
                 <p class="game-description">Trap bouncing balls by building walls strategically</p>
@@ -1166,10 +1162,10 @@
         const gameData = [
             { title: 'Tetris', icon: '▦', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html' },
             { title: 'Breakout', icon: '▬', color: '#fbbf24', description: 'Smash through colorful bricks with precision and skill', url: 'breakout.html' },
-            { title: 'Frogger', icon: '🐸', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html', isUpdated: true },
-            { title: 'Missile Command', icon: '⟟', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html', isNew: true },
-            { title: 'Snake', icon: '▪', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html', isNew: true },
-            { title: 'JezzBall', icon: '◈', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html', isNew: true }
+            { title: 'Frogger', icon: '🐸', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html' },
+            { title: 'Missile Command', icon: '⟟', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html' },
+            { title: 'Snake', icon: '▪', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html' },
+            { title: 'JezzBall', icon: '◈', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html' }
         ];
         
         let browseMode = false;
@@ -1203,8 +1199,6 @@
                 card.style.animationDelay = `${index * 0.05}s`;
                 
                 card.innerHTML = `
-                    ${game.isNew ? '<span class="new-badge">New</span>' : ''}
-                    ${game.isUpdated ? '<span class="updated-badge">Updated</span>' : ''}
                     <div class="game-icon ${game.title.toLowerCase().replace(' ', '')}" style="color: ${game.color}">${game.icon}</div>
                     <h3 class="game-title">${game.title}</h3>
                     <p class="game-description">${game.description}</p>
