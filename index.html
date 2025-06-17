@@ -235,66 +235,6 @@
             filter: grayscale(0%);
         }
         
-        /* Tetris icon - T-shaped tetromino */
-        .game-icon.tetris {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            font-size: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .game-icon.tetris::before {
-            content: '';
-            position: relative;
-            width: 20px;
-            height: 20px;
-            background: #e5e5e5;
-            box-shadow: 
-                /* Top row - 3 blocks */
-                -20px -20px 0 0 #e5e5e5,
-                0px -20px 0 0 #e5e5e5,
-                20px -20px 0 0 #e5e5e5,
-                /* Bottom center block */
-                0px 0px 0 0 #e5e5e5;
-        }
-        
-        .game-card.active .game-icon.tetris::before {
-            background: #818cf8;
-            box-shadow: 
-                /* Top row - 3 blocks */
-                -20px -20px 0 0 #818cf8,
-                0px -20px 0 0 #818cf8,
-                20px -20px 0 0 #818cf8,
-                /* Bottom center block */
-                0px 0px 0 0 #818cf8;
-        }
-        
-        /* Tetris icon for browse cards */
-        .browse-card .game-icon.tetris {
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .browse-card .game-icon.tetris::before {
-            content: '';
-            position: relative;
-            width: 15px;
-            height: 15px;
-            background: #818cf8;
-            box-shadow: 
-                /* Top row - 3 blocks */
-                -15px -15px 0 0 #818cf8,
-                0px -15px 0 0 #818cf8,
-                15px -15px 0 0 #818cf8,
-                /* Bottom center block */
-                0px 0px 0 0 #818cf8;
-        }
         
         /* Remove grayscale filter from browse card icons */
         .browse-card .game-icon {
@@ -1655,7 +1595,7 @@
             <!-- Tetris -->
             <div class="game-card" data-game="tetris.html">
                 <div class="game-content">
-                    <div class="game-icon tetris"></div>
+                    <div class="game-icon">▦</div>
                     <h2 class="game-title">Tetris</h2>
                     <p class="game-description">Stack falling blocks to clear lines in this timeless puzzle classic</p>
                 </div>
@@ -2072,7 +2012,7 @@
         
         // Browse mode functionality
         const gameData = [
-            { title: 'Tetris', icon: '', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html' },
+            { title: 'Tetris', icon: '▦', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html' },
             { title: 'Breakout', icon: '▬', color: '#fbbf24', description: 'Smash through colorful bricks with precision and skill', url: 'breakout.html' },
             { title: 'Frogger', icon: '🐸', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html' },
             { title: 'Missile Command', icon: '⟟', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html' },
