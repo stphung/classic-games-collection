@@ -2055,14 +2055,7 @@
             
             // Failsafe rendering for endless mode
             if (gameMode === 'endless') {
-                // Always show the distance indicator
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(300 - 60, 10, 120, 30);
-                ctx.fillStyle = '#4ade80';
-                ctx.font = '18px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`${Math.floor(distanceTraveled)}m`, 300, 30);
-                ctx.textAlign = 'left';
+                // Removed duplicate distance indicator - already shown in right panel
                 
                 if (endlessLanes.length === 0) {
                     ctx.fillStyle = 'red';
