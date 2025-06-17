@@ -226,10 +226,56 @@
             height: 140px;
             filter: grayscale(100%);
             transition: all 0.5s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .game-card.active .game-icon {
             filter: grayscale(0%);
+        }
+        
+        /* Tetris icon - T-shaped tetromino */
+        .game-icon.tetris {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            font-size: 0;
+        }
+        
+        .game-icon.tetris::before {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            background: #e5e5e5;
+            left: 10px;
+            top: 20px;
+            box-shadow: 
+                /* Center block below */
+                20px 20px 0 0 #e5e5e5;
+        }
+        
+        .game-card.active .game-icon.tetris::before {
+            background: #818cf8;
+            box-shadow: 20px 20px 0 0 #818cf8;
+        }
+        
+        /* Tetris icon for browse cards */
+        .browse-card .game-icon.tetris {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .browse-card .game-icon.tetris::before {
+            width: 45px;
+            height: 15px;
+            left: 7.5px;
+            top: 15px;
+            background: currentColor;
+            box-shadow: 
+                /* Center block below */
+                15px 15px 0 0 currentColor;
         }
 
         .game-title {
@@ -485,6 +531,571 @@
             overflow: hidden;
         }
         
+        
+        /* Mobile styles (max-width: 768px) */
+        @media (max-width: 768px) {
+            /* Full mobile redesign */
+            body {
+                padding: 0;
+                display: block;
+                overflow-y: auto;
+                min-height: 100vh;
+                background: #000;
+            }
+            
+            /* Mobile header */
+            .header {
+                position: sticky;
+                top: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 15px 20px;
+                margin: 0;
+                z-index: 100;
+                text-align: center;
+            }
+            
+            .logo {
+                font-size: 28px;
+                letter-spacing: 3px;
+                margin-bottom: 5px;
+            }
+            
+            .subtitle {
+                font-size: 11px;
+                color: #666;
+            }
+            
+            /* Hide patch notes completely on mobile */
+            .patch-notes {
+                display: none;
+            }
+            
+            /* Mobile carousel redesign */
+            .carousel-container {
+                position: relative;
+                height: auto;
+                width: 100%;
+                padding: 20px;
+                margin-top: 20px;
+            }
+            
+            .game-card {
+                position: relative;
+                transform: none !important;
+                width: 100%;
+                max-width: 400px;
+                height: auto;
+                margin: 0 auto;
+                padding: 30px;
+                opacity: 1 !important;
+            }
+            
+            /* Show only active card */
+            .game-card {
+                display: none;
+            }
+            
+            .game-card.active {
+                display: flex;
+            }
+            
+            .game-icon {
+                font-size: 70px;
+                height: 80px;
+                margin-bottom: 15px;
+            }
+            
+            .game-title {
+                font-size: 22px;
+                margin-bottom: 10px;
+            }
+            
+            .game-description {
+                font-size: 13px;
+                line-height: 1.5;
+                margin-bottom: 20px;
+            }
+            
+            .play-button {
+                padding: 12px 32px;
+                font-size: 14px;
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            /* Hide desktop nav */
+            .nav-button {
+                display: none;
+            }
+            
+            /* Hamburger menu button */
+            .hamburger-button {
+                display: block !important;
+                position: fixed;
+                top: 15px;
+                right: 15px;
+                z-index: 1000;
+                background: rgba(255, 255, 255, 0.02);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                padding: 10px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .hamburger-button:hover {
+                background: rgba(255, 255, 255, 0.04);
+                border-color: rgba(255, 255, 255, 0.2);
+            }
+            
+            .hamburger-icon {
+                width: 24px;
+                height: 20px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            
+            .hamburger-line {
+                width: 100%;
+                height: 2px;
+                background: #fff;
+                transition: all 0.3s ease;
+            }
+            
+            /* Mobile menu overlay */
+            .mobile-menu {
+                position: fixed;
+                top: 0;
+                right: -300px;
+                width: 280px;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(20px);
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+                z-index: 999;
+                transition: right 0.3s ease;
+                padding: 80px 20px 20px;
+                overflow-y: auto;
+                display: block !important;
+            }
+            
+            .mobile-menu.active {
+                right: 0;
+            }
+            
+            .mobile-menu-item {
+                display: block;
+                width: 100%;
+                padding: 15px 20px;
+                margin-bottom: 10px;
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 8px;
+                color: #fff;
+                text-align: left;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 14px;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+            }
+            
+            .mobile-menu-item:hover {
+                background: rgba(255, 255, 255, 0.04);
+                border-color: rgba(255, 255, 255, 0.1);
+                transform: translateX(-5px);
+            }
+            
+            .mobile-menu-icon {
+                display: inline-block;
+                margin-right: 10px;
+                font-size: 18px;
+            }
+            
+            /* Updates popup button */
+            .updates-popup-button {
+                display: block !important;
+                position: fixed;
+                bottom: 80px;
+                left: 20px;
+                background: rgba(255, 255, 255, 0.02);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 20px;
+                padding: 8px 16px;
+                color: #666;
+                font-size: 12px;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                z-index: 100;
+            }
+            
+            .updates-popup-button:hover {
+                background: rgba(255, 255, 255, 0.04);
+                border-color: rgba(255, 255, 255, 0.1);
+                color: #fff;
+            }
+            
+            .updates-indicator {
+                display: inline-block;
+                width: 6px;
+                height: 6px;
+                background: #4ade80;
+                border-radius: 50%;
+                margin-left: 8px;
+                animation: pulse 2s ease-in-out infinite;
+            }
+            
+            @keyframes pulse {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.6; transform: scale(0.8); }
+            }
+            
+            /* Updates popup overlay */
+            .updates-popup {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(10px);
+                z-index: 900;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            
+            .updates-popup.active {
+                display: flex;
+            }
+            
+            .updates-popup-content {
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                padding: 30px;
+                max-width: 500px;
+                width: 100%;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            
+            .updates-popup-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            
+            .updates-popup-title {
+                font-size: 24px;
+                font-weight: 200;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+            }
+            
+            .updates-popup-close {
+                background: transparent;
+                border: none;
+                color: #666;
+                font-size: 24px;
+                cursor: pointer;
+                transition: color 0.3s ease;
+                padding: 0;
+                line-height: 1;
+            }
+            
+            .updates-popup-close:hover {
+                color: #fff;
+            }
+            
+            .patch-update {
+                margin-bottom: 20px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            
+            .patch-update:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+            
+            .patch-date {
+                font-size: 12px;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 8px;
+            }
+            
+            .patch-content {
+                font-size: 14px;
+                line-height: 1.6;
+                color: #ccc;
+            }
+            
+            .patch-games {
+                color: #60a5fa;
+                font-weight: 400;
+            }
+            
+            /* Mobile navigation footer - simplified */
+            .mobile-nav-footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(20px);
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 12px;
+                z-index: 100;
+                display: flex !important;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            /* Hide desktop controls on mobile */
+            body > .dots-container,
+            body > .instructions,
+            body > .random-game-button,
+            body > .browse-controls,
+            .submit-idea {
+                display: none !important;
+            }
+            
+            .dots-container {
+                position: relative;
+                bottom: auto;
+                display: flex;
+                justify-content: center;
+                gap: 8px;
+                margin: 0;
+            }
+            
+            .dot {
+                width: 6px;
+                height: 6px;
+            }
+            
+            
+            .instructions {
+                position: relative;
+                bottom: auto;
+                text-align: center;
+                font-size: 11px;
+                color: #666;
+                margin: 0;
+            }
+            
+            .desktop-instruction {
+                display: none;
+            }
+            
+            .mobile-instruction {
+                display: inline !important;
+            }
+            
+            /* Add padding to bottom for dots footer */
+            body {
+                padding-bottom: 60px;
+            }
+            
+            /* Browse mode adjustments */
+            body.browse-mode {
+                padding-bottom: 0;
+            }
+            
+            body.browse-mode .carousel-container,
+            body.browse-mode .mobile-nav-footer {
+                display: none !important;
+            }
+            
+            .browse-grid-container {
+                position: static;
+                padding: 20px 10px 120px;
+                top: auto;
+            }
+            
+            body.browse-mode .browse-grid-container {
+                display: block;
+                margin-top: 0;
+            }
+            
+            .browse-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+            }
+            
+            .browse-card {
+                padding: 15px 10px;
+            }
+            
+            .browse-card .game-icon {
+                font-size: 40px;
+                height: 50px;
+                margin-bottom: 8px;
+            }
+            
+            .browse-card .game-title {
+                font-size: 13px;
+                margin-bottom: 5px;
+            }
+            
+            .browse-card .game-description {
+                font-size: 10px;
+                margin-bottom: 10px;
+                line-height: 1.3;
+            }
+            
+            .browse-card .play-button {
+                padding: 6px 16px;
+                font-size: 10px;
+            }
+            
+            /* Browse search bar mobile */
+            .browse-search-bar {
+                position: sticky;
+                top: 70px;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(20px);
+                padding: 15px;
+                margin: 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                width: 100%;
+                left: 0;
+                transform: none;
+                gap: 10px;
+            }
+            
+            /* New/Updated badges */
+            .new-badge,
+            .updated-badge {
+                padding: 2px 6px;
+                font-size: 8px;
+                top: 5px;
+                right: 5px;
+            }
+        }
+        
+        /* Small mobile styles (max-width: 480px) */
+        @media (max-width: 480px) {
+            .carousel-container {
+                padding: 15px;
+            }
+            
+            .game-card {
+                padding: 25px;
+            }
+            
+            .game-icon {
+                font-size: 60px;
+                height: 70px;
+            }
+            
+            .game-title {
+                font-size: 20px;
+            }
+            
+            .game-description {
+                font-size: 12px;
+            }
+            
+            .browse-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .browse-card {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                padding: 12px;
+                gap: 12px;
+            }
+            
+            .browse-card .game-icon {
+                font-size: 36px;
+                height: auto;
+                margin-bottom: 0;
+                flex-shrink: 0;
+            }
+            
+            .browse-card .game-content {
+                flex: 1;
+                text-align: left;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .browse-card .game-title {
+                font-size: 15px;
+                margin-bottom: 0;
+            }
+            
+            .browse-card .game-description {
+                display: none;
+            }
+            
+            .browse-card .play-button {
+                margin-left: auto;
+                flex-shrink: 0;
+                padding: 6px 12px;
+                font-size: 10px;
+            }
+            
+            .mobile-nav-footer {
+                padding: 10px;
+            }
+            
+            .hamburger-button {
+                top: 12px;
+                right: 12px;
+                padding: 8px;
+            }
+            
+            .hamburger-icon {
+                width: 20px;
+                height: 16px;
+            }
+            
+            .updates-popup-button {
+                bottom: 15px;
+                left: 15px;
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+            
+            .updates-popup-content {
+                padding: 20px;
+            }
+            
+            .updates-popup-title {
+                font-size: 20px;
+            }
+            
+            .mobile-menu {
+                width: 250px;
+                padding: 70px 15px 15px;
+            }
+            
+            .mobile-menu-item {
+                font-size: 13px;
+                padding: 12px 16px;
+            }
+        }
+        
         /* Patch notes */
         .patch-notes {
             position: fixed;
@@ -717,6 +1328,14 @@
             font-size: 16px;
         }
         
+        /* Hamburger menu (hidden on desktop) */
+        .hamburger-button,
+        .mobile-menu,
+        .updates-popup-button,
+        .updates-popup {
+            display: none;
+        }
+        
         /* Browse search bar */
         .browse-search-bar {
             position: fixed;
@@ -728,6 +1347,27 @@
             align-items: center;
             gap: 15px;
             animation: fadeInScale 0.3s ease;
+        }
+        
+        /* Mobile browse search bar */
+        @media (max-width: 768px) {
+            .browse-search-bar {
+                top: 80px;
+                width: calc(100% - 40px);
+                max-width: 400px;
+            }
+            
+            .search-input {
+                width: 100%;
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+            
+            .close-browse {
+                padding: 8px 16px;
+                font-size: 11px;
+                white-space: nowrap;
+            }
         }
         
         @keyframes fadeInScale {
@@ -794,6 +1434,14 @@
             overflow-y: auto;
             z-index: 5;
             display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .browse-grid-container {
+                top: 140px;
+                padding: 20px 10px;
+                -webkit-overflow-scrolling: touch;
+            }
         }
         
         body.browse-mode .browse-grid-container {
@@ -983,7 +1631,7 @@
             <!-- Tetris -->
             <div class="game-card" data-game="tetris.html">
                 <div class="game-content">
-                    <div class="game-icon tetris">▦</div>
+                    <div class="game-icon tetris"></div>
                     <h2 class="game-title">Tetris</h2>
                     <p class="game-description">Stack falling blocks to clear lines in this timeless puzzle classic</p>
                 </div>
@@ -993,7 +1641,7 @@
             <!-- Breakout -->
             <div class="game-card" data-game="breakout.html">
                 <div class="game-content">
-                    <div class="game-icon breakout">▬</div>
+                    <div class="game-icon breakout">━</div>
                     <h2 class="game-title">Breakout</h2>
                     <p class="game-description">Smash through colorful bricks with precision and skill</p>
                 </div>
@@ -1075,12 +1723,77 @@
         <span class="dot" onclick="goToSlide(7)"></span>
     </div>
 
-    <p class="instructions">Use arrow keys or click to navigate</p>
+    <p class="instructions">
+        <span class="desktop-instruction">Use arrow keys or click to navigate</span>
+        <span class="mobile-instruction" style="display: none;">Swipe to navigate</span>
+    </p>
     
     <button class="random-game-button" onclick="selectRandomGame()">
         <span class="random-icon">🎲</span>
         <span class="random-text">Random Game</span>
     </button>
+    
+    <!-- Hamburger Menu Button -->
+    <button class="hamburger-button" onclick="toggleMobileMenu()">
+        <div class="hamburger-icon">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+        </div>
+    </button>
+    
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" style="display: none;">
+        <button class="mobile-menu-item" onclick="toggleBrowseMode(); toggleMobileMenu();">
+            <span class="mobile-menu-icon">📚</span>
+            Browse All Games
+        </button>
+        <button class="mobile-menu-item" onclick="selectRandomGame(); toggleMobileMenu();">
+            <span class="mobile-menu-icon">🎲</span>
+            Random Game
+        </button>
+        <button class="mobile-menu-item" onclick="window.open('https://github.com/stphung/classic-games-collection/issues/new', '_blank'); toggleMobileMenu();">
+            <span class="mobile-menu-icon">💡</span>
+            Submit Game Idea
+        </button>
+    </div>
+    
+    <!-- Updates Popup Button (hidden on desktop) -->
+    <button class="updates-popup-button" onclick="toggleUpdatesPopup()" style="display: none;">
+        Recent Updates
+        <span class="updates-indicator"></span>
+    </button>
+    
+    <!-- Updates Popup -->
+    <div class="updates-popup">
+        <div class="updates-popup-content">
+            <div class="updates-popup-header">
+                <h2 class="updates-popup-title">Recent Updates</h2>
+                <button class="updates-popup-close" onclick="toggleUpdatesPopup()">×</button>
+            </div>
+            <div class="patch-notes-content">
+                <div class="patch-update">
+                    <div class="patch-date">Jun 17, 2025</div>
+                    <div class="patch-content">
+                        New games added: <span class="patch-games">Minesweeper</span> and <span class="patch-games">Lunar Lander</span><br>
+                        Feature update: <span class="patch-games">Breakout</span> now supports keyboard controls!
+                    </div>
+                </div>
+                <div class="patch-update" style="margin-top: 20px;">
+                    <div class="patch-date">Jun 16, 2025</div>
+                    <div class="patch-content">
+                        New games added: <span class="patch-games">Missile Command</span>, <span class="patch-games">Snake</span>, and <span class="patch-games">JezzBall</span><br>
+                        Game update: <span class="patch-games">Frogger</span> now includes endless mode!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Navigation Footer (simplified) -->
+    <div class="mobile-nav-footer" style="display: none;">
+        <div class="dots-container mobile-dots"></div>
+    </div>
     
     <!-- Browse Mode Grid -->
     <div class="browse-grid-container">
@@ -1122,6 +1835,12 @@
 
             // Update dots
             dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+            });
+            
+            // Update mobile dots
+            const mobileDotElements = document.querySelectorAll('.mobile-dots .dot');
+            mobileDotElements.forEach((dot, index) => {
                 dot.classList.toggle('active', index === currentIndex);
             });
         }
@@ -1193,8 +1912,56 @@
             });
         });
 
+        // Hamburger menu toggle
+        function toggleMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const hamburger = document.querySelector('.hamburger-button');
+            menu.classList.toggle('active');
+            
+            // Animate hamburger lines
+            const lines = hamburger.querySelectorAll('.hamburger-line');
+            if (menu.classList.contains('active')) {
+                lines[0].style.transform = 'rotate(45deg) translateY(9px)';
+                lines[1].style.opacity = '0';
+                lines[2].style.transform = 'rotate(-45deg) translateY(-9px)';
+            } else {
+                lines[0].style.transform = '';
+                lines[1].style.opacity = '';
+                lines[2].style.transform = '';
+            }
+        }
+        
+        // Updates popup toggle
+        function toggleUpdatesPopup() {
+            const popup = document.querySelector('.updates-popup');
+            popup.classList.toggle('active');
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.querySelector('.mobile-menu');
+            const hamburger = document.querySelector('.hamburger-button');
+            
+            if (!menu.contains(e.target) && !hamburger.contains(e.target) && menu.classList.contains('active')) {
+                toggleMobileMenu();
+            }
+        });
+        
         // Initialize
         updateCarousel();
+        
+        // Populate mobile dots
+        const mobileDots = document.querySelector('.mobile-dots');
+        if (mobileDots && dots.length > 0) {
+            mobileDots.innerHTML = '';
+            for (let i = 0; i < cards.length; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'dot';
+                dot.onclick = () => goToSlide(i);
+                if (i === currentIndex) dot.classList.add('active');
+                mobileDots.appendChild(dot);
+            }
+        }
         
         // Add fade-in effect on page load
         window.addEventListener('load', () => {
@@ -1281,7 +2048,7 @@
         
         // Browse mode functionality
         const gameData = [
-            { title: 'Tetris', icon: '▦', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html' },
+            { title: 'Tetris', icon: '', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html' },
             { title: 'Breakout', icon: '▬', color: '#fbbf24', description: 'Smash through colorful bricks with precision and skill', url: 'breakout.html' },
             { title: 'Frogger', icon: '🐸', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html' },
             { title: 'Missile Command', icon: '⟟', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html' },
