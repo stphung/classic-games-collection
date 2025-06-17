@@ -1685,11 +1685,16 @@
                     // Only check logs in the same lane as the frog
                     if (log.laneY !== currentLane.y) continue;
                     
-                    // Simple and forgiving collision check
-                    // Check if frog center is within log bounds plus some margin
-                    const margin = GRID_SIZE * 0.4; // 40% of a grid cell margin
+                    // Check if frog overlaps with log - require at least 50% overlap
+                    const frogLeft = frogX - collisionSize/2;
+                    const frogRight = frogX + collisionSize/2;
+                    const overlapStart = Math.max(frogLeft, log.x);
+                    const overlapEnd = Math.min(frogRight, log.x + log.width);
+                    const overlapWidth = Math.max(0, overlapEnd - overlapStart);
+                    const frogOnLogPercent = overlapWidth / collisionSize;
                     
-                    if (frogX >= log.x - margin && frogX <= log.x + log.width + margin) {
+                    // Require 50% of frog to be on log
+                    if (frogOnLogPercent >= 0.5) {
                         onLog = true;
                         const logMovement = log.speed * speedMultiplier / GRID_SIZE;
                         frog.x += logMovement;
@@ -2315,11 +2320,16 @@
                     // Only check logs in the same lane as the frog
                     if (log.laneY !== currentLane.y) continue;
                     
-                    // Simple and forgiving collision check
-                    // Check if frog center is within log bounds plus some margin
-                    const margin = GRID_SIZE * 0.4; // 40% of a grid cell margin
+                    // Check if frog overlaps with log - require at least 50% overlap
+                    const frogLeft = frogX - collisionSize/2;
+                    const frogRight = frogX + collisionSize/2;
+                    const overlapStart = Math.max(frogLeft, log.x);
+                    const overlapEnd = Math.min(frogRight, log.x + log.width);
+                    const overlapWidth = Math.max(0, overlapEnd - overlapStart);
+                    const frogOnLogPercent = overlapWidth / collisionSize;
                     
-                    if (frogX >= log.x - margin && frogX <= log.x + log.width + margin) {
+                    // Require 50% of frog to be on log
+                    if (frogOnLogPercent >= 0.5) {
                         onLog = true;
                         const logMovement = log.speed * speedMultiplier / GRID_SIZE;
                         frog2.x += logMovement;
