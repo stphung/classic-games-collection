@@ -8,6 +8,9 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
+    <link rel="stylesheet" href="common-styles.css">
+    <script src="audio-manager.js"></script>
+    <script src="particle-system.js"></script>
     <style>
         * {
             margin: 0;
@@ -423,7 +426,7 @@
         let lives = 3;
         let gameRunning = false;
         let ballLaunched = false;
-        let particles = [];
+        // Particle system is loaded from particle-system.js
 
         // Clean color palette
         const brickColors = [
@@ -507,38 +510,10 @@
             }
         }
 
-        function createParticles(x, y, color) {
-            for (let i = 0; i < 6; i++) {
-                const angle = (Math.PI * 2 / 6) * i;
-                particles.push({
-                    x: x,
-                    y: y,
-                    dx: Math.cos(angle) * 120, // pixels per second
-                    dy: Math.sin(angle) * 120, // pixels per second
-                    size: 2,
-                    color: color,
-                    life: 1
-                });
-            }
-        }
+        // Particle effects are handled by particle-system.js
 
         function updateParticles(deltaTime) {
-            particles = particles.filter(particle => {
-                particle.x += particle.dx * deltaTime;
-                particle.y += particle.dy * deltaTime;
-                particle.dy += 300 * deltaTime; // gravity
-                particle.life -= 2.4 * deltaTime;
-                particle.dx *= Math.pow(0.95, deltaTime * 60);
-
-                if (particle.life > 0) {
-                    ctx.globalAlpha = particle.life * 0.5;
-                    ctx.fillStyle = particle.color;
-                    ctx.fillRect(particle.x - particle.size/2, particle.y - particle.size/2, particle.size, particle.size);
-                    ctx.globalAlpha = 1;
-                    return true;
-                }
-                return false;
-            });
+            window.particleSystem.update(deltaTime);
         }
 
         function collisionDetection(deltaTime) {
@@ -590,7 +565,11 @@
                             b.status = 0;
                             score += b.points;
                             updateScore();
-                            createParticles(b.x + brickWidth / 2, b.y + brickHeight / 2, b.color);
+                            window.particleSystem.createExplosion(
+                                b.x + brickWidth / 2,
+                                b.y + brickHeight / 2,
+                                { color: b.color, count: 6, speed: 120, life: 0.4, size: 2 }
+                            );
                             playSound('brickHit');
 
                             if (score === getTotalPossibleScore()) {
@@ -733,6 +712,7 @@
                 
                 // Then draw everything
                 drawBricks();
+                window.particleSystem.draw(ctx);
                 drawBall();
                 drawPaddle();
                 
