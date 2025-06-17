@@ -2,7 +2,7 @@
 
 🎮 **[Play the games here!](https://stphung.github.io/classic-games-collection/)**
 
-A collection of seven classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
+A collection of eight classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
 
 ## Games Included
 
@@ -89,6 +89,18 @@ The classic logic puzzle game where you clear a minefield using deduction and ca
   - Choose from three difficulty levels: Easy (9x9, 10 mines), Medium (16x16, 40 mines), Hard (16x30, 99 mines)
 - **Controls**: Left-click to reveal, Right-click to flag, Click difficulty buttons to change level
 - **Features**: Three difficulty levels, timer, mine counter, first-click protection (never hit a mine on first click)
+
+### 🚀 Lunar Lander
+Navigate your spacecraft to a safe landing on the lunar surface with limited fuel.
+- **How to Play**:
+  - Control your lander's descent using thrusters
+  - Land on the flat landing pads marked with multipliers (1x, 2x, 3x)
+  - Keep your landing speed below 2 m/s for a safe landing
+  - Land straight (minimal angle) to avoid crashing
+  - Higher multiplier pads give bonus points
+  - Watch your fuel gauge - no fuel means no thrust!
+- **Controls**: ↑/W for main thruster, ←/A to rotate left, →/D to rotate right, ESC to return home
+- **Features**: Realistic physics with gravity and momentum, multiple landing zones with score multipliers, fuel management, particle effects
 
 ## Features
 

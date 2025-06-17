@@ -100,6 +100,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: space-between;
             text-align: center;
             overflow: visible;
         }
@@ -208,13 +209,21 @@
             display: none;
         }
 
+        .game-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+        }
+
         .game-icon {
             font-size: 120px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 150px;
+            height: 140px;
             filter: grayscale(100%);
             transition: all 0.5s ease;
         }
@@ -229,13 +238,14 @@
             letter-spacing: 3px;
             margin-bottom: 15px;
             text-transform: uppercase;
+            line-height: 1.2;
         }
 
         .game-description {
             font-size: 14px;
             color: #666;
             line-height: 1.6;
-            margin-bottom: 30px;
+            margin-bottom: 0;
         }
 
         .game-card.active .game-description {
@@ -607,6 +617,7 @@
         .snake { color: #4ade80; }
         .jezzball { color: #c084fc; }
         .minesweeper { color: #60a5fa; }
+        .lunarlander { color: #93c5fd; }
 
         /* Mobile responsiveness */
         @media (max-width: 768px) {
@@ -669,7 +680,7 @@
         /* Browse/Search Controls */
         .browse-controls {
             position: fixed;
-            bottom: 200px;
+            top: 160px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
@@ -870,7 +881,7 @@
         
         @media (max-width: 768px) {
             .browse-controls {
-                bottom: 320px;
+                top: 120px;
             }
             
             .browse-search-bar {
@@ -929,7 +940,7 @@
             <div class="patch-update">
                 <div class="patch-date">Jun 17, 2025</div>
                 <div class="patch-content">
-                    New game added: <span class="patch-games">Minesweeper</span> - the classic logic puzzle!
+                    New games added: <span class="patch-games">Minesweeper</span> and <span class="patch-games">Lunar Lander</span>!
                 </div>
             </div>
             <div class="older-updates">
@@ -971,59 +982,84 @@
         <div class="carousel-track">
             <!-- Tetris -->
             <div class="game-card" data-game="tetris.html">
-                <div class="game-icon tetris">▦</div>
-                <h2 class="game-title">Tetris</h2>
-                <p class="game-description">Stack falling blocks to clear lines in this timeless puzzle classic</p>
+                <div class="game-content">
+                    <div class="game-icon tetris">▦</div>
+                    <h2 class="game-title">Tetris</h2>
+                    <p class="game-description">Stack falling blocks to clear lines in this timeless puzzle classic</p>
+                </div>
                 <a href="tetris.html" class="play-button" onclick="event.preventDefault(); transitionToGame('tetris.html')">Play</a>
             </div>
 
             <!-- Breakout -->
             <div class="game-card" data-game="breakout.html">
-                <div class="game-icon breakout">▬</div>
-                <h2 class="game-title">Breakout</h2>
-                <p class="game-description">Smash through colorful bricks with precision and skill</p>
+                <div class="game-content">
+                    <div class="game-icon breakout">▬</div>
+                    <h2 class="game-title">Breakout</h2>
+                    <p class="game-description">Smash through colorful bricks with precision and skill</p>
+                </div>
                 <a href="breakout.html" class="play-button" onclick="event.preventDefault(); transitionToGame('breakout.html')">Play</a>
             </div>
 
             <!-- Frogger -->
             <div class="game-card" data-game="frogger.html">
-                <div class="game-icon frogger">🐸</div>
-                <h2 class="game-title">Frogger</h2>
-                <p class="game-description">Navigate dangerous roads and rivers to reach safety</p>
+                <div class="game-content">
+                    <div class="game-icon frogger">🐸</div>
+                    <h2 class="game-title">Frogger</h2>
+                    <p class="game-description">Navigate dangerous roads and rivers to reach safety</p>
+                </div>
                 <a href="frogger.html" class="play-button" onclick="event.preventDefault(); transitionToGame('frogger.html')">Play</a>
             </div>
 
             <!-- Missile Command -->
             <div class="game-card" data-game="missilecommand.html">
-                <div class="game-icon missile">⟟</div>
-                <h2 class="game-title">Missile Command</h2>
-                <p class="game-description">Defend your cities from incoming missile attacks</p>
+                <div class="game-content">
+                    <div class="game-icon missile">⟟</div>
+                    <h2 class="game-title">Missile Command</h2>
+                    <p class="game-description">Defend your cities from incoming missile attacks</p>
+                </div>
                 <a href="missilecommand.html" class="play-button" onclick="event.preventDefault(); transitionToGame('missilecommand.html')">Play</a>
             </div>
 
             <!-- Snake -->
             <div class="game-card" data-game="snake.html">
-                <div class="game-icon snake">▪</div>
-                <h2 class="game-title">Snake</h2>
-                <p class="game-description">Guide the snake to grow longer without hitting walls</p>
+                <div class="game-content">
+                    <div class="game-icon snake">▪</div>
+                    <h2 class="game-title">Snake</h2>
+                    <p class="game-description">Guide the snake to grow longer without hitting walls</p>
+                </div>
                 <a href="snake.html" class="play-button" onclick="event.preventDefault(); transitionToGame('snake.html')">Play</a>
             </div>
 
             <!-- JezzBall -->
             <div class="game-card" data-game="jezzball.html">
-                <div class="game-icon jezzball">◈</div>
-                <h2 class="game-title">JezzBall</h2>
-                <p class="game-description">Trap bouncing balls by building walls strategically</p>
+                <div class="game-content">
+                    <div class="game-icon jezzball">◈</div>
+                    <h2 class="game-title">JezzBall</h2>
+                    <p class="game-description">Trap bouncing balls by building walls strategically</p>
+                </div>
                 <a href="jezzball.html" class="play-button" onclick="event.preventDefault(); transitionToGame('jezzball.html')">Play</a>
             </div>
 
             <!-- Minesweeper -->
             <div class="game-card" data-game="minesweeper.html">
                 <span class="new-badge">New</span>
-                <div class="game-icon minesweeper">⚑</div>
-                <h2 class="game-title">Minesweeper</h2>
-                <p class="game-description">Clear the minefield using logic and careful deduction</p>
+                <div class="game-content">
+                    <div class="game-icon minesweeper">⚑</div>
+                    <h2 class="game-title">Minesweeper</h2>
+                    <p class="game-description">Clear the minefield using logic and careful deduction</p>
+                </div>
                 <a href="minesweeper.html" class="play-button" onclick="event.preventDefault(); transitionToGame('minesweeper.html')">Play</a>
+            </div>
+
+            <!-- Lunar Lander -->
+            <div class="game-card" data-game="lunarlander.html">
+                <span class="new-badge">New</span>
+                <div class="game-content">
+                    <div class="game-icon lunarlander">🚀</div>
+                    <h2 class="game-title">Lunar Lander</h2>
+                    <p class="game-description">Land safely on the moon with limited fuel</p>
+                </div>
+                <a href="lunarlander.html" class="play-button" onclick="event.preventDefault(); transitionToGame('lunarlander.html')">Play</a>
             </div>
         </div>
     </div>
@@ -1036,6 +1072,7 @@
         <span class="dot" onclick="goToSlide(4)"></span>
         <span class="dot" onclick="goToSlide(5)"></span>
         <span class="dot" onclick="goToSlide(6)"></span>
+        <span class="dot" onclick="goToSlide(7)"></span>
     </div>
 
     <p class="instructions">Use arrow keys or click to navigate</p>
@@ -1250,7 +1287,8 @@
             { title: 'Missile Command', icon: '⟟', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html' },
             { title: 'Snake', icon: '▪', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html' },
             { title: 'JezzBall', icon: '◈', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html' },
-            { title: 'Minesweeper', icon: '⚑', color: '#60a5fa', description: 'Clear the minefield using logic and careful deduction', url: 'minesweeper.html', isNew: true }
+            { title: 'Minesweeper', icon: '⚑', color: '#60a5fa', description: 'Clear the minefield using logic and careful deduction', url: 'minesweeper.html', isNew: true },
+            { title: 'Lunar Lander', icon: '🚀', color: '#93c5fd', description: 'Land safely on the moon with limited fuel', url: 'lunarlander.html', isNew: true }
         ];
         
         let browseMode = false;

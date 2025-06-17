@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunar Lander - Modern Arcade</title>
+    <script src="transition-common.js"></script>
+    <script src="submit-idea-button.js"></script>
+    <script src="home-button.js"></script>
+    <script src="mute-button.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle animated background */
+        .bg-effect {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #fff 2%, transparent 2%),
+                radial-gradient(circle at 75% 75%, #fff 2%, transparent 2%);
+            background-size: 50px 50px;
+            animation: drift 20s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0, 0); }
+            to { transform: translate(50px, 50px); }
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            position: relative;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        .game-info {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 200;
+            letter-spacing: 1px;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-weight: 400;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .fuel-value {
+            color: #4ade80;
+        }
+
+        .velocity-value {
+            color: #60a5fa;
+        }
+
+        .altitude-value {
+            color: #fbbf24;
+        }
+
+        .score-value {
+            color: #c084fc;
+        }
+
+        .difficulty-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .difficulty-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .difficulty-btn.active {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+        }
+
+        #gameCanvas {
+            background: linear-gradient(to bottom, #000 0%, #0a0a0a 50%, #111 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: block;
+            position: relative;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            border-radius: 8px;
+        }
+
+        .start-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .game-title {
+            font-size: 48px;
+            font-weight: 200;
+            letter-spacing: 6px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #60a5fa 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .instructions {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #999;
+            line-height: 1.8;
+        }
+
+        .control-info {
+            display: grid;
+            grid-template-columns: auto auto;
+            gap: 15px 30px;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .control-key {
+            color: #60a5fa;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .control-desc {
+            color: #999;
+            text-align: left;
+        }
+
+        .start-button {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+            padding: 15px 40px;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .start-button:hover {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: rgba(96, 165, 250, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(96, 165, 250, 0.3);
+        }
+
+        .game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            border-radius: 8px;
+        }
+
+        .game-over-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .game-over-title {
+            font-size: 36px;
+            font-weight: 200;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .success {
+            color: #4ade80;
+        }
+
+        .crash {
+            color: #f87171;
+        }
+
+        .final-stats {
+            color: #999;
+            margin-bottom: 30px;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .landing-score {
+            font-size: 24px;
+            color: #fbbf24;
+            margin: 10px 0;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 20px;
+                width: 95%;
+                max-width: 95%;
+            }
+
+            .game-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .game-info {
+                flex-wrap: wrap;
+                gap: 15px;
+                justify-content: center;
+            }
+
+            .info-item {
+                font-size: 14px;
+            }
+
+            .control-info {
+                gap: 10px 20px;
+                padding: 20px;
+                font-size: 14px;
+            }
+
+            .game-title {
+                font-size: 36px;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-effect"></div>
+    
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-info">
+                <div class="info-item">
+                    <span class="info-label">Fuel</span>
+                    <span class="info-value fuel-value" id="fuel">1000</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Velocity</span>
+                    <span class="info-value velocity-value" id="velocity">0</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Altitude</span>
+                    <span class="info-value altitude-value" id="altitude">500</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Score</span>
+                    <span class="info-value score-value" id="score">0</span>
+                </div>
+            </div>
+            <div class="info-item" style="margin-left: 20px;">
+                <span class="info-label">Difficulty</span>
+                <span class="info-value" id="currentDifficulty" style="color: #60a5fa; text-transform: uppercase;">Easy</span>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div class="start-screen active" id="startScreen">
+            <h1 class="game-title">Lunar Lander</h1>
+            <div class="instructions">
+                Land safely on the flat landing pads<br>
+                Watch your speed and fuel!<br>
+                <span style="color: #666; font-size: 14px;">Max safe landing speed: <span id="maxSpeed">3.0</span> m/s</span>
+            </div>
+            <div class="control-info">
+                <div class="control-key">↑ / W</div>
+                <div class="control-desc">Main Thruster</div>
+                <div class="control-key">← / A</div>
+                <div class="control-desc">Rotate Left</div>
+                <div class="control-key">→ / D</div>
+                <div class="control-desc">Rotate Right</div>
+                <div class="control-key">ESC</div>
+                <div class="control-desc">Return Home</div>
+            </div>
+            <div class="difficulty-select" style="margin: 30px 0;">
+                <p style="color: #999; margin-bottom: 15px; text-align: center;">Select Difficulty:</p>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button class="difficulty-btn active" data-level="easy" onclick="selectStartDifficulty('easy')">Easy</button>
+                    <button class="difficulty-btn" data-level="normal" onclick="selectStartDifficulty('normal')">Normal</button>
+                    <button class="difficulty-btn" data-level="hard" onclick="selectStartDifficulty('hard')">Hard</button>
+                    <button class="difficulty-btn" data-level="expert" onclick="selectStartDifficulty('expert')">Expert</button>
+                </div>
+                <p id="difficultyDesc" style="color: #666; font-size: 12px; margin-top: 15px; text-align: center;">Low gravity • More fuel • 0.5x score</p>
+            </div>
+            <button class="start-button" onclick="startGame()">Start Landing</button>
+        </div>
+        
+        <div class="game-over-screen" id="gameOverScreen">
+            <h2 class="game-over-title" id="gameOverTitle">MISSION COMPLETE</h2>
+            <div class="final-stats" id="finalStats">
+                <div>Landing Velocity: <span id="finalVelocity">0</span> m/s</div>
+                <div>Fuel Remaining: <span id="finalFuel">0</span></div>
+                <div class="landing-score">Score: <span id="finalScore">0</span></div>
+            </div>
+            <button class="start-button" onclick="resetGame()">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game state
+        let gameRunning = false;
+        let gameOver = false;
+        let animationId;
+        
+        // Lander properties
+        const lander = {
+            x: canvas.width / 2,
+            y: 100,
+            vx: 0,
+            vy: 0,
+            angle: 0,
+            fuel: 1000,
+            width: 20,
+            height: 25,
+            thrustPower: 0.3,
+            rotationSpeed: 0.05,
+            landed: false,
+            crashed: false
+        };
+        
+        // Difficulty settings
+        const difficulties = {
+            easy: {
+                gravity: 0.03,
+                maxSafeLandingSpeed: 3,
+                windSpeed: 0.01,
+                fuel: 1500,
+                thrustPower: 0.35,
+                maxAngle: 0.3,
+                scoreMultiplier: 0.5
+            },
+            normal: {
+                gravity: 0.05,
+                maxSafeLandingSpeed: 2,
+                windSpeed: 0.02,
+                fuel: 1000,
+                thrustPower: 0.3,
+                maxAngle: 0.2,
+                scoreMultiplier: 1
+            },
+            hard: {
+                gravity: 0.08,
+                maxSafeLandingSpeed: 1.5,
+                windSpeed: 0.04,
+                fuel: 700,
+                thrustPower: 0.25,
+                maxAngle: 0.15,
+                scoreMultiplier: 1.5
+            },
+            expert: {
+                gravity: 0.12,
+                maxSafeLandingSpeed: 1,
+                windSpeed: 0.06,
+                fuel: 500,
+                thrustPower: 0.2,
+                maxAngle: 0.1,
+                scoreMultiplier: 2
+            }
+        };
+        
+        let currentDifficulty = 'easy';
+        let difficultySettings = difficulties[currentDifficulty];
+        
+        function setDifficulty(level) {
+            currentDifficulty = level;
+            difficultySettings = difficulties[level];
+            
+            // Update button states
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                if (btn.dataset.level === level) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Update max speed display
+            const maxSpeedElement = document.getElementById('maxSpeed');
+            if (maxSpeedElement) {
+                maxSpeedElement.textContent = difficultySettings.maxSafeLandingSpeed.toFixed(1);
+            }
+            
+            // Update current difficulty display
+            const difficultyElement = document.getElementById('currentDifficulty');
+            if (difficultyElement) {
+                difficultyElement.textContent = level;
+            }
+            
+            // Reset game with new difficulty
+            resetGame();
+        }
+        
+        function selectStartDifficulty(level) {
+            currentDifficulty = level;
+            difficultySettings = difficulties[level];
+            
+            // Update button states on start screen
+            document.querySelectorAll('#startScreen .difficulty-btn').forEach(btn => {
+                if (btn.dataset.level === level) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Update max speed display
+            const maxSpeedElement = document.getElementById('maxSpeed');
+            if (maxSpeedElement) {
+                maxSpeedElement.textContent = difficultySettings.maxSafeLandingSpeed.toFixed(1);
+            }
+            
+            // Update current difficulty display
+            const difficultyElement = document.getElementById('currentDifficulty');
+            if (difficultyElement) {
+                difficultyElement.textContent = level;
+            }
+            
+            // Update difficulty description
+            const descElement = document.getElementById('difficultyDesc');
+            if (descElement) {
+                const descriptions = {
+                    easy: 'Low gravity • More fuel • 0.5x score',
+                    normal: 'Standard physics • 1x score',
+                    hard: 'High gravity • Less fuel • 1.5x score',
+                    expert: 'Extreme gravity • Minimal fuel • 2x score'
+                };
+                descElement.textContent = descriptions[level];
+            }
+        }
+        
+        // Terrain
+        let terrain = [];
+        let landingPads = [];
+        
+        // Stars
+        let stars = [];
+        
+        // Particles
+        let particles = [];
+        
+        // Controls
+        const keys = {};
+        
+        // Score
+        let score = 0;
+        let totalScore = 0;
+        
+        // Audio
+        let audioContext;
+        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
+        let backgroundMusic;
+        
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Create background music
+            backgroundMusic = createBackgroundMusic();
+        }
+        
+        function createBackgroundMusic() {
+            const tempo = 100;
+            const beatDuration = 60 / tempo;
+            
+            const notes = [
+                { freq: 110, duration: 0.5 },    // A2
+                { freq: 123.47, duration: 0.5 },  // B2
+                { freq: 130.81, duration: 0.5 },  // C3
+                { freq: 146.83, duration: 0.5 },  // D3
+                { freq: 130.81, duration: 0.5 },  // C3
+                { freq: 123.47, duration: 0.5 },  // B2
+                { freq: 110, duration: 0.5 },     // A2
+                { freq: 98, duration: 0.5 },      // G2
+            ];
+
+            let musicGain = audioContext.createGain();
+            musicGain.gain.value = 0.08;
+            musicGain.connect(audioContext.destination);
+
+            let currentTime = 0;
+            
+            function playSequence() {
+                if (isMuted || !audioContext || !gameRunning) return;
+                
+                currentTime = audioContext.currentTime;
+                
+                notes.forEach((note, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const noteGain = audioContext.createGain();
+                    
+                    oscillator.type = 'square';
+                    oscillator.frequency.value = note.freq;
+                    
+                    noteGain.gain.setValueAtTime(0, currentTime + index * beatDuration * 0.5);
+                    noteGain.gain.linearRampToValueAtTime(0.08, currentTime + index * beatDuration * 0.5 + 0.01);
+                    noteGain.gain.exponentialRampToValueAtTime(0.001, currentTime + index * beatDuration * 0.5 + note.duration * beatDuration);
+                    
+                    oscillator.connect(noteGain);
+                    noteGain.connect(musicGain);
+                    
+                    oscillator.start(currentTime + index * beatDuration * 0.5);
+                    oscillator.stop(currentTime + index * beatDuration * 0.5 + note.duration * beatDuration);
+                });
+                
+                setTimeout(playSequence, notes.length * beatDuration * 500);
+            }
+            
+            return { play: playSequence, stop: () => {} };
+        }
+        
+        function playSound(type) {
+            if (isMuted || !audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            const now = audioContext.currentTime;
+            
+            switch(type) {
+                case 'thrust':
+                    // Create white noise for thrust
+                    const bufferSize = audioContext.sampleRate * 0.1;
+                    const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const data = noiseBuffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    
+                    const noise = audioContext.createBufferSource();
+                    noise.buffer = noiseBuffer;
+                    
+                    const filter = audioContext.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 400;
+                    
+                    noise.connect(filter);
+                    filter.connect(gainNode);
+                    
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    
+                    noise.start(now);
+                    noise.stop(now + 0.1);
+                    break;
+                    
+                case 'landing':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(400, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.2);
+                    break;
+                    
+                case 'crash':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(150, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.5);
+                    break;
+                    
+                case 'beep':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 880;
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.05);
+                    break;
+            }
+        }
+        
+        // Listen for global mute toggle
+        window.addEventListener('globalMuteToggle', (event) => {
+            isMuted = event.detail.isMuted;
+            if (!isMuted && !audioContext && gameRunning) {
+                initAudio();
+                backgroundMusic.play();
+            }
+        });
+        
+        function initTerrain() {
+            terrain = [];
+            landingPads = [];
+            
+            // Generate rough terrain
+            let y = canvas.height - 100;
+            for (let x = 0; x <= canvas.width; x += 20) {
+                y += (Math.random() - 0.5) * 40;
+                y = Math.max(canvas.height - 200, Math.min(canvas.height - 50, y));
+                terrain.push({ x, y });
+            }
+            
+            // Create landing pads (flat areas)
+            const padPositions = [150, 400, 650];
+            padPositions.forEach(padX => {
+                const padWidth = 80;
+                const padY = canvas.height - 120;
+                
+                // Find terrain points near the pad
+                for (let i = 0; i < terrain.length - 1; i++) {
+                    if (terrain[i].x >= padX - padWidth/2 && terrain[i].x <= padX + padWidth/2) {
+                        terrain[i].y = padY;
+                    }
+                }
+                
+                landingPads.push({
+                    x: padX - padWidth/2,
+                    y: padY,
+                    width: padWidth,
+                    multiplier: padX === 400 ? 2 : (padX === 650 ? 3 : 1)
+                });
+            });
+        }
+        
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * (canvas.height - 200),
+                    size: Math.random() * 2,
+                    brightness: Math.random()
+                });
+            }
+        }
+        
+        function createParticle(x, y, vx, vy, color) {
+            particles.push({
+                x, y, vx, vy,
+                life: 1,
+                color: color || '#fbbf24'
+            });
+        }
+        
+        function updateParticles() {
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1; // gravity
+                p.life -= 0.02;
+                return p.life > 0;
+            });
+        }
+        
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, 2, 2);
+                ctx.restore();
+            });
+        }
+        
+        function updateLander() {
+            if (lander.landed || lander.crashed) return;
+            
+            // Apply gravity
+            lander.vy += difficultySettings.gravity;
+            
+            // Apply wind
+            lander.vx += (Math.random() - 0.5) * difficultySettings.windSpeed;
+            
+            // Handle controls
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                lander.angle -= lander.rotationSpeed;
+            }
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                lander.angle += lander.rotationSpeed;
+            }
+            if ((keys['ArrowUp'] || keys['w'] || keys['W']) && lander.fuel > 0) {
+                const thrust = difficultySettings.thrustPower;
+                lander.vx += Math.sin(lander.angle) * thrust;
+                lander.vy -= Math.cos(lander.angle) * thrust;
+                lander.fuel = Math.max(0, lander.fuel - 2);
+                
+                // Thrust particles
+                for (let i = 0; i < 3; i++) {
+                    const particleAngle = lander.angle + (Math.random() - 0.5) * 0.5;
+                    const particleSpeed = 3 + Math.random() * 2;
+                    createParticle(
+                        lander.x - Math.sin(lander.angle) * 10,
+                        lander.y + Math.cos(lander.angle) * 15,
+                        -Math.sin(particleAngle) * particleSpeed,
+                        Math.cos(particleAngle) * particleSpeed,
+                        Math.random() > 0.5 ? '#fbbf24' : '#f87171'
+                    );
+                }
+                
+                // Play thrust sound
+                if (Math.random() < 0.3) {
+                    playSound('thrust');
+                }
+            }
+            
+            // Update position
+            lander.x += lander.vx;
+            lander.y += lander.vy;
+            
+            // Wrap around horizontally
+            if (lander.x < 0) lander.x = canvas.width;
+            if (lander.x > canvas.width) lander.x = 0;
+            
+            // Check collision with terrain
+            checkCollision();
+            
+            // Update display
+            updateDisplay();
+        }
+        
+        function checkCollision() {
+            // Check if lander is near the ground
+            for (let i = 0; i < terrain.length - 1; i++) {
+                const t1 = terrain[i];
+                const t2 = terrain[i + 1];
+                
+                // Check if lander is above this terrain segment
+                if (lander.x >= t1.x && lander.x <= t2.x) {
+                    // Interpolate terrain height at lander position
+                    const terrainY = t1.y + (t2.y - t1.y) * ((lander.x - t1.x) / (t2.x - t1.x));
+                    
+                    if (lander.y + lander.height/2 >= terrainY) {
+                        // Check if on landing pad
+                        let onPad = false;
+                        let padMultiplier = 1;
+                        
+                        for (let pad of landingPads) {
+                            if (lander.x >= pad.x && lander.x <= pad.x + pad.width) {
+                                onPad = true;
+                                padMultiplier = pad.multiplier;
+                                break;
+                            }
+                        }
+                        
+                        // Check landing conditions
+                        const speed = Math.sqrt(lander.vx * lander.vx + lander.vy * lander.vy);
+                        const angleOk = Math.abs(lander.angle) < difficultySettings.maxAngle;
+                        const speedOk = speed < difficultySettings.maxSafeLandingSpeed;
+                        
+                        if (onPad && angleOk && speedOk) {
+                            // Successful landing
+                            lander.landed = true;
+                            lander.y = terrainY - lander.height/2;
+                            lander.vx = 0;
+                            lander.vy = 0;
+                            
+                            // Calculate score
+                            const fuelBonus = Math.floor(lander.fuel / 10);
+                            const speedBonus = Math.floor((difficultySettings.maxSafeLandingSpeed - speed) * 100);
+                            score = (1000 + fuelBonus + speedBonus) * padMultiplier * difficultySettings.scoreMultiplier;
+                            totalScore += Math.floor(score);
+                            
+                            playSound('landing');
+                            endGame(true);
+                        } else {
+                            // Crash
+                            lander.crashed = true;
+                            
+                            // Create explosion particles
+                            for (let i = 0; i < 20; i++) {
+                                const angle = Math.random() * Math.PI * 2;
+                                const speed = Math.random() * 5;
+                                createParticle(
+                                    lander.x,
+                                    lander.y,
+                                    Math.cos(angle) * speed,
+                                    Math.sin(angle) * speed,
+                                    '#f87171'
+                                );
+                            }
+                            
+                            playSound('crash');
+                            endGame(false);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function updateDisplay() {
+            document.getElementById('fuel').textContent = Math.floor(lander.fuel);
+            document.getElementById('velocity').textContent = Math.abs(Math.sqrt(lander.vx * lander.vx + lander.vy * lander.vy)).toFixed(1);
+            document.getElementById('altitude').textContent = Math.max(0, Math.floor(getAltitude()));
+            document.getElementById('score').textContent = totalScore;
+        }
+        
+        function getAltitude() {
+            // Find terrain height below lander
+            for (let i = 0; i < terrain.length - 1; i++) {
+                if (lander.x >= terrain[i].x && lander.x <= terrain[i + 1].x) {
+                    const t1 = terrain[i];
+                    const t2 = terrain[i + 1];
+                    const terrainY = t1.y + (t2.y - t1.y) * ((lander.x - t1.x) / (t2.x - t1.x));
+                    return terrainY - lander.y - lander.height/2;
+                }
+            }
+            return canvas.height - lander.y;
+        }
+        
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw stars
+            ctx.fillStyle = '#fff';
+            stars.forEach(star => {
+                ctx.save();
+                ctx.globalAlpha = star.brightness;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+                ctx.restore();
+            });
+            
+            // Draw terrain
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            terrain.forEach((point, i) => {
+                if (i === 0) ctx.moveTo(point.x, point.y);
+                else ctx.lineTo(point.x, point.y);
+            });
+            ctx.stroke();
+            
+            // Fill terrain
+            ctx.fillStyle = '#222';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height);
+            terrain.forEach(point => ctx.lineTo(point.x, point.y));
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw landing pads
+            landingPads.forEach(pad => {
+                // Pad surface
+                ctx.fillStyle = '#4ade80';
+                ctx.fillRect(pad.x, pad.y - 3, pad.width, 3);
+                
+                // Pad markers
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${pad.multiplier}x`, pad.x + pad.width/2, pad.y + 20);
+                
+                // Landing lights
+                const blink = Date.now() % 1000 < 500;
+                if (blink) {
+                    ctx.fillStyle = '#f87171';
+                    ctx.fillRect(pad.x + 5, pad.y - 8, 5, 5);
+                    ctx.fillRect(pad.x + pad.width - 10, pad.y - 8, 5, 5);
+                }
+            });
+            
+            // Draw particles
+            drawParticles();
+            
+            // Draw lander
+            if (!lander.crashed) {
+                ctx.save();
+                ctx.translate(lander.x, lander.y);
+                ctx.rotate(lander.angle);
+                
+                // Lander body
+                ctx.fillStyle = '#60a5fa';
+                ctx.fillRect(-lander.width/2, -lander.height/2, lander.width, lander.height);
+                
+                // Lander legs
+                ctx.strokeStyle = '#999';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(-lander.width/2 - 5, lander.height/2);
+                ctx.lineTo(-lander.width/2, lander.height/2 + 10);
+                ctx.moveTo(lander.width/2 + 5, lander.height/2);
+                ctx.lineTo(lander.width/2, lander.height/2 + 10);
+                ctx.stroke();
+                
+                // Thruster flame
+                if ((keys['ArrowUp'] || keys['w'] || keys['W']) && lander.fuel > 0 && !lander.landed) {
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.moveTo(-5, lander.height/2);
+                    ctx.lineTo(0, lander.height/2 + 15);
+                    ctx.lineTo(5, lander.height/2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+            
+            // Draw low fuel warning
+            if (lander.fuel < 200 && lander.fuel > 0 && !lander.landed && !lander.crashed) {
+                ctx.fillStyle = '#f87171';
+                ctx.font = '16px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('LOW FUEL', canvas.width/2, 50);
+            }
+        }
+        
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            updateLander();
+            updateParticles();
+            draw();
+            
+            animationId = requestAnimationFrame(gameLoop);
+        }
+        
+        function startGame() {
+            document.getElementById('startScreen').classList.remove('active');
+            resetGame();
+            gameRunning = true;
+            
+            if (!audioContext && !isMuted) {
+                initAudio();
+                backgroundMusic.play();
+            } else if (audioContext && !isMuted) {
+                backgroundMusic.play();
+            }
+            
+            gameLoop();
+        }
+        
+        function resetGame() {
+            // Reset lander
+            lander.x = canvas.width / 2;
+            lander.y = 100;
+            lander.vx = (Math.random() - 0.5) * 2;
+            lander.vy = 0;
+            lander.angle = 0;
+            lander.fuel = difficultySettings.fuel;
+            lander.landed = false;
+            lander.crashed = false;
+            
+            // Reset game state
+            gameOver = false;
+            gameRunning = true;
+            score = 0;
+            particles = [];
+            
+            // Generate new terrain
+            initTerrain();
+            
+            // Hide game over screen
+            document.getElementById('gameOverScreen').classList.remove('active');
+            
+            updateDisplay();
+            
+            // Restart background music if not muted
+            if (audioContext && !isMuted) {
+                backgroundMusic.play();
+            }
+            
+            // Restart the game loop
+            gameLoop();
+        }
+        
+        function endGame(success) {
+            gameOver = true;
+            gameRunning = false;
+            
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            const gameOverTitle = document.getElementById('gameOverTitle');
+            const finalVelocity = document.getElementById('finalVelocity');
+            const finalFuel = document.getElementById('finalFuel');
+            const finalScore = document.getElementById('finalScore');
+            
+            if (success) {
+                gameOverTitle.textContent = 'SUCCESSFUL LANDING!';
+                gameOverTitle.className = 'game-over-title success';
+            } else {
+                gameOverTitle.textContent = 'MISSION FAILED';
+                gameOverTitle.className = 'game-over-title crash';
+            }
+            
+            finalVelocity.textContent = Math.abs(Math.sqrt(lander.vx * lander.vx + lander.vy * lander.vy)).toFixed(1);
+            finalFuel.textContent = Math.floor(lander.fuel);
+            finalScore.textContent = Math.floor(score) + (difficultySettings.scoreMultiplier !== 1 ? ` (${difficultySettings.scoreMultiplier}x)` : '');
+            
+            setTimeout(() => {
+                gameOverScreen.classList.add('active');
+            }, 1000);
+        }
+        
+        // Event listeners
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            if (e.key === 'Escape' && gameRunning) {
+                gameRunning = false;
+                cancelAnimationFrame(animationId);
+                window.location.href = 'index.html';
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        // Initialize
+        initTerrain();
+        initStars();
+        updateDisplay();
+        draw();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            // Keep canvas size fixed for consistent gameplay
+        });
+    </script>
+</body>
+</html>

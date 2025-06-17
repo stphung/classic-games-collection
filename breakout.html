@@ -236,7 +236,7 @@
             <p class="overlay-message">FINAL SCORE <span id="finalScore">0</span></p>
             <button class="play-button" onclick="resetGame()">PLAY AGAIN</button>
         </div>
-        <div class="instructions" id="instructions">MOVE MOUSE TO CONTROL</div>
+        <div class="instructions" id="instructions">MOVE MOUSE or use SHIFT KEYS</div>
     </div>
     
 
@@ -249,6 +249,11 @@
         document.addEventListener('mousemove', (e) => {
             cursor.style.left = e.clientX + 'px';
             cursor.style.top = e.clientY + 'px';
+            // Show cursor on any mouse movement
+            if (typeof gameRunning !== 'undefined' && gameRunning) {
+                usingKeyboard = false;
+                cursor.style.display = 'block';
+            }
         });
         
         // Initialize Web Audio API
@@ -718,6 +723,7 @@
 
             if (gameRunning) {
                 // Update physics first
+                updatePaddleKeyboard(cappedDeltaTime); // Update paddle position from keyboard
                 updateBall(cappedDeltaTime);
                 if (ballLaunched) {
                     collisionDetection(cappedDeltaTime);
@@ -734,7 +740,9 @@
                     ctx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
                     ctx.textAlign = 'center';
-                    ctx.fillText('CLICK TO LAUNCH', canvas.width / 2, canvas.height / 2 + 100);
+                    ctx.fillText('CLICK or SPACE to LAUNCH', canvas.width / 2, canvas.height / 2 + 100);
+                    ctx.font = '14px -apple-system, BlinkMacSystemFont, sans-serif';
+                    ctx.fillText('Move with mouse or Left/Right Shift keys', canvas.width / 2, canvas.height / 2 + 125);
                 }
             }
 
@@ -749,6 +757,18 @@
             document.getElementById('lives').textContent = lives;
         }
 
+        // Track keyboard state
+        const keys = {
+            leftShift: false,
+            rightShift: false
+        };
+        
+        // Paddle movement speed for keyboard control
+        const paddleKeyboardSpeed = 500; // pixels per second
+        
+        // Track if using keyboard controls
+        let usingKeyboard = false;
+
         canvas.addEventListener('mousemove', (e) => {
             if (gameRunning) {
                 const rect = canvas.getBoundingClientRect();
@@ -759,8 +779,27 @@
                 if (paddle.x + paddle.width > canvas.width) {
                     paddle.x = canvas.width - paddle.width;
                 }
+                
+                // Show cursor when using mouse
+                usingKeyboard = false;
+                cursor.style.display = 'block';
             }
         });
+        
+        function updatePaddleKeyboard(deltaTime) {
+            if (!gameRunning) return;
+            
+            if (keys.leftShift) {
+                paddle.x -= paddleKeyboardSpeed * deltaTime;
+                if (paddle.x < 0) paddle.x = 0;
+            }
+            if (keys.rightShift) {
+                paddle.x += paddleKeyboardSpeed * deltaTime;
+                if (paddle.x + paddle.width > canvas.width) {
+                    paddle.x = canvas.width - paddle.width;
+                }
+            }
+        }
         
         canvas.addEventListener('click', (e) => {
             launchBall();
@@ -825,11 +864,41 @@
             };
         }
 
-        // Keyboard event listener for ESC key
+        // Keyboard event listeners
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 transitionToMenu();
                 return;
+            }
+            
+            // Check for space bar to launch ball
+            if (e.key === ' ' || e.key === 'Space') {
+                launchBall();
+                e.preventDefault(); // Prevent page scroll
+            }
+            
+            // Check for shift keys
+            if (e.key === 'Shift') {
+                if (e.location === KeyboardEvent.DOM_KEY_LOCATION_LEFT) {
+                    keys.leftShift = true;
+                } else if (e.location === KeyboardEvent.DOM_KEY_LOCATION_RIGHT) {
+                    keys.rightShift = true;
+                }
+                e.preventDefault(); // Prevent any default shift behavior
+                
+                // Hide cursor when using keyboard controls
+                usingKeyboard = true;
+                cursor.style.display = 'none';
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Shift') {
+                if (e.location === KeyboardEvent.DOM_KEY_LOCATION_LEFT) {
+                    keys.leftShift = false;
+                } else if (e.location === KeyboardEvent.DOM_KEY_LOCATION_RIGHT) {
+                    keys.rightShift = false;
+                }
             }
         });
 
