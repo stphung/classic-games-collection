@@ -495,12 +495,24 @@
             border-color: rgba(255, 255, 255, 0.08);
         }
         
+        .patch-notes.expanded {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .patch-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+        
         .patch-title {
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             color: #666;
-            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -519,6 +531,40 @@
             50% { opacity: 1; }
         }
         
+        .expand-icon {
+            font-size: 12px;
+            color: #666;
+            transition: transform 0.3s ease;
+        }
+        
+        .patch-notes.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+        
+        .patch-updates {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .patch-update {
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .patch-update:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .patch-date {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
         .patch-content {
             font-size: 13px;
             line-height: 1.5;
@@ -528,6 +574,17 @@
         .patch-games {
             color: #fff;
             font-weight: 400;
+        }
+        
+        .older-updates {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .patch-notes.expanded .older-updates {
+            display: block;
         }
         
         @media (max-width: 768px) {
@@ -549,6 +606,7 @@
         .missile { color: #f87171; }
         .snake { color: #4ade80; }
         .jezzball { color: #c084fc; }
+        .minesweeper { color: #60a5fa; }
 
         /* Mobile responsiveness */
         @media (max-width: 768px) {
@@ -859,14 +917,30 @@
         </div>
     </div>
     
-    <div class="patch-notes">
-        <div class="patch-title">
-            <span class="patch-indicator"></span>
-            <span>Update • Jun 16, 2025</span>
+    <div class="patch-notes" id="patchNotes">
+        <div class="patch-header" onclick="togglePatchNotes()">
+            <div class="patch-title">
+                <span class="patch-indicator"></span>
+                <span>Recent Updates</span>
+            </div>
+            <span class="expand-icon">▼</span>
         </div>
-        <div class="patch-content">
-            New games added: <span class="patch-games">Missile Command</span>, <span class="patch-games">Snake</span>, and <span class="patch-games">JezzBall</span><br>
-            Game update: <span class="patch-games">Frogger</span> now includes endless mode!
+        <div class="patch-updates">
+            <div class="patch-update">
+                <div class="patch-date">Jun 17, 2025</div>
+                <div class="patch-content">
+                    New game added: <span class="patch-games">Minesweeper</span> - the classic logic puzzle!
+                </div>
+            </div>
+            <div class="older-updates">
+                <div class="patch-update">
+                    <div class="patch-date">Jun 16, 2025</div>
+                    <div class="patch-content">
+                        New games added: <span class="patch-games">Missile Command</span>, <span class="patch-games">Snake</span>, and <span class="patch-games">JezzBall</span><br>
+                        Game update: <span class="patch-games">Frogger</span> now includes endless mode!
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -942,6 +1016,15 @@
                 <p class="game-description">Trap bouncing balls by building walls strategically</p>
                 <a href="jezzball.html" class="play-button" onclick="event.preventDefault(); transitionToGame('jezzball.html')">Play</a>
             </div>
+
+            <!-- Minesweeper -->
+            <div class="game-card" data-game="minesweeper.html">
+                <span class="new-badge">New</span>
+                <div class="game-icon minesweeper">⚑</div>
+                <h2 class="game-title">Minesweeper</h2>
+                <p class="game-description">Clear the minefield using logic and careful deduction</p>
+                <a href="minesweeper.html" class="play-button" onclick="event.preventDefault(); transitionToGame('minesweeper.html')">Play</a>
+            </div>
         </div>
     </div>
 
@@ -952,6 +1035,7 @@
         <span class="dot" onclick="goToSlide(3)"></span>
         <span class="dot" onclick="goToSlide(4)"></span>
         <span class="dot" onclick="goToSlide(5)"></span>
+        <span class="dot" onclick="goToSlide(6)"></span>
     </div>
 
     <p class="instructions">Use arrow keys or click to navigate</p>
@@ -1165,7 +1249,8 @@
             { title: 'Frogger', icon: '🐸', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html' },
             { title: 'Missile Command', icon: '⟟', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html' },
             { title: 'Snake', icon: '▪', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html' },
-            { title: 'JezzBall', icon: '◈', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html' }
+            { title: 'JezzBall', icon: '◈', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html' },
+            { title: 'Minesweeper', icon: '⚑', color: '#60a5fa', description: 'Clear the minefield using logic and careful deduction', url: 'minesweeper.html', isNew: true }
         ];
         
         let browseMode = false;
@@ -1199,6 +1284,8 @@
                 card.style.animationDelay = `${index * 0.05}s`;
                 
                 card.innerHTML = `
+                    ${game.isNew ? '<span class="new-badge">New</span>' : ''}
+                    ${game.isUpdated ? '<span class="updated-badge">Updated</span>' : ''}
                     <div class="game-icon ${game.title.toLowerCase().replace(' ', '')}" style="color: ${game.color}">${game.icon}</div>
                     <h3 class="game-title">${game.title}</h3>
                     <p class="game-description">${game.description}</p>
@@ -1227,6 +1314,12 @@
                     card.classList.add('hidden');
                 }
             });
+        }
+        
+        // Toggle patch notes
+        function togglePatchNotes() {
+            const patchNotes = document.getElementById('patchNotes');
+            patchNotes.classList.toggle('expanded');
         }
         
         // Keyboard shortcuts

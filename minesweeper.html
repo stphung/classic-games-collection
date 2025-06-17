@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper - Modern Arcade</title>
+    <script src="transition-common.js"></script>
+    <script src="submit-idea-button.js"></script>
+    <script src="home-button.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle animated background */
+        .bg-effect {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #fff 2%, transparent 2%),
+                radial-gradient(circle at 75% 75%, #fff 2%, transparent 2%);
+            background-size: 50px 50px;
+            animation: drift 20s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0, 0); }
+            to { transform: translate(50px, 50px); }
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            position: relative;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        .game-info {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 200;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-weight: 400;
+            color: #60a5fa;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .mine-count {
+            color: #f87171;
+        }
+
+        .time-value {
+            color: #4ade80;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .difficulty-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .difficulty-btn.active {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #60a5fa;
+        }
+
+        .game-board {
+            display: grid;
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 0 auto;
+            width: fit-content;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .cell:hover:not(.revealed):not(.flagged) {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .cell.revealed {
+            background: rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.05);
+            cursor: default;
+            transform: none;
+        }
+
+        .cell.mine {
+            background: rgba(248, 113, 113, 0.2);
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        .cell.flagged {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+
+        .cell[data-count="1"] { color: #60a5fa; }
+        .cell[data-count="2"] { color: #4ade80; }
+        .cell[data-count="3"] { color: #f87171; }
+        .cell[data-count="4"] { color: #c084fc; }
+        .cell[data-count="5"] { color: #fbbf24; }
+        .cell[data-count="6"] { color: #10b981; }
+        .cell[data-count="7"] { color: #ec4899; }
+        .cell[data-count="8"] { color: #ef4444; }
+
+        .game-over-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .game-over-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .game-over-content {
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .game-over-overlay.active .game-over-content {
+            transform: scale(1);
+        }
+
+        .game-over-title {
+            font-size: 48px;
+            font-weight: 200;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .game-over-title.win {
+            color: #4ade80;
+        }
+
+        .game-over-title.lose {
+            color: #f87171;
+        }
+
+        .game-over-stats {
+            font-size: 18px;
+            color: #999;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .restart-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 12px 32px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .restart-btn:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Mute button */
+        .mute-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .mute-button:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        .mute-button.muted {
+            color: #666;
+        }
+
+        .mute-button:not(.muted) {
+            color: #60a5fa;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 20px;
+                width: 95%;
+                max-width: 95%;
+            }
+
+            .game-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .game-info {
+                gap: 20px;
+            }
+
+            .info-item {
+                font-size: 16px;
+            }
+
+            .cell {
+                width: 25px;
+                height: 25px;
+                font-size: 14px;
+            }
+
+            .game-board {
+                gap: 1px;
+                padding: 5px;
+            }
+
+            .difficulty-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .difficulty-btn {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-effect"></div>
+    
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-info">
+                <div class="info-item">
+                    <span>💣</span>
+                    <span class="info-value mine-count" id="mineCount">10</span>
+                </div>
+                <div class="info-item">
+                    <span>⏱</span>
+                    <span class="info-value time-value" id="timer">000</span>
+                </div>
+            </div>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn active" data-level="easy">Easy</button>
+                <button class="difficulty-btn" data-level="medium">Medium</button>
+                <button class="difficulty-btn" data-level="hard">Hard</button>
+            </div>
+        </div>
+        
+        <div class="game-board" id="gameBoard"></div>
+        
+        <div class="game-over-overlay" id="gameOverOverlay">
+            <div class="game-over-content">
+                <h2 class="game-over-title" id="gameOverTitle">GAME OVER</h2>
+                <p class="game-over-stats" id="gameOverStats">Time: 000</p>
+                <button class="restart-btn" onclick="initGame()">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="mute-button" id="muteButton" onclick="toggleMute()">
+        <span id="muteIcon">🔊</span>
+    </button>
+
+    <script>
+        // Game configuration
+        const DIFFICULTIES = {
+            easy: { rows: 9, cols: 9, mines: 10 },
+            medium: { rows: 16, cols: 16, mines: 40 },
+            hard: { rows: 16, cols: 30, mines: 99 }
+        };
+
+        let currentDifficulty = 'easy';
+        let gameState = {
+            board: [],
+            revealed: [],
+            flagged: [],
+            mines: [],
+            gameOver: false,
+            gameWon: false,
+            timer: 0,
+            timerInterval: null,
+            firstClick: true,
+            minesRemaining: 0
+        };
+
+        // Audio setup
+        let audioContext;
+        let isMuted = false;
+        let backgroundMusic;
+
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Create background music
+            backgroundMusic = createBackgroundMusic();
+        }
+
+        function createBackgroundMusic() {
+            const tempo = 120;
+            const beatDuration = 60 / tempo;
+            
+            const notes = [
+                { freq: 130.81, duration: 0.5 }, // C3
+                { freq: 146.83, duration: 0.5 }, // D3
+                { freq: 164.81, duration: 0.5 }, // E3
+                { freq: 130.81, duration: 0.5 }, // C3
+                { freq: 174.61, duration: 0.5 }, // F3
+                { freq: 164.81, duration: 0.5 }, // E3
+                { freq: 146.83, duration: 0.5 }, // D3
+                { freq: 130.81, duration: 0.5 }, // C3
+            ];
+
+            let musicGain = audioContext.createGain();
+            musicGain.gain.value = 0.1;
+            musicGain.connect(audioContext.destination);
+
+            let currentTime = 0;
+            
+            function playSequence() {
+                if (isMuted || !audioContext) return;
+                
+                currentTime = audioContext.currentTime;
+                
+                notes.forEach((note, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const noteGain = audioContext.createGain();
+                    
+                    oscillator.type = 'square';
+                    oscillator.frequency.value = note.freq;
+                    
+                    noteGain.gain.setValueAtTime(0, currentTime + index * beatDuration * 0.5);
+                    noteGain.gain.linearRampToValueAtTime(0.1, currentTime + index * beatDuration * 0.5 + 0.01);
+                    noteGain.gain.exponentialRampToValueAtTime(0.001, currentTime + index * beatDuration * 0.5 + note.duration * beatDuration);
+                    
+                    oscillator.connect(noteGain);
+                    noteGain.connect(musicGain);
+                    
+                    oscillator.start(currentTime + index * beatDuration * 0.5);
+                    oscillator.stop(currentTime + index * beatDuration * 0.5 + note.duration * beatDuration);
+                });
+                
+                setTimeout(playSequence, notes.length * beatDuration * 500);
+            }
+            
+            return { play: playSequence, stop: () => {} };
+        }
+
+        function playSound(type) {
+            if (isMuted || !audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            const now = audioContext.currentTime;
+            
+            switch(type) {
+                case 'reveal':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(800, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.1);
+                    break;
+                    
+                case 'flag':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(600, now);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.05);
+                    break;
+                    
+                case 'mine':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(100, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    
+                    const noise = audioContext.createBufferSource();
+                    const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.3, audioContext.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < data.length; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    noise.buffer = buffer;
+                    noise.connect(gainNode);
+                    
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.3);
+                    noise.start(now);
+                    break;
+                    
+                case 'win':
+                    const winNotes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    winNotes.forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.type = 'square';
+                        osc.frequency.value = freq;
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        gain.gain.setValueAtTime(0.1, now + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.2);
+                        osc.start(now + i * 0.1);
+                        osc.stop(now + i * 0.1 + 0.2);
+                    });
+                    break;
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const muteIcon = document.getElementById('muteIcon');
+            const muteButton = document.getElementById('muteButton');
+            
+            if (isMuted) {
+                muteIcon.textContent = '🔇';
+                muteButton.classList.add('muted');
+            } else {
+                muteIcon.textContent = '🔊';
+                muteButton.classList.remove('muted');
+                if (!audioContext) {
+                    initAudio();
+                    backgroundMusic.play();
+                }
+            }
+        }
+
+        function initGame() {
+            const config = DIFFICULTIES[currentDifficulty];
+            
+            // Reset game state
+            gameState = {
+                board: [],
+                revealed: [],
+                flagged: [],
+                mines: [],
+                gameOver: false,
+                gameWon: false,
+                timer: 0,
+                timerInterval: null,
+                firstClick: true,
+                minesRemaining: config.mines
+            };
+            
+            // Clear timer
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            
+            // Initialize arrays
+            for (let i = 0; i < config.rows; i++) {
+                gameState.board[i] = [];
+                gameState.revealed[i] = [];
+                gameState.flagged[i] = [];
+                for (let j = 0; j < config.cols; j++) {
+                    gameState.board[i][j] = 0;
+                    gameState.revealed[i][j] = false;
+                    gameState.flagged[i][j] = false;
+                }
+            }
+            
+            // Update UI
+            updateMineCount();
+            updateTimer();
+            renderBoard();
+            hideGameOver();
+        }
+
+        function placeMines(excludeRow, excludeCol) {
+            const config = DIFFICULTIES[currentDifficulty];
+            gameState.mines = [];
+            
+            // Place mines randomly, excluding the first clicked cell and its neighbors
+            let minesPlaced = 0;
+            while (minesPlaced < config.mines) {
+                const row = Math.floor(Math.random() * config.rows);
+                const col = Math.floor(Math.random() * config.cols);
+                
+                // Skip if mine already exists or if it's near the first click
+                if (gameState.board[row][col] === -1) continue;
+                if (Math.abs(row - excludeRow) <= 1 && Math.abs(col - excludeCol) <= 1) continue;
+                
+                gameState.board[row][col] = -1;
+                gameState.mines.push({ row, col });
+                minesPlaced++;
+            }
+            
+            // Calculate numbers
+            for (let i = 0; i < config.rows; i++) {
+                for (let j = 0; j < config.cols; j++) {
+                    if (gameState.board[i][j] !== -1) {
+                        gameState.board[i][j] = countAdjacentMines(i, j);
+                    }
+                }
+            }
+        }
+
+        function countAdjacentMines(row, col) {
+            let count = 0;
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (i === 0 && j === 0) continue;
+                    const newRow = row + i;
+                    const newCol = col + j;
+                    if (isValidCell(newRow, newCol) && gameState.board[newRow][newCol] === -1) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        function isValidCell(row, col) {
+            const config = DIFFICULTIES[currentDifficulty];
+            return row >= 0 && row < config.rows && col >= 0 && col < config.cols;
+        }
+
+        function handleCellClick(row, col, e) {
+            e.preventDefault();
+            
+            if (gameState.gameOver || gameState.revealed[row][col]) return;
+            
+            if (e.button === 2 || e.ctrlKey || e.metaKey) {
+                // Right click - toggle flag
+                handleFlag(row, col);
+            } else {
+                // Left click - reveal
+                handleReveal(row, col);
+            }
+        }
+
+        function handleReveal(row, col) {
+            if (gameState.flagged[row][col]) return;
+            
+            if (gameState.firstClick) {
+                gameState.firstClick = false;
+                placeMines(row, col);
+                startTimer();
+            }
+            
+            if (gameState.board[row][col] === -1) {
+                // Hit a mine - game over
+                gameState.gameOver = true;
+                revealAllMines();
+                playSound('mine');
+                showGameOver(false);
+                stopTimer();
+            } else {
+                // Reveal cell
+                revealCell(row, col);
+                playSound('reveal');
+                checkWin();
+            }
+        }
+
+        function handleFlag(row, col) {
+            if (gameState.revealed[row][col]) return;
+            
+            gameState.flagged[row][col] = !gameState.flagged[row][col];
+            
+            if (gameState.flagged[row][col]) {
+                gameState.minesRemaining--;
+                playSound('flag');
+            } else {
+                gameState.minesRemaining++;
+            }
+            
+            updateMineCount();
+            updateCell(row, col);
+        }
+
+        function revealCell(row, col) {
+            if (!isValidCell(row, col) || gameState.revealed[row][col] || gameState.flagged[row][col]) {
+                return;
+            }
+            
+            gameState.revealed[row][col] = true;
+            updateCell(row, col);
+            
+            // If cell has no adjacent mines, reveal neighboring cells
+            if (gameState.board[row][col] === 0) {
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        if (i === 0 && j === 0) continue;
+                        revealCell(row + i, col + j);
+                    }
+                }
+            }
+        }
+
+        function revealAllMines() {
+            gameState.mines.forEach(({ row, col }) => {
+                gameState.revealed[row][col] = true;
+                updateCell(row, col);
+            });
+        }
+
+        function checkWin() {
+            const config = DIFFICULTIES[currentDifficulty];
+            let revealedCount = 0;
+            
+            for (let i = 0; i < config.rows; i++) {
+                for (let j = 0; j < config.cols; j++) {
+                    if (gameState.revealed[i][j]) {
+                        revealedCount++;
+                    }
+                }
+            }
+            
+            if (revealedCount === config.rows * config.cols - config.mines) {
+                gameState.gameWon = true;
+                gameState.gameOver = true;
+                playSound('win');
+                showGameOver(true);
+                stopTimer();
+            }
+        }
+
+        function updateCell(row, col) {
+            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            if (!cell) return;
+            
+            cell.className = 'cell';
+            cell.textContent = '';
+            
+            if (gameState.revealed[row][col]) {
+                cell.classList.add('revealed');
+                
+                if (gameState.board[row][col] === -1) {
+                    cell.classList.add('mine');
+                    cell.textContent = '💣';
+                } else if (gameState.board[row][col] > 0) {
+                    cell.textContent = gameState.board[row][col];
+                    cell.setAttribute('data-count', gameState.board[row][col]);
+                }
+            } else if (gameState.flagged[row][col]) {
+                cell.classList.add('flagged');
+                cell.textContent = '🚩';
+            }
+        }
+
+        function updateMineCount() {
+            document.getElementById('mineCount').textContent = gameState.minesRemaining;
+        }
+
+        function updateTimer() {
+            document.getElementById('timer').textContent = String(gameState.timer).padStart(3, '0');
+        }
+
+        function startTimer() {
+            gameState.timerInterval = setInterval(() => {
+                gameState.timer++;
+                updateTimer();
+                if (gameState.timer >= 999) {
+                    stopTimer();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+        }
+
+        function showGameOver(won) {
+            const overlay = document.getElementById('gameOverOverlay');
+            const title = document.getElementById('gameOverTitle');
+            const stats = document.getElementById('gameOverStats');
+            
+            title.textContent = won ? 'YOU WIN!' : 'GAME OVER';
+            title.className = `game-over-title ${won ? 'win' : 'lose'}`;
+            stats.textContent = `Time: ${String(gameState.timer).padStart(3, '0')}`;
+            
+            setTimeout(() => {
+                overlay.classList.add('active');
+            }, 500);
+        }
+
+        function hideGameOver() {
+            const overlay = document.getElementById('gameOverOverlay');
+            overlay.classList.remove('active');
+        }
+
+        function renderBoard() {
+            const config = DIFFICULTIES[currentDifficulty];
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            board.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
+            
+            for (let i = 0; i < config.rows; i++) {
+                for (let j = 0; j < config.cols; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.setAttribute('data-row', i);
+                    cell.setAttribute('data-col', j);
+                    cell.addEventListener('mousedown', (e) => handleCellClick(i, j, e));
+                    cell.addEventListener('contextmenu', (e) => e.preventDefault());
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function changeDifficulty(level) {
+            currentDifficulty = level;
+            
+            // Update button states
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.level === level);
+            });
+            
+            initGame();
+        }
+
+        // Event listeners
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => changeDifficulty(btn.dataset.level));
+        });
+
+        // Touch support for mobile
+        let touchTimer;
+        document.addEventListener('touchstart', (e) => {
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+            
+            touchTimer = setTimeout(() => {
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                handleFlag(row, col);
+            }, 500);
+        });
+
+        document.addEventListener('touchend', (e) => {
+            clearTimeout(touchTimer);
+            const cell = e.target.closest('.cell');
+            if (!cell) return;
+            
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            
+            if (!gameState.flagged[row][col]) {
+                handleReveal(row, col);
+            }
+        });
+
+        // Initialize audio on first interaction
+        document.addEventListener('click', () => {
+            if (!audioContext && !isMuted) {
+                initAudio();
+                backgroundMusic.play();
+            }
+        }, { once: true });
+
+        // Initialize game
+        initGame();
+    </script>
+</body>
+</html>

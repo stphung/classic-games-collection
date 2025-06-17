@@ -2,7 +2,7 @@
 
 🎮 **[Play the games here!](https://stphung.github.io/classic-games-collection/)**
 
-A collection of six classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
+A collection of seven classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
 
 ## Games Included
 
@@ -77,6 +77,18 @@ A strategic puzzle game where you trap bouncing balls by building walls to clear
   - Each new level adds one more ball and increases speed
 - **Controls**: Click to build walls, Right-click/Space to toggle direction, P to pause
 - **Features**: Progressive difficulty, area percentage tracking, strategic gameplay
+
+### ⚑ Minesweeper
+The classic logic puzzle game where you clear a minefield using deduction and careful reasoning.
+- **How to Play**:
+  - Left-click to reveal a cell
+  - Right-click to place/remove a flag on suspected mines
+  - Numbers show how many mines are in the 8 adjacent cells
+  - Use logic to deduce which cells contain mines
+  - Flag all mines and reveal all safe cells to win
+  - Choose from three difficulty levels: Easy (9x9, 10 mines), Medium (16x16, 40 mines), Hard (16x30, 99 mines)
+- **Controls**: Left-click to reveal, Right-click to flag, Click difficulty buttons to change level
+- **Features**: Three difficulty levels, timer, mine counter, first-click protection (never hit a mine on first click)
 
 ## Features
 
