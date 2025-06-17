@@ -1779,10 +1779,17 @@
 
         function loseLife() {
             lives--;
-            createParticles(frog.x * GRID_SIZE, frog.y * GRID_SIZE, '#ff0000');
+            // Don't create particles if drowning (water already has splash effect)
+            if (!frog.drowning) {
+                createParticles(frog.x * GRID_SIZE, frog.y * GRID_SIZE, '#ff0000');
+            }
             updateLivesDisplay();
             
             if (lives === 0) {
+                // Keep frog hidden if drowning
+                if (frog.drowning) {
+                    frog.drowningProgress = 1; // Keep at max to stay invisible
+                }
                 gameOver();
             } else {
                 resetFrogPosition();
@@ -1977,13 +1984,12 @@
                     frog.drowningProgress += deltaTime * 2; // 0.5 seconds to complete
                     if (frog.drowningProgress >= 1) {
                         // Animation complete, now lose life
+                        frog.drowningProgress = 1; // Keep at max to stay invisible
                         if (gameMode === 'endless') {
                             endlessGameOver();
                         } else {
                             loseLife();
                         }
-                        frog.drowning = false;
-                        frog.drowningProgress = 0;
                     }
                 }
                 
