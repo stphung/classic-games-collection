@@ -782,7 +782,9 @@
             color: '#4CAF50',
             homeFrogs: [],
             drowning: false,
-            drowningProgress: 0
+            drowningProgress: 0,
+            flattened: false,
+            flattenProgress: 0
         };
         
         let frog2 = {
@@ -797,7 +799,9 @@
             color: '#FF9800',
             homeFrogs: [],
             drowning: false,
-            drowningProgress: 0
+            drowningProgress: 0,
+            flattened: false,
+            flattenProgress: 0
         };
 
         let cars = [];
@@ -1152,6 +1156,30 @@
                 
                 // Rotate slightly as it sinks
                 ctx.rotate(frogObj.drowningProgress * Math.PI * 0.5);
+            }
+            
+            // Handle flattening animation
+            if (frogObj && frogObj.flattened) {
+                // Classic squash effect
+                const flattenAlpha = 1 - (frogObj.flattenProgress * 0.5); // Fade to 50% opacity
+                ctx.globalAlpha = flattenAlpha;
+                
+                // Squash vertically and stretch horizontally
+                const squashY = 1 - (frogObj.flattenProgress * 0.9); // Squash to 10% height
+                const stretchX = 1 + (frogObj.flattenProgress * 0.5); // Stretch to 150% width
+                ctx.scale(stretchX, squashY);
+                
+                // Add tire marks effect
+                if (frogObj.flattenProgress > 0.3) {
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(-20, -5);
+                    ctx.lineTo(20, -5);
+                    ctx.moveTo(-20, 5);
+                    ctx.lineTo(20, 5);
+                    ctx.stroke();
+                }
             }
             
             // Determine animation state
@@ -1667,13 +1695,12 @@
                     
                     if (yOverlap < (car.height/2 + collisionSize/2) &&
                         frogX + collisionSize/2 > car.x &&
-                        frogX - collisionSize/2 < car.x + car.width) {
+                        frogX - collisionSize/2 < car.x + car.width &&
+                        !frog.flattened) {
                         playSoundEffect('crash');
-                        if (gameMode === 'endless') {
-                            endlessGameOver();
-                        } else {
-                            loseLife();
-                        }
+                        frog.flattened = true;
+                        frog.flattenProgress = 0;
+                        // Don't immediately lose life - let the flattening animation play
                         return;
                     }
                 }
@@ -1784,16 +1811,19 @@
 
         function loseLife() {
             lives--;
-            // Don't create particles if drowning (water already has splash effect)
-            if (!frog.drowning) {
+            // Don't create particles if drowning or flattened (they have their own effects)
+            if (!frog.drowning && !frog.flattened) {
                 createParticles(frog.x * GRID_SIZE, frog.y * GRID_SIZE, '#ff0000');
             }
             updateLivesDisplay();
             
             if (lives === 0) {
-                // Keep frog hidden if drowning
+                // Keep frog hidden if drowning or flattened
                 if (frog.drowning) {
                     frog.drowningProgress = 1; // Keep at max to stay invisible
+                }
+                if (frog.flattened) {
+                    frog.flattenProgress = 1; // Keep at max to stay flattened
                 }
                 gameOver();
             } else {
@@ -1808,6 +1838,8 @@
             frog.targetY = 14;
             frog.drowning = false;
             frog.drowningProgress = 0;
+            frog.flattened = false;
+            frog.flattenProgress = 0;
         }
         
         function resetFrog2Position() {
@@ -1817,6 +1849,8 @@
             frog2.targetY = 14;
             frog2.drowning = false;
             frog2.drowningProgress = 0;
+            frog2.flattened = false;
+            frog2.flattenProgress = 0;
         }
 
         function levelComplete() {
@@ -1998,6 +2032,20 @@
                     }
                 }
                 
+                // Handle flattening animation
+                if (frog.flattened) {
+                    frog.flattenProgress += deltaTime * 2; // 0.5 seconds to complete
+                    if (frog.flattenProgress >= 1) {
+                        // Animation complete, now lose life
+                        frog.flattenProgress = 1; // Keep at max to stay flattened
+                        if (gameMode === 'endless') {
+                            endlessGameOver();
+                        } else {
+                            loseLife();
+                        }
+                    }
+                }
+                
                 // Smooth frog2 movement in two player mode
                 if (twoPlayerMode) {
                     if (frog2.x !== frog2.targetX || frog2.y !== frog2.targetY) {
@@ -2032,6 +2080,18 @@
                             createParticles(frog2.x * GRID_SIZE, frog2.y * GRID_SIZE, '#ff0000');
                             frog2.drowning = false;
                             frog2.drowningProgress = 0;
+                        }
+                    }
+                    
+                    // Handle flattening animation for player 2
+                    if (frog2.flattened) {
+                        frog2.flattenProgress += deltaTime * 2; // 0.5 seconds to complete
+                        if (frog2.flattenProgress >= 1) {
+                            // Animation complete, now reset position
+                            resetFrog2Position();
+                            createParticles(frog2.x * GRID_SIZE, frog2.y * GRID_SIZE, '#ff0000');
+                            frog2.flattened = false;
+                            frog2.flattenProgress = 0;
                         }
                     }
                 }
@@ -2142,8 +2202,8 @@
 
             if (isPaused || winner) return;
 
-            // Player 1 controls (arrows) - disable when drowning
-            if (frog.x === frog.targetX && frog.y === frog.targetY && !frog.drowning) {
+            // Player 1 controls (arrows) - disable when drowning or flattened
+            if (frog.x === frog.targetX && frog.y === frog.targetY && !frog.drowning && !frog.flattened) {
                 switch(e.key) {
                     case 'ArrowUp':
                         if (gameMode === 'endless' || frog.targetY > 0) {
@@ -2173,8 +2233,8 @@
                 }
             }
 
-            // Player 2 controls (WASD) - only in two player mode and not drowning
-            if (twoPlayerMode && frog2.x === frog2.targetX && frog2.y === frog2.targetY && !frog2.drowning) {
+            // Player 2 controls (WASD) - only in two player mode and not drowning or flattened
+            if (twoPlayerMode && frog2.x === frog2.targetX && frog2.y === frog2.targetY && !frog2.drowning && !frog2.flattened) {
                 switch(e.key.toLowerCase()) {
                     case 'w':
                         if (frog2.targetY > 0) {
@@ -2305,10 +2365,12 @@
                     
                     if (yOverlap < (car.height/2 + collisionSize/2) &&
                         frogX + collisionSize/2 > car.x &&
-                        frogX - collisionSize/2 < car.x + car.width) {
+                        frogX - collisionSize/2 < car.x + car.width &&
+                        !frog2.flattened) {
                         playSoundEffect('crash');
-                        resetFrog2Position();
-                        createParticles(frogX, frogY, '#ff0000');
+                        frog2.flattened = true;
+                        frog2.flattenProgress = 0;
+                        // Don't immediately reset - let the flattening animation play
                         return;
                     }
                 }
