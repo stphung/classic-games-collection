@@ -588,31 +588,31 @@
             
             const now = audioContext.currentTime;
             
-            // Play ambient melody - very soft and sparse
+            // Play ambient melody - soft and sparse
             let melodyTime = 0;
             melody.forEach(note => {
-                playNote(note.note, note.duration, now + melodyTime, note.wave, 0.015); // Very quiet
+                playNote(note.note, note.duration, now + melodyTime, note.wave, 0.08); // Audible but gentle
                 melodyTime += note.duration;
             });
             
             // Play deep bass drone - foundation
             let bassTime = 0;
             bassLine.forEach(note => {
-                playNote(note.note, note.duration, now + bassTime, note.wave, 0.02); // Deep and present
+                playNote(note.note, note.duration, now + bassTime, note.wave, 0.1); // Deep and present
                 bassTime += note.duration;
             });
             
             // Play ambient texture - mid layer
             let textureTime = 0;
             ambientTexture.forEach(note => {
-                playNote(note.note, note.duration, now + textureTime, note.wave, 0.008); // Very soft
+                playNote(note.note, note.duration, now + textureTime, note.wave, 0.05); // Soft support
                 textureTime += note.duration;
             });
             
             // Play high shimmer - ethereal top layer
             let shimmerTime = 0;
             shimmerLayer.forEach(note => {
-                playNote(note.note, note.duration, now + shimmerTime, note.wave, 0.006); // Barely audible
+                playNote(note.note, note.duration, now + shimmerTime, note.wave, 0.03); // Subtle sparkle
                 shimmerTime += note.duration;
             });
         }
