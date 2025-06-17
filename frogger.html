@@ -1134,83 +1134,343 @@
             const x = gridX * GRID_SIZE;
             const y = gridY * GRID_SIZE;
             
+            // Color palette for smooth modern frog
+            const colors = {
+                body: color,                 // Main green
+                bodyDark: '#2E7D32',        // Dark green for shadows
+                bodyLight: '#A5D6A7',       // Light green for highlights
+                belly: '#FFEB3B',           // Yellow belly
+                eyes: '#FF1493',            // Deep pink eyes
+                eyeWhite: '#FFFFFF',        // White eye base
+                eyeBlack: '#000000',        // Black pupils
+                shadow: 'rgba(0, 0, 0, 0.3)' // Shadow color
+            };
+            
             ctx.save();
-            ctx.translate(x, y + GRID_SIZE / 2);
+            ctx.translate(x + GRID_SIZE/2, y + GRID_SIZE/2);
             
-            // Body
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.ellipse(0, 0, size * 0.45, size * 0.4, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // Determine animation state
+            let direction = 'up';
+            let isJumping = false;
+            let jumpProgress = 0;
+            let jumpHeight = 0;
+            let squashStretch = 1;
             
-            // Body gradient
-            const bodyGradient = ctx.createRadialGradient(0, -5, 0, 0, 0, size * 0.4);
-            bodyGradient.addColorStop(0, '#66BB6A');
-            bodyGradient.addColorStop(1, color);
-            ctx.fillStyle = bodyGradient;
-            ctx.beginPath();
-            ctx.ellipse(0, 0, size * 0.45, size * 0.4, 0, 0, Math.PI * 2);
-            ctx.fill();
+            if (frogObj && frogObj.jumping) {
+                isJumping = true;
+                jumpProgress = frogObj.jumpProgress || 0;
+                const dx = frogObj.targetX - frogObj.x;
+                const dy = frogObj.targetY - frogObj.y;
+                
+                if (Math.abs(dy) > Math.abs(dx)) {
+                    direction = dy < 0 ? 'up' : 'down';
+                } else if (Math.abs(dx) > 0.1) {
+                    direction = dx < 0 ? 'left' : 'right';
+                }
+                
+                // Calculate jump animation effects
+                // Parabolic arc for natural jump motion
+                jumpHeight = Math.sin(jumpProgress * Math.PI) * 15;
+                
+                // Squash and stretch effect
+                if (jumpProgress < 0.2) {
+                    // Squash at start (preparing to jump)
+                    squashStretch = 1 - (jumpProgress / 0.2) * 0.3; // Squash down to 70%
+                } else if (jumpProgress > 0.8) {
+                    // Squash at landing
+                    const landProgress = (jumpProgress - 0.8) / 0.2;
+                    squashStretch = 1 - landProgress * 0.2; // Slight squash on landing
+                } else {
+                    // Stretch in mid-air
+                    const midProgress = (jumpProgress - 0.2) / 0.6;
+                    squashStretch = 1 + Math.sin(midProgress * Math.PI) * 0.15; // Stretch up to 115%
+                }
+                
+                // Apply jump height
+                ctx.translate(0, -jumpHeight);
+                
+                // Apply squash/stretch transform
+                ctx.scale(1 / squashStretch, squashStretch);
+            }
             
-            // Belly
-            ctx.fillStyle = '#81C784';
-            ctx.beginPath();
-            ctx.ellipse(0, 5, size * 0.3, size * 0.25, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // Scale factor - smaller and more proportionate
+            const scale = 0.7; // Make it 70% of the original size
             
-            // Back legs
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.ellipse(-size * 0.35, size * 0.15, size * 0.2, size * 0.15, -0.5, 0, Math.PI * 2);
-            ctx.ellipse(size * 0.35, size * 0.15, size * 0.2, size * 0.15, 0.5, 0, Math.PI * 2);
-            ctx.fill();
+            // Dynamic shadow based on jump height
+            ctx.save();
+            // Reset transforms for shadow (shadows don't jump or stretch)
+            ctx.setTransform(1, 0, 0, 1, x + GRID_SIZE/2, y + GRID_SIZE/2);
             
-            // Front legs
-            ctx.beginPath();
-            ctx.ellipse(-size * 0.3, -size * 0.1, size * 0.15, size * 0.12, -0.3, 0, Math.PI * 2);
-            ctx.ellipse(size * 0.3, -size * 0.1, size * 0.15, size * 0.12, 0.3, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = colors.shadow;
+            if (isJumping) {
+                // Shadow gets smaller and lighter as frog jumps higher
+                const shadowScale = 1 - (jumpHeight / 30); // Shadow shrinks with height
+                const shadowOpacity = 0.15 + (0.15 * shadowScale); // Fade shadow as it gets smaller
+                ctx.fillStyle = `rgba(0, 0, 0, ${shadowOpacity})`;
+                
+                const shadowWidth = 24 * scale * shadowScale;
+                const shadowHeight = 4 * scale * shadowScale;
+                ctx.fillRect(-shadowWidth/2, 18 * scale, shadowWidth, shadowHeight);
+            } else {
+                ctx.fillRect(-15 * scale, 18 * scale, 30 * scale, 6 * scale);
+            }
+            ctx.restore();
             
-            // Head
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.ellipse(0, -size * 0.35, size * 0.35, size * 0.25, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // Draw frog based on direction
+            if (direction === 'up') {
+                drawFrogUp();
+            } else if (direction === 'down') {
+                drawFrogDown();
+            } else if (direction === 'left') {
+                drawFrogLeft();
+            } else if (direction === 'right') {
+                drawFrogRight();
+            }
             
-            // Eyes
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.ellipse(-size * 0.15, -size * 0.4, size * 0.12, size * 0.1, 0, 0, Math.PI * 2);
-            ctx.ellipse(size * 0.15, -size * 0.4, size * 0.12, size * 0.1, 0, 0, Math.PI * 2);
-            ctx.fill();
+            function drawFrogUp() {
+                // Main body - smooth oval
+                ctx.fillStyle = colors.body;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 16 * scale, 20 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Body gradient for depth
+                const bodyGradient = ctx.createRadialGradient(0, -5 * scale, 0, 0, 0, 20 * scale);
+                bodyGradient.addColorStop(0, colors.bodyLight);
+                bodyGradient.addColorStop(1, colors.body);
+                ctx.fillStyle = bodyGradient;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 16 * scale, 20 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Yellow belly
+                ctx.fillStyle = colors.belly;
+                ctx.beginPath();
+                ctx.ellipse(0, 2 * scale, 10 * scale, 14 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Back legs (bottom, powerful and splayed)
+                ctx.fillStyle = colors.body;
+                // Left back leg
+                ctx.beginPath();
+                ctx.ellipse(-18 * scale, 8 * scale, 8 * scale, 12 * scale, -0.3, 0, Math.PI * 2);
+                ctx.fill();
+                // Right back leg
+                ctx.beginPath();
+                ctx.ellipse(18 * scale, 8 * scale, 8 * scale, 12 * scale, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Front legs (top, smaller)
+                // Left front leg
+                ctx.beginPath();
+                ctx.ellipse(-12 * scale, -12 * scale, 5 * scale, 8 * scale, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+                // Right front leg
+                ctx.beginPath();
+                ctx.ellipse(12 * scale, -12 * scale, 5 * scale, 8 * scale, 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Eyes
+                // Left eye
+                ctx.fillStyle = colors.eyeWhite;
+                ctx.beginPath();
+                ctx.ellipse(-6 * scale, -8 * scale, 4 * scale, 4 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = colors.eyes;
+                ctx.beginPath();
+                ctx.ellipse(-6 * scale, -8 * scale, 3 * scale, 3 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = colors.eyeBlack;
+                ctx.beginPath();
+                ctx.ellipse(-6 * scale, -8 * scale, 1.5 * scale, 1.5 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Right eye
+                ctx.fillStyle = colors.eyeWhite;
+                ctx.beginPath();
+                ctx.ellipse(6 * scale, -8 * scale, 4 * scale, 4 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = colors.eyes;
+                ctx.beginPath();
+                ctx.ellipse(6 * scale, -8 * scale, 3 * scale, 3 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = colors.eyeBlack;
+                ctx.beginPath();
+                ctx.ellipse(6 * scale, -8 * scale, 1.5 * scale, 1.5 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Body shading
+                ctx.fillStyle = colors.bodyDark;
+                ctx.beginPath();
+                ctx.ellipse(-8 * scale, 5 * scale, 2 * scale, 3 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(8 * scale, 5 * scale, 2 * scale, 3 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
             
-            // Eye details
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.ellipse(-size * 0.15, -size * 0.4, size * 0.08, size * 0.08, 0, 0, Math.PI * 2);
-            ctx.ellipse(size * 0.15, -size * 0.4, size * 0.08, size * 0.08, 0, 0, Math.PI * 2);
-            ctx.fill();
+            function drawFrogDown() {
+                // Main body
+                ctx.fillStyle = colors.body;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 16 * scale, 20 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Body gradient
+                const bodyGradient = ctx.createRadialGradient(0, 5 * scale, 0, 0, 0, 20 * scale);
+                bodyGradient.addColorStop(0, colors.bodyLight);
+                bodyGradient.addColorStop(1, colors.body);
+                ctx.fillStyle = bodyGradient;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 16 * scale, 20 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Yellow belly
+                ctx.fillStyle = colors.belly;
+                ctx.beginPath();
+                ctx.ellipse(0, -2 * scale, 10 * scale, 12 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Front legs (bottom, reaching back)
+                ctx.fillStyle = colors.body;
+                ctx.beginPath();
+                ctx.ellipse(-15 * scale, 15 * scale, 6 * scale, 8 * scale, 0.5, 0, Math.PI * 2);
+                ctx.ellipse(15 * scale, 15 * scale, 6 * scale, 8 * scale, -0.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Back legs (top, tucked)
+                ctx.beginPath();
+                ctx.ellipse(-10 * scale, -15 * scale, 5 * scale, 6 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(10 * scale, -15 * scale, 5 * scale, 6 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Eyes
+                ctx.fillStyle = colors.eyeWhite;
+                ctx.beginPath();
+                ctx.ellipse(-6 * scale, 5 * scale, 4 * scale, 4 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(6 * scale, 5 * scale, 4 * scale, 4 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = colors.eyes;
+                ctx.beginPath();
+                ctx.ellipse(-6 * scale, 5 * scale, 3 * scale, 3 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(6 * scale, 5 * scale, 3 * scale, 3 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = colors.eyeBlack;
+                ctx.beginPath();
+                ctx.ellipse(-6 * scale, 5 * scale, 1.5 * scale, 1.5 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(6 * scale, 5 * scale, 1.5 * scale, 1.5 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
             
-            // Eye highlights
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.arc(-size * 0.13, -size * 0.42, size * 0.03, 0, Math.PI * 2);
-            ctx.arc(size * 0.17, -size * 0.42, size * 0.03, 0, Math.PI * 2);
-            ctx.fill();
+            function drawFrogLeft() {
+                // Body leaning left
+                ctx.fillStyle = colors.body;
+                ctx.beginPath();
+                ctx.ellipse(-2 * scale, 0, 18 * scale, 16 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Body gradient
+                const bodyGradient = ctx.createRadialGradient(-5 * scale, -3 * scale, 0, -2 * scale, 0, 18 * scale);
+                bodyGradient.addColorStop(0, colors.bodyLight);
+                bodyGradient.addColorStop(1, colors.body);
+                ctx.fillStyle = bodyGradient;
+                ctx.beginPath();
+                ctx.ellipse(-2 * scale, 0, 18 * scale, 16 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Yellow belly
+                ctx.fillStyle = colors.belly;
+                ctx.beginPath();
+                ctx.ellipse(-2 * scale, 0, 12 * scale, 10 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Left legs extended
+                ctx.fillStyle = colors.body;
+                ctx.beginPath();
+                ctx.ellipse(-22 * scale, -5 * scale, 8 * scale, 6 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(-20 * scale, 8 * scale, 10 * scale, 8 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Right legs compressed
+                ctx.beginPath();
+                ctx.ellipse(12 * scale, -3 * scale, 4 * scale, 5 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(14 * scale, 6 * scale, 5 * scale, 6 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Eyes
+                ctx.fillStyle = colors.eyeWhite;
+                ctx.beginPath();
+                ctx.ellipse(-8 * scale, -5 * scale, 4 * scale, 4 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(4 * scale, -5 * scale, 4 * scale, 4 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = colors.eyes;
+                ctx.beginPath();
+                ctx.ellipse(-8 * scale, -5 * scale, 3 * scale, 3 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(4 * scale, -5 * scale, 3 * scale, 3 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = colors.eyeBlack;
+                ctx.beginPath();
+                ctx.ellipse(-8 * scale, -5 * scale, 1.5 * scale, 1.5 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(4 * scale, -5 * scale, 1.5 * scale, 1.5 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
             
-            // Nostrils
-            ctx.fillStyle = '#2E7D32';
-            ctx.beginPath();
-            ctx.ellipse(-size * 0.05, -size * 0.35, size * 0.02, size * 0.03, 0, 0, Math.PI * 2);
-            ctx.ellipse(size * 0.05, -size * 0.35, size * 0.02, size * 0.03, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Mouth
-            ctx.strokeStyle = '#2E7D32';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.arc(0, -size * 0.3, size * 0.1, 0, Math.PI);
-            ctx.stroke();
+            function drawFrogRight() {
+                // Body leaning right
+                ctx.fillStyle = colors.body;
+                ctx.beginPath();
+                ctx.ellipse(2 * scale, 0, 18 * scale, 16 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Body gradient
+                const bodyGradient = ctx.createRadialGradient(5 * scale, -3 * scale, 0, 2 * scale, 0, 18 * scale);
+                bodyGradient.addColorStop(0, colors.bodyLight);
+                bodyGradient.addColorStop(1, colors.body);
+                ctx.fillStyle = bodyGradient;
+                ctx.beginPath();
+                ctx.ellipse(2 * scale, 0, 18 * scale, 16 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Yellow belly
+                ctx.fillStyle = colors.belly;
+                ctx.beginPath();
+                ctx.ellipse(2 * scale, 0, 12 * scale, 10 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Right legs extended
+                ctx.fillStyle = colors.body;
+                ctx.beginPath();
+                ctx.ellipse(22 * scale, -5 * scale, 8 * scale, 6 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(20 * scale, 8 * scale, 10 * scale, 8 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Left legs compressed
+                ctx.beginPath();
+                ctx.ellipse(-12 * scale, -3 * scale, 4 * scale, 5 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(-14 * scale, 6 * scale, 5 * scale, 6 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Eyes
+                ctx.fillStyle = colors.eyeWhite;
+                ctx.beginPath();
+                ctx.ellipse(8 * scale, -5 * scale, 4 * scale, 4 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(-4 * scale, -5 * scale, 4 * scale, 4 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = colors.eyes;
+                ctx.beginPath();
+                ctx.ellipse(8 * scale, -5 * scale, 3 * scale, 3 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(-4 * scale, -5 * scale, 3 * scale, 3 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = colors.eyeBlack;
+                ctx.beginPath();
+                ctx.ellipse(8 * scale, -5 * scale, 1.5 * scale, 1.5 * scale, 0, 0, Math.PI * 2);
+                ctx.ellipse(-4 * scale, -5 * scale, 1.5 * scale, 1.5 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
             
             ctx.restore();
         }
