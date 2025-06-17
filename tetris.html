@@ -7,6 +7,7 @@
     <script src="transition-common.js"></script>
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
+    <script src="mute-button.js"></script>
     <style>
         * {
             margin: 0;
@@ -281,51 +282,9 @@
             opacity: 1;
         }
 
-        .mute-control {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .mute-control:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        .mute-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            user-select: none;
-            color: #999;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .mute-checkbox {
-            width: 18px;
-            height: 18px;
-            accent-color: #f59e0b;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
-    <div class="mute-control">
-        <label class="mute-label">
-            <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
-            Mute Background Music
-        </label>
-    </div>
     <div class="game-container">
         <div class="game-board">
             <canvas id="canvas" width="300" height="600"></canvas>
@@ -368,7 +327,7 @@
     <script>
         // Initialize Web Audio API
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        let isMuted = false;
+        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
         let musicGainNode = null;
         let musicOscillators = [];
         let musicStarted = false;
@@ -650,6 +609,20 @@
         }
 
         // Background music
+        // Listen for global mute changes
+        window.addEventListener('globalMuteToggle', (e) => {
+            isMuted = e.detail.isMuted;
+            if (isMuted) {
+                stopBackgroundMusic();
+                if (musicGainNode) {
+                    musicGainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                }
+            } else if (gameRunning) {
+                musicStarted = false;
+                startBackgroundMusic();
+            }
+        });
+
         function startBackgroundMusic() {
             if (musicStarted || isMuted) return;
             musicStarted = true;
@@ -930,20 +903,6 @@
             musicStarted = false;
         }
 
-        // Mute checkbox handler
-        const muteCheckbox = document.getElementById('muteCheckbox');
-        muteCheckbox.addEventListener('change', (e) => {
-            isMuted = e.target.checked;
-            if (isMuted) {
-                stopBackgroundMusic();
-                if (musicGainNode) {
-                    musicGainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                }
-            } else if (gameRunning) {
-                musicStarted = false;
-                startBackgroundMusic();
-            }
-        });
 
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');

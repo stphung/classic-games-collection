@@ -7,6 +7,7 @@
     <script src="transition-common.js"></script>
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
+    <script src="mute-button.js"></script>
     <style>
         * {
             margin: 0;
@@ -226,35 +227,6 @@
             content: '←';
             margin-right: 8px;
         }
-
-
-        .mute-control {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            padding: 12px 16px;
-            border-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .mute-label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            color: #666;
-            font-size: 13px;
-            letter-spacing: 0.5px;
-        }
-
-        .mute-checkbox {
-            margin-right: 8px;
-            cursor: pointer;
-            width: 16px;
-            height: 16px;
-        }
     </style>
 </head>
 <body>
@@ -287,12 +259,6 @@
         </div>
     </div>
     
-    <div class="mute-control">
-        <label class="mute-label">
-            <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
-            MUTE SOUNDS
-        </label>
-    </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -315,7 +281,12 @@
         let accumulator = 0;
         let lastTime = 0;
         let particles = [];
-        let muted = false;
+        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
+        
+        // Listen for global mute changes
+        window.addEventListener('globalMuteToggle', (e) => {
+            isMuted = e.detail.isMuted;
+        });
         
         // Audio context
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -327,18 +298,14 @@
         const gameOverScreen = document.getElementById('gameOverScreen');
         const startScreen = document.getElementById('startScreen');
         const newRecordElement = document.getElementById('newRecord');
-        const muteCheckbox = document.getElementById('muteCheckbox');
         
         highScoreElement.textContent = highScore;
         
-        // Mute control
-        muteCheckbox.addEventListener('change', (e) => {
-            muted = e.target.checked;
-        });
+        // Remove local mute control since we're using global mute button
         
         // Sound functions
         function playSound(type) {
-            if (muted) return;
+            if (isMuted) return;
             
             const now = audioContext.currentTime;
             

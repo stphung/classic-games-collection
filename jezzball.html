@@ -7,6 +7,7 @@
     <script src="transition-common.js"></script>
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
+    <script src="mute-button.js"></script>
     <style>
         * {
             margin: 0;
@@ -198,31 +199,6 @@
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
 
-        .mute-control {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 1000;
-        }
-
-        .mute-control input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-
-        .mute-control label {
-            cursor: pointer;
-            user-select: none;
-        }
 
         .mode-indicator {
             position: absolute;
@@ -308,10 +284,6 @@
         </div>
     </div>
     
-    <div class="mute-control">
-        <input type="checkbox" id="muteMusic">
-        <label for="muteMusic">Mute Background Music</label>
-    </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -343,9 +315,18 @@
         
         // Audio context
         let audioContext;
+        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
+        
+        // Listen for global mute changes
+        window.addEventListener('globalMuteToggle', (e) => {
+            isMuted = e.detail.isMuted;
+            if (musicGainNode) {
+                musicGainNode.gain.value = isMuted ? 0 : 0.1;
+            }
+        });
         let musicGainNode;
         let musicOscillator;
-        let isMusicMuted = false;
+        // Remove isMusicMuted as we'll use global isMuted
         
         // Ball class
         class Ball {
@@ -639,6 +620,7 @@
         
         // Sound effects
         function playSound(type) {
+            if (isMuted) return;
             if (!audioContext) return;
             
             const oscillator = audioContext.createOscillator();
@@ -721,7 +703,7 @@
             if (!audioContext || musicOscillator) return;
             
             musicGainNode = audioContext.createGain();
-            musicGainNode.gain.value = isMusicMuted ? 0 : 0.1;
+            musicGainNode.gain.value = isMuted ? 0 : 0.1;
             musicGainNode.connect(audioContext.destination);
             
             // Create a simple melody loop
@@ -1183,13 +1165,7 @@
             }
         });
         
-        // Mute control
-        document.getElementById('muteMusic').addEventListener('change', (e) => {
-            isMusicMuted = e.target.checked;
-            if (musicGainNode) {
-                musicGainNode.gain.value = isMusicMuted ? 0 : 0.1;
-            }
-        });
+        // Remove local mute control since we're using global mute button
     </script>
 </body>
 </html>

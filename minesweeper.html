@@ -7,6 +7,7 @@
     <script src="transition-common.js"></script>
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
+    <script src="mute-button.js"></script>
     <style>
         * {
             margin: 0;
@@ -258,38 +259,6 @@
             transform: translateY(-2px);
         }
 
-        /* Mute button */
-        .mute-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .mute-button:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.1);
-            transform: scale(1.05);
-        }
-
-        .mute-button.muted {
-            color: #666;
-        }
-
-        .mute-button:not(.muted) {
-            color: #60a5fa;
-        }
 
         /* Mobile responsiveness */
         @media (max-width: 768px) {
@@ -368,9 +337,6 @@
         </div>
     </div>
 
-    <button class="mute-button" id="muteButton" onclick="toggleMute()">
-        <span id="muteIcon">🔊</span>
-    </button>
 
     <script>
         // Game configuration
@@ -396,7 +362,7 @@
 
         // Audio setup
         let audioContext;
-        let isMuted = false;
+        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
         let backgroundMusic;
 
         function initAudio() {
@@ -526,23 +492,14 @@
             }
         }
 
-        function toggleMute() {
-            isMuted = !isMuted;
-            const muteIcon = document.getElementById('muteIcon');
-            const muteButton = document.getElementById('muteButton');
-            
-            if (isMuted) {
-                muteIcon.textContent = '🔇';
-                muteButton.classList.add('muted');
-            } else {
-                muteIcon.textContent = '🔊';
-                muteButton.classList.remove('muted');
-                if (!audioContext) {
-                    initAudio();
-                    backgroundMusic.play();
-                }
+        // Listen for global mute toggle
+        window.addEventListener('globalMuteToggle', (event) => {
+            isMuted = event.detail.isMuted;
+            if (!isMuted && !audioContext) {
+                initAudio();
+                backgroundMusic.play();
             }
-        }
+        });
 
         function initGame() {
             const config = DIFFICULTIES[currentDifficulty];

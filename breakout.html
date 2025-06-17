@@ -7,6 +7,7 @@
     <script src="transition-common.js"></script>
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
+    <script src="mute-button.js"></script>
     <style>
         * {
             margin: 0;
@@ -194,36 +195,6 @@
             color: #fff;
         }
 
-        .mute-control {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .mute-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            user-select: none;
-            color: #666;
-            font-size: 13px;
-            font-weight: 300;
-            letter-spacing: 0.5px;
-        }
-
-        .mute-checkbox {
-            width: 16px;
-            height: 16px;
-            accent-color: #ff6b6b;
-            cursor: pointer;
-        }
 
         /* Custom cursor */
         .cursor {
@@ -268,12 +239,6 @@
         <div class="instructions" id="instructions">MOVE MOUSE TO CONTROL</div>
     </div>
     
-    <div class="mute-control">
-        <label class="mute-label">
-            <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
-            MUTE MUSIC
-        </label>
-    </div>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -289,11 +254,13 @@
         // Initialize Web Audio API
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         let musicPlaying = false;
-        let musicMuted = false;
+        let musicMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
         let musicInterval;
+        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false; // For sound effects
 
         // Sound effect functions
         function playSound(type) {
+            if (isMuted) return; // Don't play sound effects if muted
             const now = audioContext.currentTime;
             
             switch(type) {
@@ -866,10 +833,10 @@
             }
         });
 
-        // Mute checkbox handler
-        const muteCheckbox = document.getElementById('muteCheckbox');
-        muteCheckbox.addEventListener('change', (e) => {
-            musicMuted = e.target.checked;
+        // Listen for global mute toggle
+        window.addEventListener('globalMuteToggle', (event) => {
+            isMuted = event.detail.isMuted;
+            musicMuted = event.detail.isMuted;
             if (musicMuted) {
                 stopMusic();
             } else if (gameRunning) {

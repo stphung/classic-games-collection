@@ -7,6 +7,7 @@
     <script src="transition-common.js"></script>
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
+    <script src="mute-button.js"></script>
     <style>
         * {
             margin: 0;
@@ -341,42 +342,6 @@
             text-align: center;
         }
         
-        .mute-control {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .mute-control:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        }
-        
-        .mute-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            user-select: none;
-            color: #999;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .mute-checkbox {
-            width: 18px;
-            height: 18px;
-            accent-color: #f59e0b;
-            cursor: pointer;
-        }
 
         .back-button {
             position: fixed;
@@ -487,16 +452,21 @@
         </div>
     </div>
     
-    <div class="mute-control">
-        <label class="mute-label">
-            <input type="checkbox" class="mute-checkbox" id="muteCheckbox">
-            Mute Background Music
-        </label>
-    </div>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
+        
+        // Listen for global mute changes
+        window.addEventListener('globalMuteToggle', (e) => {
+            isMuted = e.detail.isMuted;
+            if (isMuted) {
+                stopMusic();
+            } else if (gameRunning && !isPaused) {
+                startMusic();
+            }
+        });
         
         // Initialize Web Audio API for retro music
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -505,6 +475,7 @@
         
         // Subtle ambient retro synthesizer
         function playNote(frequency, duration, startTime, waveType = 'square', volume = 0.03) {
+            if (isMuted) return;
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             const filter = audioContext.createBiquadFilter();
@@ -618,7 +589,7 @@
         }
         
         function startMusic() {
-            if (musicMuted) return;
+            if (isMuted) return;
             
             // Stop any existing music first
             stopMusic();
@@ -641,6 +612,7 @@
         
         // Sound Effects
         function playSoundEffect(type) {
+            if (isMuted) return;
             // Sound effects always play regardless of music mute state
             const now = audioContext.currentTime;
             const oscillator = audioContext.createOscillator();
@@ -806,7 +778,7 @@
         let particles = [];
         let winner = null;
         let speedMultiplier = 1;
-        let musicMuted = false;
+        // Remove musicMuted as we'll use global isMuted
         
         // Game mode variables
         let gameMode = 'classic'; // 'classic' or 'endless'
@@ -2472,21 +2444,14 @@
         // Speed slider functionality
         const speedSlider = document.getElementById('speedSlider');
         const speedValue = document.getElementById('speedValue');
-        const muteCheckbox = document.getElementById('muteCheckbox');
+        // Remove muteCheckbox as we're using global mute button
         
         speedSlider.addEventListener('input', (e) => {
             speedMultiplier = parseFloat(e.target.value);
             speedValue.textContent = speedMultiplier.toFixed(1) + 'x';
         });
         
-        muteCheckbox.addEventListener('change', (e) => {
-            musicMuted = e.target.checked;
-            if (musicMuted) {
-                stopMusic();
-            } else if (gameRunning && !isPaused) {
-                startMusic();
-            }
-        });
+        // Remove local mute control since we're using global mute button
     </script>
 </body>
 </html>
