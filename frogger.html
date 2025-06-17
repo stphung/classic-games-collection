@@ -276,21 +276,7 @@
             color: #fff;
         }
         
-        /* Distance indicator for endless mode */
-        .distance-indicator {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #4ade80;
-            display: none;
-            z-index: 10;
-        }
+        /* Distance indicator removed - using right panel display instead */
         .speed-control {
             position: absolute;
             bottom: 30px;
@@ -434,7 +420,6 @@
     <div class="game-container">
         <div class="game-board">
             <canvas id="canvas" width="600" height="750"></canvas>
-            <div class="distance-indicator" id="distanceIndicator">0m</div>
             <div class="game-overlay active" id="startScreen">
                 <h1 class="overlay-title">Frogger</h1>
                 <p class="overlay-message">Choose your game mode</p>
@@ -1051,14 +1036,6 @@
             ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, 600, 750);
             
-            // Draw a test pattern in endless mode to verify rendering
-            if (gameMode === 'endless' && endlessLanes.length > 0) {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                ctx.fillRect(0, 0, 100, 30);
-                ctx.fillStyle = 'white';
-                ctx.font = '12px sans-serif';
-                ctx.fillText('Endless', 10, 20);
-            }
 
             const lanesToDraw = gameMode === 'endless' ? endlessLanes : lanes;
             
@@ -1896,7 +1873,7 @@
                         distanceTraveled = Math.floor(maxFrogProgress);
                         score = distanceTraveled * 10;
                         
-                        document.getElementById('distanceIndicator').textContent = distanceTraveled + 'm';
+                        // Distance indicator removed - using right panel display instead
                         
                         // Update lives display to show distance
                         const livesDisplay = document.getElementById('livesDisplay');
@@ -2191,8 +2168,7 @@
                 // Reset frog position for endless mode
                 frog.y = 14;
                 frog.targetY = 14;
-                document.getElementById('distanceIndicator').style.display = 'block';
-                document.getElementById('distanceIndicator').textContent = '0m';
+                // Distance indicator removed - using right panel display instead
                 document.getElementById('level').parentElement.style.display = 'none';
                 document.getElementById('time').parentElement.style.display = 'none';
                 document.getElementById('livesTitle').textContent = 'Distance';
@@ -2207,7 +2183,7 @@
                     lives = 3;
                     timeLeft = 45;
                 }
-                document.getElementById('distanceIndicator').style.display = 'none';
+                // Distance indicator removed - using right panel display instead
                 document.getElementById('level').parentElement.style.display = 'block';
                 document.getElementById('time').parentElement.style.display = 'block';
             }
