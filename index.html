@@ -46,7 +46,7 @@
 
         .header {
             position: absolute;
-            top: 60px;
+            top: 40px;
             text-align: center;
             z-index: 10;
         }
@@ -64,6 +64,124 @@
             letter-spacing: 2px;
             text-transform: uppercase;
         }
+        
+        /* Featured Section */
+        .featured-section {
+            position: absolute;
+            top: 140px;
+            width: 100%;
+            max-width: 1400px;
+            padding: 0 40px;
+            z-index: 10;
+        }
+        
+        .featured-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .featured-title {
+            font-size: 24px;
+            font-weight: 200;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+        
+        .featured-subtitle {
+            font-size: 12px;
+            color: #666;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .featured-games {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
+        
+        .featured-games::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .featured-games::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .featured-games::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        
+        .featured-card {
+            flex-shrink: 0;
+            width: 280px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .featured-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .featured-icon {
+            font-size: 48px;
+            flex-shrink: 0;
+        }
+        
+        .featured-info {
+            flex: 1;
+        }
+        
+        .featured-name {
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        
+        .featured-description {
+            font-size: 12px;
+            color: #999;
+            line-height: 1.4;
+        }
+        
+        .featured-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .featured-tag.updated {
+            background: rgba(250, 204, 21, 0.2);
+            color: #facc15;
+        }
 
         /* Carousel Container */
         .carousel-container {
@@ -75,6 +193,7 @@
             align-items: center;
             justify-content: center;
             z-index: 10;
+            margin-top: 80px;
         }
 
         .carousel-track {
@@ -802,7 +921,8 @@
         body.browse-mode .dots-container,
         body.browse-mode .instructions,
         body.browse-mode .random-game-button,
-        body.browse-mode .browse-toggle {
+        body.browse-mode .browse-toggle,
+        body.browse-mode .featured-section {
             display: none;
         }
         
@@ -811,6 +931,33 @@
         }
         
         @media (max-width: 768px) {
+            .featured-section {
+                top: 120px;
+                padding: 0 20px;
+            }
+            
+            .featured-games {
+                gap: 15px;
+            }
+            
+            .featured-card {
+                width: 250px;
+                height: 100px;
+                padding: 15px;
+            }
+            
+            .featured-icon {
+                font-size: 40px;
+            }
+            
+            .featured-name {
+                font-size: 16px;
+            }
+            
+            .carousel-container {
+                margin-top: 60px;
+            }
+            
             .browse-controls {
                 bottom: 320px;
             }
@@ -875,6 +1022,17 @@
         <h1 class="logo">ARCADE</h1>
         <p class="subtitle">Classic Games Collection</p>
     </header>
+    
+    <!-- Featured Section -->
+    <section class="featured-section">
+        <div class="featured-header">
+            <h2 class="featured-title">Featured</h2>
+            <p class="featured-subtitle">New & Updated Games</p>
+        </div>
+        <div class="featured-games" id="featuredGames">
+            <!-- Featured cards will be populated by JavaScript -->
+        </div>
+    </section>
     
     <!-- Browse/Search Controls -->
     <div class="browse-controls">
@@ -1078,11 +1236,65 @@
 
         // Initialize
         updateCarousel();
+        initializeFeaturedGames();
         
         // Add fade-in effect on page load
         window.addEventListener('load', () => {
             document.body.style.animation = 'fadeIn 0.8s ease-out';
         });
+        
+        // Initialize featured games
+        function initializeFeaturedGames() {
+            const featuredGames = [
+                { 
+                    title: 'JezzBall', 
+                    icon: '◈', 
+                    description: 'Trap bouncing balls',
+                    url: 'jezzball.html',
+                    tag: 'NEW'
+                },
+                { 
+                    title: 'Snake', 
+                    icon: '▪', 
+                    description: 'Classic arcade game',
+                    url: 'snake.html',
+                    tag: 'NEW'
+                },
+                { 
+                    title: 'Missile Command', 
+                    icon: '⟟', 
+                    description: 'Defend your cities',
+                    url: 'missilecommand.html',
+                    tag: 'NEW'
+                },
+                { 
+                    title: 'Frogger', 
+                    icon: '🐸', 
+                    description: 'Now with endless mode',
+                    url: 'frogger.html',
+                    tag: 'UPDATED'
+                }
+            ];
+            
+            const container = document.getElementById('featuredGames');
+            
+            featuredGames.forEach(game => {
+                const card = document.createElement('div');
+                card.className = 'featured-card';
+                card.onclick = () => transitionToGame(game.url);
+                
+                card.innerHTML = `
+                    <div class="featured-icon">${game.icon}</div>
+                    <div class="featured-info">
+                        <h3 class="featured-name">${game.title}</h3>
+                        <p class="featured-description">${game.description}</p>
+                    </div>
+                    <span class="featured-tag ${game.tag === 'UPDATED' ? 'updated' : ''}">${game.tag}</span>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
         
         // Transition to game
         function transitionToGame(gameUrl) {
