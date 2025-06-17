@@ -768,7 +768,8 @@
             drowning: false,
             drowningProgress: 0,
             flattened: false,
-            flattenProgress: 0
+            flattenProgress: 0,
+            direction: 'up'
         };
         
         let frog2 = {
@@ -785,7 +786,8 @@
             drowning: false,
             drowningProgress: 0,
             flattened: false,
-            flattenProgress: 0
+            flattenProgress: 0,
+            direction: 'up'
         };
 
         let cars = [];
@@ -1167,7 +1169,7 @@
             }
             
             // Determine animation state
-            let direction = 'up';
+            let direction = frogObj ? frogObj.direction : 'up';
             let isJumping = false;
             let jumpProgress = 0;
             let jumpHeight = 0;
@@ -1176,14 +1178,6 @@
             if (frogObj && frogObj.jumping) {
                 isJumping = true;
                 jumpProgress = frogObj.jumpProgress || 0;
-                const dx = frogObj.targetX - frogObj.x;
-                const dy = frogObj.targetY - frogObj.y;
-                
-                if (Math.abs(dy) > Math.abs(dx)) {
-                    direction = dy < 0 ? 'up' : 'down';
-                } else if (Math.abs(dx) > 0.1) {
-                    direction = dx < 0 ? 'left' : 'right';
-                }
                 
                 // Calculate jump animation effects
                 // Parabolic arc for natural jump motion
@@ -2192,6 +2186,7 @@
                     case 'ArrowUp':
                         if (gameMode === 'endless' || frog.targetY > 0) {
                             frog.targetY--;
+                            frog.direction = 'up';
                             if (gameMode === 'classic' && frog.targetY < 6) score += 10;
                             playSoundEffect('hop');
                         }
@@ -2199,18 +2194,21 @@
                     case 'ArrowDown':
                         if (frog.targetY < 14) {
                             frog.targetY++;
+                            frog.direction = 'down';
                             playSoundEffect('hop');
                         }
                         break;
                     case 'ArrowLeft':
                         if (frog.targetX > 0) {
                             frog.targetX--;
+                            frog.direction = 'left';
                             playSoundEffect('hop');
                         }
                         break;
                     case 'ArrowRight':
                         if (frog.targetX < 11) {
                             frog.targetX++;
+                            frog.direction = 'right';
                             playSoundEffect('hop');
                         }
                         break;
@@ -2223,6 +2221,7 @@
                     case 'w':
                         if (frog2.targetY > 0) {
                             frog2.targetY--;
+                            frog2.direction = 'up';
                             if (frog2.targetY < 6) score2 += 10;
                             playSoundEffect('hop');
                         }
@@ -2230,18 +2229,21 @@
                     case 's':
                         if (frog2.targetY < 14) {
                             frog2.targetY++;
+                            frog2.direction = 'down';
                             playSoundEffect('hop');
                         }
                         break;
                     case 'a':
                         if (frog2.targetX > 0) {
                             frog2.targetX--;
+                            frog2.direction = 'left';
                             playSoundEffect('hop');
                         }
                         break;
                     case 'd':
                         if (frog2.targetX < 11) {
                             frog2.targetX++;
+                            frog2.direction = 'right';
                             playSoundEffect('hop');
                         }
                         break;
