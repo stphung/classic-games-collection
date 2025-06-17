@@ -6,6 +6,73 @@
     <title>Arcade Collection</title>
     <script src="submit-idea-button.js"></script>
     <style>
+        :root {
+            /* Colors */
+            --color-bg: #000;
+            --color-text: #fff;
+            --color-text-secondary: #666;
+            --color-text-muted: #999;
+            --color-text-dark: #444;
+            
+            /* Glass effect colors */
+            --color-glass-bg: rgba(255, 255, 255, 0.02);
+            --color-glass-bg-hover: rgba(255, 255, 255, 0.04);
+            --color-glass-border: rgba(255, 255, 255, 0.05);
+            --color-glass-border-hover: rgba(255, 255, 255, 0.1);
+            
+            /* Button colors */
+            --color-btn-border: rgba(255, 255, 255, 0.2);
+            --color-btn-border-hover: rgba(255, 255, 255, 0.5);
+            --color-btn-bg-hover: rgba(255, 255, 255, 0.1);
+            
+            /* Game colors */
+            --color-tetris: #818cf8;
+            --color-breakout: #fbbf24;
+            --color-frogger: #34d399;
+            --color-missile: #f87171;
+            --color-snake: #4ade80;
+            --color-jezzball: #c084fc;
+            --color-minesweeper: #60a5fa;
+            --color-lunarlander: #93c5fd;
+            
+            /* Spacing */
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 20px;
+            --spacing-lg: 30px;
+            --spacing-xl: 40px;
+            
+            /* Transitions */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+            --transition-cubic: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Border radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 20px;
+            --radius-round: 30px;
+            --radius-circle: 50%;
+            
+            /* Font sizes */
+            --font-xs: 11px;
+            --font-sm: 12px;
+            --font-md: 14px;
+            --font-lg: 16px;
+            --font-xl: 20px;
+            --font-2xl: 24px;
+            --font-3xl: 32px;
+            --font-4xl: 48px;
+            
+            /* Z-index layers */
+            --z-bg: 1;
+            --z-content: 10;
+            --z-overlay: 20;
+            --z-modal: 100;
+            --z-top: 1000;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -14,12 +81,74 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000;
-            color: #fff;
+            background: var(--color-bg);
+            color: var(--color-text);
             min-height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Common utility classes */
+        .glass-panel {
+            background: var(--color-glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--color-glass-border);
+        }
+        
+        .glass-panel-hover {
+            background: var(--color-glass-bg-hover);
+            border-color: var(--color-glass-border-hover);
+        }
+        
+        .btn {
+            background: transparent;
+            border: 1px solid var(--color-btn-border);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: var(--color-btn-bg-hover);
+            border-color: var(--color-btn-border-hover);
+            color: var(--color-text);
+            transform: translateY(-2px);
+        }
+        
+        .btn-round {
+            border-radius: var(--radius-round);
+            padding: var(--spacing-sm) 36px;
+            font-size: var(--font-md);
+        }
+        
+        .btn-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-circle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        
+        .text-secondary {
+            color: var(--color-text-secondary);
+        }
+        
+        .text-uppercase {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .icon-container {
+            display: flex;
             align-items: center;
             justify-content: center;
         }
@@ -48,19 +177,19 @@
             position: absolute;
             top: 60px;
             text-align: center;
-            z-index: 10;
+            z-index: var(--z-content);
         }
 
         .logo {
-            font-size: 48px;
+            font-size: var(--font-4xl);
             font-weight: 100;
             letter-spacing: 8px;
             margin-bottom: 10px;
         }
 
         .subtitle {
-            font-size: 14px;
-            color: #666;
+            font-size: var(--font-md);
+            color: var(--color-text-secondary);
             letter-spacing: 2px;
             text-transform: uppercase;
         }
@@ -90,13 +219,10 @@
             position: absolute;
             width: 320px;
             height: 420px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
             cursor: pointer;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all var(--transition-cubic);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -110,11 +236,11 @@
             position: absolute;
             top: -10px;
             right: -10px;
-            background: #4ade80;
-            color: #000;
+            background: var(--color-snake);
+            color: var(--color-bg);
             padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 11px;
+            border-radius: var(--radius-lg);
+            font-size: var(--font-xs);
             font-weight: 600;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -252,69 +378,29 @@
         }
 
         .game-description {
-            font-size: 14px;
-            color: #666;
+            font-size: var(--font-md);
+            color: var(--color-text-secondary);
             line-height: 1.6;
             margin-bottom: 0;
         }
 
         .game-card.active .game-description {
-            color: #999;
+            color: var(--color-text-muted);
         }
 
-        .play-button {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #666;
-            padding: 12px 36px;
-            font-size: 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            text-decoration: none;
-            display: inline-block;
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        .game-card.active .play-button {
-            opacity: 1;
-            transform: translateY(0);
-            border-color: rgba(255, 255, 255, 0.3);
-            color: #fff;
-        }
-
-        .game-card.active .play-button:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-2px);
-        }
 
         /* Navigation */
         .nav-button {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #666;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
+            z-index: var(--z-overlay);
+            font-size: var(--font-xl);
+            border: 1px solid var(--color-glass-border-hover);
         }
 
         .nav-button:hover {
             border-color: rgba(255, 255, 255, 0.3);
-            color: #fff;
             transform: translateY(-50%) scale(1.1);
         }
 
@@ -352,9 +438,9 @@
         /* Instructions */
         .instructions {
             position: absolute;
-            bottom: 30px;
-            font-size: 12px;
-            color: #444;
+            bottom: var(--spacing-lg);
+            font-size: var(--font-sm);
+            color: var(--color-text-dark);
             letter-spacing: 1px;
             text-transform: uppercase;
         }
@@ -363,28 +449,13 @@
         .random-game-button {
             position: absolute;
             bottom: 140px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 30px;
-            padding: 12px 28px;
-            color: #666;
-            font-size: 14px;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
             z-index: 10;
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        
-        .random-game-button:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            transform: translateY(-2px);
+            padding: 12px 28px;
+            font-size: 14px;
+            letter-spacing: 1.5px;
         }
         
         .random-game-button:active {
@@ -408,8 +479,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #000;
-            z-index: 9999;
+            background: var(--color-bg);
+            z-index: var(--z-top);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -600,19 +671,9 @@
                 position: fixed;
                 top: 15px;
                 right: 15px;
-                z-index: 1000;
-                background: rgba(255, 255, 255, 0.02);
-                backdrop-filter: blur(20px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 8px;
+                z-index: var(--z-top);
+                border-radius: var(--radius-md);
                 padding: 10px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-            
-            .hamburger-button:hover {
-                background: rgba(255, 255, 255, 0.04);
-                border-color: rgba(255, 255, 255, 0.2);
             }
             
             .hamburger-icon {
@@ -1185,14 +1246,14 @@
         }
 
         /* Game specific colors */
-        .tetris { color: #818cf8; }
-        .breakout { color: #fbbf24; }
-        .frogger { color: #34d399; }
-        .missile { color: #f87171; }
-        .snake { color: #4ade80; }
-        .jezzball { color: #c084fc; }
-        .minesweeper { color: #60a5fa; }
-        .lunarlander { color: #93c5fd; }
+        .tetris { color: var(--color-tetris); }
+        .breakout { color: var(--color-breakout); }
+        .frogger { color: var(--color-frogger); }
+        .missile { color: var(--color-missile); }
+        .snake { color: var(--color-snake); }
+        .jezzball { color: var(--color-jezzball); }
+        .minesweeper { color: var(--color-minesweeper); }
+        .lunarlander { color: var(--color-lunarlander); }
 
         /* Mobile responsiveness */
         @media (max-width: 768px) {
@@ -1423,21 +1484,18 @@
         
         /* Browse Card */
         .browse-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all var(--transition-normal);
             text-align: center;
             position: relative;
-            animation: fadeInUp 0.5s ease backwards;
+            animation: fadeInUp var(--transition-slow) ease backwards;
         }
         
         .browse-card:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: var(--color-glass-bg-hover);
+            border-color: var(--color-glass-border-hover);
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
@@ -1541,7 +1599,7 @@
     </div>
     
     <div class="patch-notes" id="patchNotes">
-        <div class="patch-header" onclick="togglePatchNotes()">
+        <div class="patch-header" data-action="toggle-patch-notes">
             <div class="patch-title">
                 <span class="patch-indicator"></span>
                 <span>Recent Updates</span>
@@ -1575,7 +1633,7 @@
     
     <!-- Browse/Search Controls -->
     <div class="browse-controls">
-        <button class="browse-toggle" onclick="toggleBrowseMode()">
+        <button class="browse-toggle" data-action="toggle-browse">
             <span class="browse-icon">📚</span>
             <span class="browse-text">Browse All</span>
         </button>
@@ -1583,108 +1641,21 @@
     
     <!-- Search bar for browse mode -->
     <div class="browse-search-bar" style="display: none;">
-        <input type="text" class="search-input" placeholder="Search games..." oninput="searchGames(this.value)">
-        <button class="close-browse" onclick="closeBrowseMode()">✕ Close</button>
+        <input type="text" class="search-input" placeholder="Search games..." data-action="search-games">
+        <button class="close-browse" data-action="close-browse">✕ Close</button>
     </div>
 
     <div class="carousel-container">
-        <button class="nav-button nav-prev" onclick="navigate(-1)">‹</button>
-        <button class="nav-button nav-next" onclick="navigate(1)">›</button>
+        <button class="nav-button nav-prev btn btn-circle" data-action="nav-prev">‹</button>
+        <button class="nav-button nav-next btn btn-circle" data-action="nav-next">›</button>
         
-        <div class="carousel-track">
-            <!-- Tetris -->
-            <div class="game-card" data-game="tetris.html">
-                <div class="game-content">
-                    <div class="game-icon">▦</div>
-                    <h2 class="game-title">Tetris</h2>
-                    <p class="game-description">Stack falling blocks to clear lines in this timeless puzzle classic</p>
-                </div>
-                <a href="tetris.html" class="play-button" onclick="event.preventDefault(); transitionToGame('tetris.html')">Play</a>
-            </div>
-
-            <!-- Breakout -->
-            <div class="game-card" data-game="breakout.html">
-                <div class="game-content">
-                    <div class="game-icon breakout">━</div>
-                    <h2 class="game-title">Breakout</h2>
-                    <p class="game-description">Smash through colorful bricks with precision and skill</p>
-                </div>
-                <a href="breakout.html" class="play-button" onclick="event.preventDefault(); transitionToGame('breakout.html')">Play</a>
-            </div>
-
-            <!-- Frogger -->
-            <div class="game-card" data-game="frogger.html">
-                <div class="game-content">
-                    <div class="game-icon frogger">🐸</div>
-                    <h2 class="game-title">Frogger</h2>
-                    <p class="game-description">Navigate dangerous roads and rivers to reach safety</p>
-                </div>
-                <a href="frogger.html" class="play-button" onclick="event.preventDefault(); transitionToGame('frogger.html')">Play</a>
-            </div>
-
-            <!-- Missile Command -->
-            <div class="game-card" data-game="missilecommand.html">
-                <div class="game-content">
-                    <div class="game-icon missile">⟟</div>
-                    <h2 class="game-title">Missile Command</h2>
-                    <p class="game-description">Defend your cities from incoming missile attacks</p>
-                </div>
-                <a href="missilecommand.html" class="play-button" onclick="event.preventDefault(); transitionToGame('missilecommand.html')">Play</a>
-            </div>
-
-            <!-- Snake -->
-            <div class="game-card" data-game="snake.html">
-                <div class="game-content">
-                    <div class="game-icon snake">▪</div>
-                    <h2 class="game-title">Snake</h2>
-                    <p class="game-description">Guide the snake to grow longer without hitting walls</p>
-                </div>
-                <a href="snake.html" class="play-button" onclick="event.preventDefault(); transitionToGame('snake.html')">Play</a>
-            </div>
-
-            <!-- JezzBall -->
-            <div class="game-card" data-game="jezzball.html">
-                <div class="game-content">
-                    <div class="game-icon jezzball">◈</div>
-                    <h2 class="game-title">JezzBall</h2>
-                    <p class="game-description">Trap bouncing balls by building walls strategically</p>
-                </div>
-                <a href="jezzball.html" class="play-button" onclick="event.preventDefault(); transitionToGame('jezzball.html')">Play</a>
-            </div>
-
-            <!-- Minesweeper -->
-            <div class="game-card" data-game="minesweeper.html">
-                <span class="new-badge">New</span>
-                <div class="game-content">
-                    <div class="game-icon minesweeper">⚑</div>
-                    <h2 class="game-title">Minesweeper</h2>
-                    <p class="game-description">Clear the minefield using logic and careful deduction</p>
-                </div>
-                <a href="minesweeper.html" class="play-button" onclick="event.preventDefault(); transitionToGame('minesweeper.html')">Play</a>
-            </div>
-
-            <!-- Lunar Lander -->
-            <div class="game-card" data-game="lunarlander.html">
-                <span class="new-badge">New</span>
-                <div class="game-content">
-                    <div class="game-icon lunarlander">🚀</div>
-                    <h2 class="game-title">Lunar Lander</h2>
-                    <p class="game-description">Land safely on the moon with limited fuel</p>
-                </div>
-                <a href="lunarlander.html" class="play-button" onclick="event.preventDefault(); transitionToGame('lunarlander.html')">Play</a>
-            </div>
+        <div class="carousel-track" id="carouselTrack">
+            <!-- Game cards will be generated dynamically -->
         </div>
     </div>
 
-    <div class="dots-container">
-        <span class="dot active" onclick="goToSlide(0)"></span>
-        <span class="dot" onclick="goToSlide(1)"></span>
-        <span class="dot" onclick="goToSlide(2)"></span>
-        <span class="dot" onclick="goToSlide(3)"></span>
-        <span class="dot" onclick="goToSlide(4)"></span>
-        <span class="dot" onclick="goToSlide(5)"></span>
-        <span class="dot" onclick="goToSlide(6)"></span>
-        <span class="dot" onclick="goToSlide(7)"></span>
+    <div class="dots-container" id="dotsContainer">
+        <!-- Dots will be dynamically generated here -->
     </div>
 
     <p class="instructions">
@@ -1692,13 +1663,13 @@
         <span class="mobile-instruction" style="display: none;">Swipe to navigate</span>
     </p>
     
-    <button class="random-game-button" onclick="selectRandomGame()">
+    <button class="random-game-button btn btn-round glass-panel" data-action="random-game">
         <span class="random-icon">🎲</span>
         <span class="random-text">Random Game</span>
     </button>
     
     <!-- Hamburger Menu Button -->
-    <button class="hamburger-button" onclick="toggleMobileMenu()">
+    <button class="hamburger-button glass-panel" data-action="toggle-mobile-menu">
         <div class="hamburger-icon">
             <div class="hamburger-line"></div>
             <div class="hamburger-line"></div>
@@ -1708,22 +1679,22 @@
     
     <!-- Mobile Menu -->
     <div class="mobile-menu" style="display: none;">
-        <button class="mobile-menu-item" onclick="toggleBrowseMode(); toggleMobileMenu();">
+        <button class="mobile-menu-item" data-action="mobile-browse">
             <span class="mobile-menu-icon">📚</span>
             Browse All Games
         </button>
-        <button class="mobile-menu-item" onclick="selectRandomGame(); toggleMobileMenu();">
+        <button class="mobile-menu-item" data-action="mobile-random">
             <span class="mobile-menu-icon">🎲</span>
             Random Game
         </button>
-        <button class="mobile-menu-item" onclick="window.open('https://github.com/stphung/classic-games-collection/issues/new', '_blank'); toggleMobileMenu();">
+        <button class="mobile-menu-item" data-action="mobile-submit-idea">
             <span class="mobile-menu-icon">💡</span>
             Submit Game Idea
         </button>
     </div>
     
     <!-- Updates Popup Button (hidden on desktop) -->
-    <button class="updates-popup-button" onclick="toggleUpdatesPopup()" style="display: none;">
+    <button class="updates-popup-button" data-action="toggle-updates-popup" style="display: none;">
         Recent Updates
         <span class="updates-indicator"></span>
     </button>
@@ -1733,7 +1704,7 @@
         <div class="updates-popup-content">
             <div class="updates-popup-header">
                 <h2 class="updates-popup-title">Recent Updates</h2>
-                <button class="updates-popup-close" onclick="toggleUpdatesPopup()">×</button>
+                <button class="updates-popup-close" data-action="close-updates-popup">×</button>
             </div>
             <div class="patch-notes-content">
                 <div class="patch-update">
@@ -1765,342 +1736,530 @@
     </div>
 
     <script>
-        const cards = document.querySelectorAll('.game-card');
-        const dots = document.querySelectorAll('.dot');
+        // ===== Module Pattern Implementation =====
         
-        // Load saved position or default to 0
-        let currentIndex = parseInt(localStorage.getItem('carouselPosition') || '0');
-        
-        // Save position when navigating
-        function savePosition() {
-            localStorage.setItem('carouselPosition', currentIndex);
-        }
-
-        function updateCarousel() {
-            cards.forEach((card, index) => {
-                card.classList.remove('active', 'prev', 'next', 'far-prev', 'far-next', 'hidden');
-                
-                const diff = index - currentIndex;
-                
-                if (diff === 0) {
-                    card.classList.add('active');
-                } else if (diff === -1 || (diff === cards.length - 1 && currentIndex === 0)) {
-                    card.classList.add('prev');
-                } else if (diff === 1 || (diff === -(cards.length - 1) && currentIndex === cards.length - 1)) {
-                    card.classList.add('next');
-                } else if (diff === -2 || (diff === cards.length - 2 && currentIndex <= 1)) {
-                    card.classList.add('far-prev');
-                } else if (diff === 2 || (diff === -(cards.length - 2) && currentIndex >= cards.length - 2)) {
-                    card.classList.add('far-next');
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
-
-            // Update dots
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentIndex);
-            });
-            
-            // Update mobile dots
-            const mobileDotElements = document.querySelectorAll('.mobile-dots .dot');
-            mobileDotElements.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentIndex);
-            });
-        }
-
-        function navigate(direction) {
-            currentIndex = (currentIndex + direction + cards.length) % cards.length;
-            updateCarousel();
-            savePosition();
-        }
-
-        function goToSlide(index) {
-            currentIndex = index;
-            updateCarousel();
-            savePosition();
-        }
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') {
-                navigate(-1);
-            } else if (e.key === 'ArrowRight') {
-                navigate(1);
-            } else if (e.key === 'Enter') {
-                const activeCard = document.querySelector('.game-card.active');
-                if (activeCard) {
-                    savePosition();
-                    const gameUrl = activeCard.dataset.game;
-                    transitionToGame(gameUrl);
-                }
-            }
-        });
-
-        // Touch support
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        document.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        });
-
-        document.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        });
-
-        function handleSwipe() {
-            if (touchEndX < touchStartX - 50) {
-                navigate(1);
-            } else if (touchEndX > touchStartX + 50) {
-                navigate(-1);
-            }
-        }
-
-        // Card click to navigate
-        cards.forEach((card, index) => {
-            card.addEventListener('click', (e) => {
-                if (!card.classList.contains('active')) {
-                    e.preventDefault();
-                    currentIndex = index;
-                    updateCarousel();
-                    savePosition();
-                } else {
-                    // Save position and transition when clicking active card to play
-                    e.preventDefault();
-                    savePosition();
-                    const gameUrl = card.dataset.game;
-                    transitionToGame(gameUrl);
-                }
-            });
-        });
-
-        // Hamburger menu toggle
-        function toggleMobileMenu() {
-            const menu = document.querySelector('.mobile-menu');
-            const hamburger = document.querySelector('.hamburger-button');
-            menu.classList.toggle('active');
-            
-            // Animate hamburger lines
-            const lines = hamburger.querySelectorAll('.hamburger-line');
-            if (menu.classList.contains('active')) {
-                lines[0].style.transform = 'rotate(45deg) translateY(9px)';
-                lines[1].style.opacity = '0';
-                lines[2].style.transform = 'rotate(-45deg) translateY(-9px)';
-            } else {
-                lines[0].style.transform = '';
-                lines[1].style.opacity = '';
-                lines[2].style.transform = '';
-            }
-        }
-        
-        // Updates popup toggle
-        function toggleUpdatesPopup() {
-            const popup = document.querySelector('.updates-popup');
-            popup.classList.toggle('active');
-        }
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', (e) => {
-            const menu = document.querySelector('.mobile-menu');
-            const hamburger = document.querySelector('.hamburger-button');
-            
-            if (!menu.contains(e.target) && !hamburger.contains(e.target) && menu.classList.contains('active')) {
-                toggleMobileMenu();
-            }
-        });
-        
-        // Initialize
-        updateCarousel();
-        
-        // Populate mobile dots
-        const mobileDots = document.querySelector('.mobile-dots');
-        if (mobileDots && dots.length > 0) {
-            mobileDots.innerHTML = '';
-            for (let i = 0; i < cards.length; i++) {
-                const dot = document.createElement('span');
-                dot.className = 'dot';
-                dot.onclick = () => goToSlide(i);
-                if (i === currentIndex) dot.classList.add('active');
-                mobileDots.appendChild(dot);
-            }
-        }
-        
-        // Add fade-in effect on page load
-        window.addEventListener('load', () => {
-            document.body.style.animation = 'fadeIn 0.8s ease-out';
-        });
-        
-        // Transition to game
-        function transitionToGame(gameUrl) {
-            const overlay = document.querySelector('.transition-overlay');
-            const activeCard = document.querySelector('.game-card.active');
-            const gameTitle = activeCard ? activeCard.querySelector('.game-title').textContent : 'Game';
-            
-            // Update transition text
-            document.querySelector('.transition-text').textContent = `Loading ${gameTitle}...`;
-            
-            // Add transitioning class to body
-            document.body.classList.add('transitioning');
-            
-            // Activate overlay
-            overlay.classList.add('active');
-            
-            // Navigate after transition
-            setTimeout(() => {
-                window.location.href = gameUrl;
-            }, 800);
-        }
-
-        // Random game selection
-        function selectRandomGame() {
-            const randomIndex = Math.floor(Math.random() * cards.length);
-            const totalSpins = cards.length * 2 + randomIndex; // Spin through all games twice plus the random position
-            let spinsCompleted = 0;
-            
-            // Disable button during animation
-            const button = document.querySelector('.random-game-button');
-            button.disabled = true;
-            button.style.opacity = '0.5';
-            
-            // Animate with variable speed
-            function spin() {
-                navigate(1);
-                spinsCompleted++;
-                
-                if (spinsCompleted >= totalSpins) {
-                    savePosition();
-                    
-                    // Re-enable button
-                    button.disabled = false;
-                    button.style.opacity = '1';
-                    
-                    // Navigate to the game after a short pause
-                    setTimeout(() => {
-                        const activeCard = document.querySelector('.game-card.active');
-                        if (activeCard) {
-                            const gameUrl = activeCard.dataset.game;
-                            transitionToGame(gameUrl);
-                        }
-                    }, 1000);
-                } else {
-                    // Calculate delay based on progress
-                    let delay = 50;
-                    const remaining = totalSpins - spinsCompleted;
-                    
-                    if (remaining < 8) {
-                        // Slow down dramatically near the end
-                        delay = 100 + (8 - remaining) * 30;
-                    } else if (spinsCompleted < 10) {
-                        // Start slow to build anticipation
-                        delay = 80;
-                    }
-                    
-                    setTimeout(spin, delay);
-                }
-            }
-            
-            // Start the spinning
-            spin();
-        }
-
-        // Auto-rotate (optional - uncomment to enable)
-        // setInterval(() => {
-        //     navigate(1);
-        // }, 5000);
-        
-        // Browse mode functionality
+        // Game data - single source of truth
         const gameData = [
-            { title: 'Tetris', icon: '▦', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html' },
-            { title: 'Breakout', icon: '▬', color: '#fbbf24', description: 'Smash through colorful bricks with precision and skill', url: 'breakout.html' },
-            { title: 'Frogger', icon: '🐸', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html' },
-            { title: 'Missile Command', icon: '⟟', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html' },
-            { title: 'Snake', icon: '▪', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html' },
-            { title: 'JezzBall', icon: '◈', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html' },
-            { title: 'Minesweeper', icon: '⚑', color: '#60a5fa', description: 'Clear the minefield using logic and careful deduction', url: 'minesweeper.html', isNew: true },
-            { title: 'Lunar Lander', icon: '🚀', color: '#93c5fd', description: 'Land safely on the moon with limited fuel', url: 'lunarlander.html', isNew: true }
+            { title: 'Tetris', icon: '▦', cssClass: 'tetris', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html' },
+            { title: 'Breakout', icon: '━', cssClass: 'breakout', color: '#fbbf24', description: 'Smash through colorful bricks with precision and skill', url: 'breakout.html' },
+            { title: 'Frogger', icon: '🐸', cssClass: 'frogger', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html' },
+            { title: 'Missile Command', icon: '⟟', cssClass: 'missile', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html' },
+            { title: 'Snake', icon: '▪', cssClass: 'snake', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html' },
+            { title: 'JezzBall', icon: '◈', cssClass: 'jezzball', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html' },
+            { title: 'Minesweeper', icon: '⚑', cssClass: 'minesweeper', color: '#60a5fa', description: 'Clear the minefield using logic and careful deduction', url: 'minesweeper.html', isNew: true },
+            { title: 'Lunar Lander', icon: '🚀', cssClass: 'lunarlander', color: '#93c5fd', description: 'Land safely on the moon with limited fuel', url: 'lunarlander.html', isNew: true }
         ];
         
-        let browseMode = false;
-        let searchTerm = '';
-        
-        function toggleBrowseMode() {
-            browseMode = true;
-            document.body.classList.add('browse-mode');
-            initializeBrowseGrid();
-            // Focus search after a short delay
-            setTimeout(() => {
-                const searchInput = document.querySelector('.search-input');
-                if (searchInput) searchInput.focus();
-            }, 300);
-        }
-        
-        function closeBrowseMode() {
-            browseMode = false;
-            document.body.classList.remove('browse-mode');
-            document.querySelector('.search-input').value = '';
-            searchTerm = '';
-        }
-        
-        function initializeBrowseGrid() {
-            const grid = document.getElementById('browseGrid');
-            grid.innerHTML = '';
+        // CarouselController - Manages carousel navigation and game cards
+        const CarouselController = (function() {
+            // Private state
+            let cards = null;
+            let dots = null;
+            let currentIndex = 0;
+            let touchStartX = 0;
+            let touchEndX = 0;
             
-            gameData.forEach((game, index) => {
-                const card = document.createElement('div');
-                card.className = 'browse-card';
-                card.style.animationDelay = `${index * 0.05}s`;
-                
-                card.innerHTML = `
-                    ${game.isNew ? '<span class="new-badge">New</span>' : ''}
-                    ${game.isUpdated ? '<span class="updated-badge">Updated</span>' : ''}
-                    <div class="game-icon ${game.title.toLowerCase().replace(' ', '')}" style="color: ${game.color}">${game.icon}</div>
-                    <h3 class="game-title">${game.title}</h3>
-                    <p class="game-description">${game.description}</p>
-                `;
-                
-                card.addEventListener('click', () => {
-                    transitionToGame(game.url);
+            // Constants
+            const STORAGE_KEY = 'carouselPosition';
+            const SWIPE_THRESHOLD = 50;
+            
+            // Private methods
+            function savePosition() {
+                localStorage.setItem(STORAGE_KEY, currentIndex);
+            }
+            
+            function loadPosition() {
+                return parseInt(localStorage.getItem(STORAGE_KEY) || '0');
+            }
+
+            function updateCarousel() {
+                cards.forEach((card, index) => {
+                    card.classList.remove('active', 'prev', 'next', 'far-prev', 'far-next', 'hidden');
+                    
+                    const diff = index - currentIndex;
+                    
+                    if (diff === 0) {
+                        card.classList.add('active');
+                    } else if (diff === -1 || (diff === cards.length - 1 && currentIndex === 0)) {
+                        card.classList.add('prev');
+                    } else if (diff === 1 || (diff === -(cards.length - 1) && currentIndex === cards.length - 1)) {
+                        card.classList.add('next');
+                    } else if (diff === -2 || (diff === cards.length - 2 && currentIndex <= 1)) {
+                        card.classList.add('far-prev');
+                    } else if (diff === 2 || (diff === -(cards.length - 2) && currentIndex >= cards.length - 2)) {
+                        card.classList.add('far-next');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                // Update dots
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
                 });
                 
-                grid.appendChild(card);
-            });
-        }
-        
-        function searchGames(term) {
-            searchTerm = term.toLowerCase();
-            const cards = document.querySelectorAll('.browse-card');
-            
-            cards.forEach((card, index) => {
-                const title = card.querySelector('.game-title').textContent.toLowerCase();
-                const description = card.querySelector('.game-description').textContent.toLowerCase();
+                // Update mobile dots
+                const mobileDotElements = document.querySelectorAll('.mobile-dots .dot');
+                mobileDotElements.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                });
+            }
+
+            function navigate(direction) {
+                currentIndex = (currentIndex + direction + cards.length) % cards.length;
+                updateCarousel();
+                savePosition();
+            }
+
+            function goToSlide(index) {
+                currentIndex = parseInt(index);
+                updateCarousel();
+                savePosition();
+            }
+
+            function handleSwipe() {
+                if (touchEndX < touchStartX - SWIPE_THRESHOLD) {
+                    navigate(1);
+                } else if (touchEndX > touchStartX + SWIPE_THRESHOLD) {
+                    navigate(-1);
+                }
+            }
+
+            function setupCardClickHandlers() {
+                cards.forEach((card, index) => {
+                    card.addEventListener('click', (e) => {
+                        if (!card.classList.contains('active')) {
+                            e.preventDefault();
+                            goToSlide(index);
+                        } else {
+                            // Save position and transition when clicking active card to play
+                            e.preventDefault();
+                            savePosition();
+                            const gameUrl = card.dataset.game;
+                            UIController.transitionToGame(gameUrl);
+                        }
+                    });
+                });
+            }
+
+            function selectRandomGame() {
+                const randomIndex = Math.floor(Math.random() * cards.length);
+                const totalSpins = cards.length * 2 + randomIndex;
+                let spinsCompleted = 0;
                 
-                if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                    card.classList.remove('hidden');
+                // Disable button during animation
+                const button = document.querySelector('.random-game-button');
+                button.disabled = true;
+                button.style.opacity = '0.5';
+                
+                // Animate with variable speed
+                function spin() {
+                    navigate(1);
+                    spinsCompleted++;
+                    
+                    if (spinsCompleted >= totalSpins) {
+                        savePosition();
+                        
+                        // Re-enable button
+                        button.disabled = false;
+                        button.style.opacity = '1';
+                        
+                        // Navigate to the game after a short pause
+                        setTimeout(() => {
+                            const activeCard = document.querySelector('.game-card.active');
+                            if (activeCard) {
+                                const gameUrl = activeCard.dataset.game;
+                                UIController.transitionToGame(gameUrl);
+                            }
+                        }, 1000);
+                    } else {
+                        // Calculate delay based on progress
+                        let delay = 50;
+                        const remaining = totalSpins - spinsCompleted;
+                        
+                        if (remaining < 8) {
+                            delay = 100 + (8 - remaining) * 30;
+                        } else if (spinsCompleted < 10) {
+                            delay = 80;
+                        }
+                        
+                        setTimeout(spin, delay);
+                    }
+                }
+                
+                // Start the spinning
+                spin();
+            }
+
+            function setupKeyboardNavigation() {
+                document.addEventListener('keydown', (e) => {
+                    if (document.body.classList.contains('browse-mode')) return;
+                    
+                    if (e.key === 'ArrowLeft') {
+                        navigate(-1);
+                    } else if (e.key === 'ArrowRight') {
+                        navigate(1);
+                    } else if (e.key === 'Enter') {
+                        const activeCard = document.querySelector('.game-card.active');
+                        if (activeCard) {
+                            savePosition();
+                            const gameUrl = activeCard.dataset.game;
+                            UIController.transitionToGame(gameUrl);
+                        }
+                    }
+                });
+            }
+
+            function setupTouchNavigation() {
+                document.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                });
+
+                document.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                });
+            }
+
+            function populateMobileDots() {
+                const mobileDots = document.querySelector('.mobile-dots');
+                if (mobileDots && cards) {
+                    mobileDots.innerHTML = '';
+                    for (let i = 0; i < cards.length; i++) {
+                        const dot = document.createElement('span');
+                        dot.className = 'dot';
+                        dot.setAttribute('data-action', 'go-to-slide');
+                        dot.setAttribute('data-slide-index', i);
+                        if (i === currentIndex) dot.classList.add('active');
+                        mobileDots.appendChild(dot);
+                    }
+                }
+            }
+
+            function renderGameCards() {
+                const carouselTrack = document.getElementById('carouselTrack');
+                carouselTrack.innerHTML = '';
+                
+                gameData.forEach((game) => {
+                    const card = document.createElement('div');
+                    card.className = 'game-card glass-panel';
+                    card.setAttribute('data-game', game.url);
+                    
+                    // Add new badge if applicable
+                    let badgeHtml = '';
+                    if (game.isNew) {
+                        badgeHtml = '<span class="new-badge">New</span>';
+                    } else if (game.isUpdated) {
+                        badgeHtml = '<span class="updated-badge">Updated</span>';
+                    }
+                    
+                    card.innerHTML = `
+                        ${badgeHtml}
+                        <div class="game-content">
+                            <div class="game-icon ${game.cssClass || ''}">${game.icon}</div>
+                            <h2 class="game-title">${game.title}</h2>
+                            <p class="game-description">${game.description}</p>
+                        </div>
+                    `;
+                    
+                    carouselTrack.appendChild(card);
+                });
+                
+                // Update dots container to match number of games
+                const dotsContainer = document.querySelector('.dots-container');
+                dotsContainer.innerHTML = '';
+                gameData.forEach((_, index) => {
+                    const dot = document.createElement('span');
+                    dot.className = index === 0 ? 'dot active' : 'dot';
+                    dot.setAttribute('data-action', 'go-to-slide');
+                    dot.setAttribute('data-slide-index', index);
+                    dotsContainer.appendChild(dot);
+                });
+            }
+
+            // Public interface
+            return {
+                init: function() {
+                    renderGameCards();
+                    cards = document.querySelectorAll('.game-card');
+                    dots = document.querySelectorAll('.dots-container .dot');
+                    currentIndex = loadPosition();
+                    
+                    setupCardClickHandlers();
+                    setupKeyboardNavigation();
+                    setupTouchNavigation();
+                    populateMobileDots();
+                    updateCarousel();
+                },
+                navigate: navigate,
+                goToSlide: goToSlide,
+                selectRandomGame: selectRandomGame
+            };
+        })();
+
+        // BrowseController - Manages browse mode and game search
+        const BrowseController = (function() {
+            // Private state
+            let browseMode = false;
+            let searchTerm = '';
+            
+            // Private methods
+            function initializeBrowseGrid() {
+                const grid = document.getElementById('browseGrid');
+                grid.innerHTML = '';
+                
+                gameData.forEach((game, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'browse-card glass-panel';
                     card.style.animationDelay = `${index * 0.05}s`;
+                    
+                    card.innerHTML = `
+                        ${game.isNew ? '<span class="new-badge">New</span>' : ''}
+                        ${game.isUpdated ? '<span class="updated-badge">Updated</span>' : ''}
+                        <div class="game-icon ${game.cssClass || ''}" style="color: ${game.color}">${game.icon}</div>
+                        <h3 class="game-title">${game.title}</h3>
+                        <p class="game-description">${game.description}</p>
+                    `;
+                    
+                    card.addEventListener('click', () => {
+                        UIController.transitionToGame(game.url);
+                    });
+                    
+                    grid.appendChild(card);
+                });
+            }
+            
+            function searchGames(term) {
+                searchTerm = term.toLowerCase();
+                const cards = document.querySelectorAll('.browse-card');
+                
+                cards.forEach((card, index) => {
+                    const title = card.querySelector('.game-title').textContent.toLowerCase();
+                    const description = card.querySelector('.game-description').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.classList.remove('hidden');
+                        card.style.animationDelay = `${index * 0.05}s`;
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            }
+            
+            function setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === '/' && !browseMode) {
+                        e.preventDefault();
+                        toggleBrowseMode();
+                    } else if (e.key === 'Escape' && browseMode) {
+                        e.preventDefault();
+                        closeBrowseMode();
+                    }
+                });
+            }
+            
+            function toggleBrowseMode() {
+                browseMode = true;
+                document.body.classList.add('browse-mode');
+                initializeBrowseGrid();
+                // Focus search after a short delay
+                setTimeout(() => {
+                    const searchInput = document.querySelector('.search-input');
+                    if (searchInput) searchInput.focus();
+                }, 300);
+            }
+            
+            function closeBrowseMode() {
+                browseMode = false;
+                document.body.classList.remove('browse-mode');
+                document.querySelector('.search-input').value = '';
+                searchTerm = '';
+            }
+            
+            // Public interface
+            return {
+                init: function() {
+                    setupKeyboardShortcuts();
+                },
+                toggleBrowseMode: toggleBrowseMode,
+                closeBrowseMode: closeBrowseMode,
+                searchGames: searchGames
+            };
+        })();
+
+        // UIController - Manages UI interactions and transitions
+        const UIController = (function() {
+            // Private state
+            let mobileMenuOpen = false;
+            let updatesPopupOpen = false;
+            let patchNotesExpanded = false;
+            
+            // Private methods
+            function toggleMobileMenu() {
+                const menu = document.querySelector('.mobile-menu');
+                const hamburger = document.querySelector('.hamburger-button');
+                mobileMenuOpen = !mobileMenuOpen;
+                menu.classList.toggle('active', mobileMenuOpen);
+                
+                // Animate hamburger lines
+                const lines = hamburger.querySelectorAll('.hamburger-line');
+                if (mobileMenuOpen) {
+                    lines[0].style.transform = 'rotate(45deg) translateY(9px)';
+                    lines[1].style.opacity = '0';
+                    lines[2].style.transform = 'rotate(-45deg) translateY(-9px)';
                 } else {
-                    card.classList.add('hidden');
+                    lines[0].style.transform = '';
+                    lines[1].style.opacity = '';
+                    lines[2].style.transform = '';
+                }
+            }
+            
+            function toggleUpdatesPopup() {
+                const popup = document.querySelector('.updates-popup');
+                updatesPopupOpen = !updatesPopupOpen;
+                popup.classList.toggle('active', updatesPopupOpen);
+            }
+            
+            function togglePatchNotes() {
+                const patchNotes = document.getElementById('patchNotes');
+                patchNotesExpanded = !patchNotesExpanded;
+                patchNotes.classList.toggle('expanded', patchNotesExpanded);
+            }
+            
+            function transitionToGame(gameUrl) {
+                const overlay = document.querySelector('.transition-overlay');
+                const activeCard = document.querySelector('.game-card.active');
+                const gameTitle = activeCard ? activeCard.querySelector('.game-title').textContent : 'Game';
+                
+                // Update transition text
+                document.querySelector('.transition-text').textContent = `Loading ${gameTitle}...`;
+                
+                // Add transitioning class to body
+                document.body.classList.add('transitioning');
+                
+                // Activate overlay
+                overlay.classList.add('active');
+                
+                // Navigate after transition
+                setTimeout(() => {
+                    window.location.href = gameUrl;
+                }, 800);
+            }
+            
+            function setupOutsideClickHandler() {
+                document.addEventListener('click', (e) => {
+                    const menu = document.querySelector('.mobile-menu');
+                    const hamburger = document.querySelector('.hamburger-button');
+                    
+                    if (!menu.contains(e.target) && !hamburger.contains(e.target) && mobileMenuOpen) {
+                        toggleMobileMenu();
+                    }
+                });
+            }
+            
+            function setupPageLoadEffects() {
+                window.addEventListener('load', () => {
+                    document.body.style.animation = 'fadeIn 0.8s ease-out';
+                });
+            }
+            
+            // Public interface
+            return {
+                init: function() {
+                    setupOutsideClickHandler();
+                    setupPageLoadEffects();
+                },
+                toggleMobileMenu: toggleMobileMenu,
+                toggleUpdatesPopup: toggleUpdatesPopup,
+                togglePatchNotes: togglePatchNotes,
+                transitionToGame: transitionToGame
+            };
+        })();
+
+        // Main initialization function with event delegation
+        function init() {
+            // Initialize modules
+            CarouselController.init();
+            BrowseController.init();
+            UIController.init();
+            
+            // Set up event delegation
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('[data-action]');
+                if (!target) return;
+                
+                const action = target.getAttribute('data-action');
+                
+                switch(action) {
+                    // Carousel navigation
+                    case 'nav-prev':
+                        CarouselController.navigate(-1);
+                        break;
+                    case 'nav-next':
+                        CarouselController.navigate(1);
+                        break;
+                    case 'go-to-slide':
+                        const slideIndex = target.getAttribute('data-slide-index');
+                        if (slideIndex !== null) {
+                            CarouselController.goToSlide(slideIndex);
+                        }
+                        break;
+                    case 'random-game':
+                        CarouselController.selectRandomGame();
+                        break;
+                        
+                    // Browse mode
+                    case 'toggle-browse':
+                        BrowseController.toggleBrowseMode();
+                        break;
+                    case 'close-browse':
+                        BrowseController.closeBrowseMode();
+                        break;
+                        
+                    // UI toggles
+                    case 'toggle-mobile-menu':
+                        UIController.toggleMobileMenu();
+                        break;
+                    case 'toggle-patch-notes':
+                        UIController.togglePatchNotes();
+                        break;
+                    case 'toggle-updates-popup':
+                        UIController.toggleUpdatesPopup();
+                        break;
+                    case 'close-updates-popup':
+                        UIController.toggleUpdatesPopup();
+                        break;
+                        
+                    // Mobile menu actions
+                    case 'mobile-browse':
+                        BrowseController.toggleBrowseMode();
+                        UIController.toggleMobileMenu();
+                        break;
+                    case 'mobile-random':
+                        CarouselController.selectRandomGame();
+                        UIController.toggleMobileMenu();
+                        break;
+                    case 'mobile-submit-idea':
+                        window.open('https://github.com/stphung/classic-games-collection/issues/new', '_blank');
+                        UIController.toggleMobileMenu();
+                        break;
+                }
+            });
+            
+            // Set up search input event handler
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('[data-action="search-games"]')) {
+                    BrowseController.searchGames(e.target.value);
                 }
             });
         }
         
-        // Toggle patch notes
-        function togglePatchNotes() {
-            const patchNotes = document.getElementById('patchNotes');
-            patchNotes.classList.toggle('expanded');
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
         }
-        
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.key === '/' && !browseMode) {
-                e.preventDefault();
-                toggleBrowseMode();
-            } else if (e.key === 'Escape' && browseMode) {
-                e.preventDefault();
-                closeBrowseMode();
-            }
-        });
     </script>
 </body>
 </html>
