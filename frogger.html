@@ -1651,6 +1651,9 @@
             if (currentLane && currentLane.type === 'water') {
                 let onLog = false;
                 for (let log of logs) {
+                    // Only check logs in the same lane as the frog
+                    if (log.laneY !== currentLane.y) continue;
+                    
                     // Check collision with adjusted Y position for endless mode  
                     const logY = log.y;  // Log Y is already in screen coordinates
                     const frogActualY = frogY;  // Frog Y is already in screen coordinates
@@ -1664,10 +1667,8 @@
                     const overlapWidth = Math.max(0, overlapEnd - overlapStart);
                     const frogOnLogPercent = overlapWidth / collisionSize;
                     
-                    // More precise Y-axis check
-                    const yOverlap = Math.abs(logY + log.height/2 - (frogActualY + GRID_SIZE/2));
-                    
-                    if (yOverlap < (log.height/2 + collisionSize/2) && frogOnLogPercent >= 0.6) {
+                    // For logs, we just need to check if we're in the same lane row
+                    if (frogOnLogPercent >= 0.6) {
                         onLog = true;
                         const logMovement = log.speed * speedMultiplier / GRID_SIZE;
                         frog.x += logMovement;
@@ -2252,6 +2253,9 @@
             if (currentLane && currentLane.type === 'water') {
                 let onLog = false;
                 for (let log of logs) {
+                    // Only check logs in the same lane as the frog
+                    if (log.laneY !== currentLane.y) continue;
+                    
                     // Check if frog overlaps with log - require at least 60% of frog to be on log
                     // Use same pattern as car collision detection
                     const frogLeft = frogX - collisionSize/2;
@@ -2261,10 +2265,8 @@
                     const overlapWidth = Math.max(0, overlapEnd - overlapStart);
                     const frogOnLogPercent = overlapWidth / collisionSize;
                     
-                    // More precise Y-axis check
-                    const yOverlap = Math.abs(log.y + log.height/2 - (frogY + GRID_SIZE/2));
-                    
-                    if (yOverlap < (log.height/2 + collisionSize/2) && frogOnLogPercent >= 0.6) {
+                    // For logs, we just need to check if we're in the same lane row
+                    if (frogOnLogPercent >= 0.6) {
                         onLog = true;
                         const logMovement = log.speed * speedMultiplier / GRID_SIZE;
                         frog2.x += logMovement;
