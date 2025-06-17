@@ -319,6 +319,16 @@
                 font-size: 36px;
                 letter-spacing: 4px;
             }
+            
+            .difficulty-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .difficulty-btn {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
         }
     </style>
 </head>
@@ -345,9 +355,11 @@
                     <span class="info-value score-value" id="score">0</span>
                 </div>
             </div>
-            <div class="info-item" style="margin-left: 20px;">
-                <span class="info-label">Difficulty</span>
-                <span class="info-value" id="currentDifficulty" style="color: #60a5fa; text-transform: uppercase;">Easy</span>
+            <div class="difficulty-controls">
+                <button class="difficulty-btn active" data-level="easy" onclick="setDifficulty('easy')">Easy</button>
+                <button class="difficulty-btn" data-level="normal" onclick="setDifficulty('normal')">Normal</button>
+                <button class="difficulty-btn" data-level="hard" onclick="setDifficulty('hard')">Hard</button>
+                <button class="difficulty-btn" data-level="expert" onclick="setDifficulty('expert')">Expert</button>
             </div>
         </div>
         
