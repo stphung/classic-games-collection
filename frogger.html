@@ -544,59 +544,43 @@
             oscillator.stop(startTime + duration);
         }
         
-        // More exciting retro gaming melody with rhythm
+        // Ambient melody - sparse and atmospheric
         const melody = [
-            { note: 440, duration: 0.6, wave: 'square' }, // A4 - quick start
-            { note: 523, duration: 0.3, wave: 'square' }, // C5
-            { note: 659, duration: 0.6, wave: 'square' }, // E5 - higher energy
-            { note: 523, duration: 0.3, wave: 'square' }, // C5
-            { note: 440, duration: 0.8, wave: 'square' }, // A4
-            { note: 392, duration: 0.4, wave: 'square' }, // G4
-            
-            { note: 523, duration: 0.6, wave: 'square' }, // C5 - ascending
-            { note: 659, duration: 0.6, wave: 'square' }, // E5
-            { note: 784, duration: 0.8, wave: 'square' }, // G5 - peak
-            { note: 659, duration: 0.4, wave: 'square' }, // E5
-            { note: 523, duration: 0.6, wave: 'square' }, // C5
-            { note: 440, duration: 1.0, wave: 'square' }, // A4 - resolution
+            { note: 440, duration: 2.0, wave: 'sine' },    // A4 - long, gentle
+            { note: 523, duration: 2.4, wave: 'sine' },    // C5
+            { note: 392, duration: 1.6, wave: 'sine' },    // G4
+            { note: 349, duration: 3.0, wave: 'sine' },    // F4 - sustained
+            { note: 330, duration: 2.0, wave: 'sine' },    // E4
+            { note: 440, duration: 4.0, wave: 'sine' },    // A4 - resolution
         ];
         
-        // Rhythmic bass with more movement
+        // Deep ambient bass - slow moving drone
         const bassLine = [
-            { note: 110, duration: 1.0, wave: 'triangle' }, // A2
-            { note: 110, duration: 0.5, wave: 'triangle' }, // A2 - staccato
-            { note: 131, duration: 1.0, wave: 'triangle' }, // C3 - movement
-            { note: 110, duration: 0.5, wave: 'triangle' }, // A2
-            { note: 98, duration: 1.0, wave: 'triangle' },  // G2
-            { note: 87, duration: 1.0, wave: 'triangle' },  // F2
-            { note: 110, duration: 1.0, wave: 'triangle' }, // A2 - return
+            { note: 55, duration: 8.0, wave: 'sine' },     // A1 - deep drone
+            { note: 65.5, duration: 8.0, wave: 'sine' },   // C2
+            { note: 49, duration: 8.0, wave: 'sine' },     // G1
+            { note: 55, duration: 8.0, wave: 'sine' },     // A1
         ];
         
-        // Arpeggio layer for excitement
-        const arpeggioLayer = [
-            { note: 220, duration: 0.2, wave: 'triangle' }, // A3
-            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
-            { note: 330, duration: 0.2, wave: 'triangle' }, // E4
-            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
-            { note: 220, duration: 0.2, wave: 'triangle' }, // A3
-            { note: 196, duration: 0.2, wave: 'triangle' }, // G3
-            { note: 220, duration: 0.2, wave: 'triangle' }, // A3
-            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
-            
-            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
-            { note: 330, duration: 0.2, wave: 'triangle' }, // E4
-            { note: 392, duration: 0.2, wave: 'triangle' }, // G4
-            { note: 330, duration: 0.2, wave: 'triangle' }, // E4
-            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
-            { note: 220, duration: 0.2, wave: 'triangle' }, // A3
-            { note: 262, duration: 0.2, wave: 'triangle' }, // C4
-            { note: 220, duration: 0.2, wave: 'triangle' }, // A3
+        // Soft ambient texture - creates atmosphere
+        const ambientTexture = [
+            { note: 220, duration: 4.0, wave: 'triangle' },  // A3 - soft pad
+            { note: 262, duration: 4.0, wave: 'triangle' },  // C4
+            { note: 330, duration: 4.0, wave: 'triangle' },  // E4
+            { note: 262, duration: 4.0, wave: 'triangle' },  // C4
+            { note: 220, duration: 4.0, wave: 'triangle' },  // A3
+            { note: 196, duration: 4.0, wave: 'triangle' },  // G3
+            { note: 175, duration: 4.0, wave: 'triangle' },  // F3
+            { note: 220, duration: 4.0, wave: 'triangle' },  // A3
         ];
         
-        // Soft ambient pad - still atmospheric
-        const ambientPad = [
-            { note: 440, duration: 3.2, wave: 'sine' }, // A4 - warm pad
-            { note: 392, duration: 3.2, wave: 'sine' }, // G4 - gentle movement
+        // High ambient shimmer - ethereal layer
+        const shimmerLayer = [
+            { note: 880, duration: 6.0, wave: 'sine' },     // A5 - very soft
+            { note: 1047, duration: 6.0, wave: 'sine' },    // C6
+            { note: 784, duration: 6.0, wave: 'sine' },     // G5
+            { note: 698, duration: 6.0, wave: 'sine' },     // F5
+            { note: 880, duration: 8.0, wave: 'sine' },     // A5
         ];
         
         function playMusic() {
@@ -604,32 +588,32 @@
             
             const now = audioContext.currentTime;
             
-            // Play exciting retro melody - more prominent
+            // Play ambient melody - very soft and sparse
             let melodyTime = 0;
             melody.forEach(note => {
-                playNote(note.note, note.duration, now + melodyTime, note.wave, 0.035);
+                playNote(note.note, note.duration, now + melodyTime, note.wave, 0.015); // Very quiet
                 melodyTime += note.duration;
             });
             
-            // Play rhythmic bass foundation
+            // Play deep bass drone - foundation
             let bassTime = 0;
             bassLine.forEach(note => {
-                playNote(note.note, note.duration, now + bassTime, note.wave, 0.025);
+                playNote(note.note, note.duration, now + bassTime, note.wave, 0.02); // Deep and present
                 bassTime += note.duration;
             });
             
-            // Play exciting arpeggio layer for movement
-            let arpeggioTime = 0;
-            arpeggioLayer.forEach(note => {
-                playNote(note.note, note.duration, now + arpeggioTime, note.wave, 0.018);
-                arpeggioTime += note.duration;
+            // Play ambient texture - mid layer
+            let textureTime = 0;
+            ambientTexture.forEach(note => {
+                playNote(note.note, note.duration, now + textureTime, note.wave, 0.008); // Very soft
+                textureTime += note.duration;
             });
             
-            // Play soft ambient pad - atmospheric foundation
-            let padTime = 0;
-            ambientPad.forEach(note => {
-                playNote(note.note, note.duration, now + padTime, note.wave, 0.012);
-                padTime += note.duration;
+            // Play high shimmer - ethereal top layer
+            let shimmerTime = 0;
+            shimmerLayer.forEach(note => {
+                playNote(note.note, note.duration, now + shimmerTime, note.wave, 0.006); // Barely audible
+                shimmerTime += note.duration;
             });
         }
         
@@ -645,7 +629,7 @@
             
             musicPlaying = true;
             playMusic();
-            musicInterval = setInterval(playMusic, 6400); // Loop every 6.4 seconds for exciting retro gaming
+            musicInterval = setInterval(playMusic, 32000); // Loop every 32 seconds for ambient atmosphere
         }
         
         function stopMusic() {
