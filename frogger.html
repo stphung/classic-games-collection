@@ -1612,8 +1612,9 @@
         }
 
         function checkCollisions() {
-            const frogX = frog.x * GRID_SIZE;
-            const frogY = frog.y * GRID_SIZE;
+            // Frog position is centered in the grid cell
+            const frogX = frog.x * GRID_SIZE + GRID_SIZE / 2;
+            const frogY = frog.y * GRID_SIZE + GRID_SIZE / 2;
             const frogSize = frog.size;
             // Apply the same 0.7 scale factor used in drawFrog for accurate collision
             const visualFrogSize = frogSize * 0.7;
@@ -1634,7 +1635,7 @@
                     const frogActualY = frogY;  // Frog Y is already in screen coordinates
                     
                     // More precise Y-axis check - frog and car must be in same row
-                    const yOverlap = Math.abs(carY + car.height/2 - (frogActualY + GRID_SIZE/2));
+                    const yOverlap = Math.abs(carY + car.height/2 - frogActualY);
                     
                     if (yOverlap < (car.height/2 + collisionSize/2) &&
                         frogX + collisionSize/2 > car.x &&
@@ -2221,8 +2222,9 @@
         }
 
         function checkCollisions2() {
-            const frogX = frog2.x * GRID_SIZE;
-            const frogY = frog2.y * GRID_SIZE;
+            // Frog position is centered in the grid cell
+            const frogX = frog2.x * GRID_SIZE + GRID_SIZE / 2;
+            const frogY = frog2.y * GRID_SIZE + GRID_SIZE / 2;
             const frogSize = frog2.size;
             // Apply the same 0.7 scale factor used in drawFrog for accurate collision
             const visualFrogSize = frogSize * 0.7;
@@ -2236,7 +2238,7 @@
             if (currentLane && currentLane.type === 'road') {
                 for (let car of cars) {
                     // More precise Y-axis check - frog and car must be in same row
-                    const yOverlap = Math.abs(car.y + car.height/2 - (frogY + GRID_SIZE/2));
+                    const yOverlap = Math.abs(car.y + car.height/2 - frogY);
                     
                     if (yOverlap < (car.height/2 + collisionSize/2) &&
                         frogX + collisionSize/2 > car.x &&
