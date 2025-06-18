@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JezzBall</title>
+    <link rel="stylesheet" href="common-styles.css">
     <script src="transition-common.js"></script>
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
@@ -42,24 +43,15 @@
             100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
-        .game-container {
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            z-index: 1;
-        }
+        /* Game container inherits from common-styles.css */
 
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: var(--spacing-md);
             flex-wrap: wrap;
-            gap: 20px;
+            gap: var(--spacing-md);
         }
 
         .game-title {
@@ -74,10 +66,11 @@
 
         .game-stats {
             display: flex;
-            gap: 30px;
+            gap: var(--spacing-lg);
             align-items: center;
         }
 
+        /* Stat styles inherit from common info patterns */
         .stat {
             text-align: center;
         }
@@ -85,19 +78,19 @@
         .stat-label {
             font-size: 0.8em;
             opacity: 0.7;
-            margin-bottom: 5px;
+            margin-bottom: var(--spacing-xs);
         }
 
         .stat-value {
             font-size: 1.5em;
-            font-weight: bold;
+            font-weight: var(--fw-bold);
             color: #00ffff;
             text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
 
         canvas {
             border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
+            border-radius: var(--border-radius-sm);
             background: rgba(0, 0, 0, 0.8);
             display: block;
             cursor: crosshair;
@@ -108,14 +101,14 @@
         }
 
         .controls {
-            margin-top: 20px;
+            margin-top: var(--spacing-md);
             text-align: center;
             font-size: 0.9em;
             opacity: 0.8;
         }
 
         .control-item {
-            margin: 5px 0;
+            margin: var(--spacing-xs) 0;
         }
 
         .control-key {
@@ -123,9 +116,9 @@
             padding: 4px 8px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
+            border-radius: var(--border-radius-sm);
             font-family: monospace;
-            margin: 0 4px;
+            margin: 0 var(--spacing-xs);
         }
 
         .home-button {
@@ -136,7 +129,7 @@
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            border-radius: var(--border-radius-sm);
             color: #ffffff;
             text-decoration: none;
             font-weight: 500;
@@ -162,14 +155,14 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            border-radius: 10px;
+            border-radius: var(--border-radius-sm);
             z-index: 10;
         }
 
         .game-over-title, .start-title {
             font-size: 3em;
-            font-weight: bold;
-            margin-bottom: 20px;
+            font-weight: var(--fw-bold);
+            margin-bottom: var(--spacing-md);
             background: linear-gradient(135deg, #ff6b6b 0%, #ff00ff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -178,25 +171,27 @@
 
         .final-score {
             font-size: 1.5em;
-            margin-bottom: 30px;
+            margin-bottom: var(--spacing-lg);
             color: #00ffff;
         }
 
+        /* Play button inherits from common .btn styles */
         .play-button {
             padding: 15px 40px;
             font-size: 1.2em;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: var(--border-radius-sm);
             font-weight: bold;
         }
 
         .play-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .game-instructions {
+            margin-bottom: var(--spacing-md);
+            opacity: 0.8;
         }
 
 
@@ -257,14 +252,14 @@
             
             <div class="start-screen" id="startScreen">
                 <h2 class="start-title">JezzBall</h2>
-                <p style="margin-bottom: 20px; opacity: 0.8;">Trap the balls and clear 75% of the field!</p>
-                <button class="play-button" onclick="startGame()">Start Game</button>
+                <p class="game-instructions">Trap the balls and clear 75% of the field!</p>
+                <button class="btn play-button" onclick="startGame()">Start Game</button>
             </div>
             
             <div class="game-over-screen" id="gameOverScreen" style="display: none;">
                 <h2 class="game-over-title" id="gameOverTitle">Game Over!</h2>
                 <div class="final-score" id="finalScore">Final Score: 0</div>
-                <button class="play-button" onclick="resetGame()">Play Again</button>
+                <button class="btn play-button" onclick="resetGame()">Play Again</button>
             </div>
         </div>
         
