@@ -8,21 +8,60 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
-    <link rel="stylesheet" href="common-styles.css">
-    <script src="audio-manager.js"></script>
-    <script src="particle-system.js"></script>
     <style>
-        /* Game-specific styles for Lunar Lander */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        /* Background effect handled by common-styles.css */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-        /* Game container styles inherited from common-styles.css */
+        /* Subtle animated background */
+        .bg-effect {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #fff 2%, transparent 2%),
+                radial-gradient(circle at 75% 75%, #fff 2%, transparent 2%);
+            background-size: 50px 50px;
+            animation: drift 20s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0, 0); }
+            to { transform: translate(50px, 50px); }
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            position: relative;
+        }
 
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: var(--spacing-lg);
+            margin-bottom: 30px;
             padding: 0 10px;
         }
 
@@ -32,26 +71,41 @@
             align-items: center;
         }
 
-        /* Info item styles inherited from common-styles.css */
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 200;
+            letter-spacing: 1px;
+        }
 
-        /* Info label styles inherited from common-styles.css */
+        .info-label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
 
-        /* Info value styles inherited from common-styles.css */
+        .info-value {
+            font-weight: 400;
+            min-width: 40px;
+            text-align: right;
+        }
 
         .fuel-value {
-            color: var(--color-success);
+            color: #4ade80;
         }
 
         .velocity-value {
-            color: var(--color-info);
+            color: #60a5fa;
         }
 
         .altitude-value {
-            color: var(--color-warning);
+            color: #fbbf24;
         }
 
         .score-value {
-            color: var(--color-jezzball);
+            color: #c084fc;
         }
 
         /* Difficulty controls removed - only available on start screen */
@@ -83,8 +137,8 @@
 
         #gameCanvas {
             background: linear-gradient(to bottom, #000 0%, #0a0a0a 50%, #111 100%);
-            border: 1px solid var(--color-glass-border);
-            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             display: block;
             position: relative;
             image-rendering: pixelated;
@@ -480,7 +534,8 @@
         // Stars
         let stars = [];
         
-        // Particles handled by particle-system.js
+        // Particles
+        let particles = [];
         
         // Controls
         const keys = {};
@@ -489,31 +544,145 @@
         let score = 0;
         let totalScore = 0;
         
-        // Audio handled by audio-manager.js
+        // Audio
+        let audioContext;
+        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
+        let backgroundMusic;
         
-        // Audio initialization handled by audio-manager.js
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Create background music
+            backgroundMusic = createBackgroundMusic();
+        }
         
-        // Background music handled by audio-manager.js
+        function createBackgroundMusic() {
+            const tempo = 100;
+            const beatDuration = 60 / tempo;
+            
+            const notes = [
+                { freq: 110, duration: 0.5 },    // A2
+                { freq: 123.47, duration: 0.5 },  // B2
+                { freq: 130.81, duration: 0.5 },  // C3
+                { freq: 146.83, duration: 0.5 },  // D3
+                { freq: 130.81, duration: 0.5 },  // C3
+                { freq: 123.47, duration: 0.5 },  // B2
+                { freq: 110, duration: 0.5 },     // A2
+                { freq: 98, duration: 0.5 },      // G2
+            ];
+
+            let musicGain = audioContext.createGain();
+            musicGain.gain.value = 0.08;
+            musicGain.connect(audioContext.destination);
+
+            let currentTime = 0;
+            
+            function playSequence() {
+                if (isMuted || !audioContext || !gameRunning) return;
+                
+                currentTime = audioContext.currentTime;
+                
+                notes.forEach((note, index) => {
+                    const oscillator = audioContext.createOscillator();
+                    const noteGain = audioContext.createGain();
+                    
+                    oscillator.type = 'square';
+                    oscillator.frequency.value = note.freq;
+                    
+                    noteGain.gain.setValueAtTime(0, currentTime + index * beatDuration * 0.5);
+                    noteGain.gain.linearRampToValueAtTime(0.08, currentTime + index * beatDuration * 0.5 + 0.01);
+                    noteGain.gain.exponentialRampToValueAtTime(0.001, currentTime + index * beatDuration * 0.5 + note.duration * beatDuration);
+                    
+                    oscillator.connect(noteGain);
+                    noteGain.connect(musicGain);
+                    
+                    oscillator.start(currentTime + index * beatDuration * 0.5);
+                    oscillator.stop(currentTime + index * beatDuration * 0.5 + note.duration * beatDuration);
+                });
+                
+                setTimeout(playSequence, notes.length * beatDuration * 500);
+            }
+            
+            return { play: playSequence, stop: () => {} };
+        }
         
-        // Sound effects wrapper for Lunar Lander
         function playSound(type) {
+            if (isMuted || !audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            const now = audioContext.currentTime;
+            
             switch(type) {
                 case 'thrust':
-                    window.audioManager.playSound('thrust');
+                    // Create white noise for thrust
+                    const bufferSize = audioContext.sampleRate * 0.1;
+                    const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const data = noiseBuffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    
+                    const noise = audioContext.createBufferSource();
+                    noise.buffer = noiseBuffer;
+                    
+                    const filter = audioContext.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 400;
+                    
+                    noise.connect(filter);
+                    filter.connect(gainNode);
+                    
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    
+                    noise.start(now);
+                    noise.stop(now + 0.1);
                     break;
+                    
                 case 'landing':
-                    window.audioManager.playSound('success');
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(400, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.2);
                     break;
+                    
                 case 'crash':
-                    window.audioManager.playSound('explosion');
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(150, now);
+                    oscillator.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.5);
                     break;
+                    
                 case 'beep':
-                    window.audioManager.playSound('beep');
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 880;
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.05);
                     break;
             }
         }
         
-        // Audio mute handled by audio-manager.js
+        // Listen for global mute toggle
+        window.addEventListener('globalMuteToggle', (event) => {
+            isMuted = event.detail.isMuted;
+            if (!isMuted && !audioContext && gameRunning) {
+                initAudio();
+                backgroundMusic.play();
+            }
+        });
         
         function initTerrain() {
             terrain = [];
@@ -561,7 +730,33 @@
             }
         }
         
-        // Particle effects handled by particle-system.js
+        function createParticle(x, y, vx, vy, color) {
+            particles.push({
+                x, y, vx, vy,
+                life: 1,
+                color: color || '#fbbf24'
+            });
+        }
+        
+        function updateParticles() {
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1; // gravity
+                p.life -= 0.02;
+                return p.life > 0;
+            });
+        }
+        
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, 2, 2);
+                ctx.restore();
+            });
+        }
         
         function updateLander() {
             if (lander.landed || lander.crashed) return;
@@ -589,16 +784,13 @@
                 for (let i = 0; i < 3; i++) {
                     const particleAngle = lander.angle + (Math.random() - 0.5) * 0.5;
                     const particleSpeed = 3 + Math.random() * 2;
-                    window.particleSystem.createParticle({
-                        x: lander.x - Math.sin(lander.angle) * 10,
-                        y: lander.y + Math.cos(lander.angle) * 15,
-                        vx: -Math.sin(particleAngle) * particleSpeed * 60,
-                        vy: Math.cos(particleAngle) * particleSpeed * 60,
-                        color: Math.random() > 0.5 ? '#fbbf24' : '#f87171',
-                        size: 2,
-                        gravity: 200,
-                        life: 0.5
-                    });
+                    createParticle(
+                        lander.x - Math.sin(lander.angle) * 10,
+                        lander.y + Math.cos(lander.angle) * 15,
+                        -Math.sin(particleAngle) * particleSpeed,
+                        Math.cos(particleAngle) * particleSpeed,
+                        Math.random() > 0.5 ? '#fbbf24' : '#f87171'
+                    );
                 }
                 
                 // Play thrust sound
@@ -670,18 +862,18 @@
                             // Crash
                             lander.crashed = true;
                             
-                            // Create explosion effect
-                            window.particleSystem.createExplosion(
-                                lander.x,
-                                lander.y,
-                                { 
-                                    color: '#f87171',
-                                    count: 20,
-                                    speed: 300,
-                                    life: 1,
-                                    gravity: 200
-                                }
-                            );
+                            // Create explosion particles
+                            for (let i = 0; i < 20; i++) {
+                                const angle = Math.random() * Math.PI * 2;
+                                const speed = Math.random() * 5;
+                                createParticle(
+                                    lander.x,
+                                    lander.y,
+                                    Math.cos(angle) * speed,
+                                    Math.sin(angle) * speed,
+                                    '#f87171'
+                                );
+                            }
                             
                             playSound('crash');
                             endGame(false);
@@ -766,7 +958,7 @@
             });
             
             // Draw particles
-            window.particleSystem.draw(ctx);
+            drawParticles();
             
             // Draw lander
             if (!lander.crashed) {
@@ -815,7 +1007,7 @@
             if (!gameRunning) return;
             
             updateLander();
-            window.particleSystem.update(1/60); // 60 FPS
+            updateParticles();
             draw();
             
             animationId = requestAnimationFrame(gameLoop);
@@ -826,7 +1018,12 @@
             resetGame();
             gameRunning = true;
             
-            window.audioManager.startMusic('space');
+            if (!audioContext && !isMuted) {
+                initAudio();
+                backgroundMusic.play();
+            } else if (audioContext && !isMuted) {
+                backgroundMusic.play();
+            }
             
             gameLoop();
         }
@@ -846,7 +1043,7 @@
             gameOver = false;
             gameRunning = true;
             score = 0;
-            window.particleSystem.clear();
+            particles = [];
             
             // Generate new terrain
             initTerrain();
@@ -856,8 +1053,10 @@
             
             updateDisplay();
             
-            // Restart background music
-            window.audioManager.startMusic('space');
+            // Restart background music if not muted
+            if (audioContext && !isMuted) {
+                backgroundMusic.play();
+            }
             
             // Restart the game loop
             gameLoop();
