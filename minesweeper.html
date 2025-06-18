@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minesweeper - Modern Arcade</title>
+    <link rel="stylesheet" href="common-styles.css">
     <script src="transition-common.js"></script>
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
@@ -46,45 +47,26 @@
             to { transform: translate(50px, 50px); }
         }
 
-        .game-container {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
-            z-index: 10;
-            position: relative;
-        }
+        /* Game container inherits from common-styles.css */
 
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding: 0 10px;
+            margin-bottom: var(--spacing-lg);
+            padding: 0 var(--spacing-xs);
         }
 
         .game-info {
             display: flex;
-            gap: 40px;
+            gap: var(--spacing-xl);
             align-items: center;
         }
 
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 18px;
-            font-weight: 200;
-            letter-spacing: 1px;
-        }
-
+        /* Info items inherit from common-styles.css */
         .info-value {
-            font-weight: 400;
-            color: #60a5fa;
+            color: var(--color-info);
             min-width: 30px;
-            text-align: right;
         }
 
         .mine-count {
@@ -100,29 +82,17 @@
             gap: 10px;
         }
 
+        /* Difficulty buttons inherit from common .btn styles */
         .difficulty-btn {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #666;
             padding: 8px 16px;
             border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
             font-size: 14px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .difficulty-btn:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.2);
-            color: #fff;
         }
 
         .difficulty-btn.active {
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(255, 255, 255, 0.3);
-            color: #60a5fa;
+            color: var(--color-info);
         }
 
         .game-board {
@@ -175,11 +145,11 @@
             border-color: rgba(96, 165, 250, 0.3);
         }
 
-        .cell[data-count="1"] { color: #60a5fa; }
-        .cell[data-count="2"] { color: #4ade80; }
-        .cell[data-count="3"] { color: #f87171; }
-        .cell[data-count="4"] { color: #c084fc; }
-        .cell[data-count="5"] { color: #fbbf24; }
+        .cell[data-count="1"] { color: var(--color-info); }
+        .cell[data-count="2"] { color: var(--color-success); }
+        .cell[data-count="3"] { color: var(--color-error); }
+        .cell[data-count="4"] { color: var(--color-accent); }
+        .cell[data-count="5"] { color: var(--color-warning); }
         .cell[data-count="6"] { color: #10b981; }
         .cell[data-count="7"] { color: #ec4899; }
         .cell[data-count="8"] { color: #ef4444; }
@@ -195,11 +165,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 20px;
+            border-radius: var(--border-radius);
             z-index: 100;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.5s ease;
+            transition: var(--transition);
         }
 
         .game-over-overlay.active {
@@ -219,43 +189,36 @@
 
         .game-over-title {
             font-size: 48px;
-            font-weight: 200;
-            letter-spacing: 4px;
-            margin-bottom: 20px;
+            font-weight: var(--fw-light);
+            letter-spacing: var(--letter-spacing-lg);
+            margin-bottom: var(--spacing-md);
             text-transform: uppercase;
         }
 
         .game-over-title.win {
-            color: #4ade80;
+            color: var(--color-success);
         }
 
         .game-over-title.lose {
-            color: #f87171;
+            color: var(--color-error);
         }
 
         .game-over-stats {
             font-size: 18px;
-            color: #999;
-            margin-bottom: 30px;
-            letter-spacing: 1px;
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-lg);
+            letter-spacing: var(--letter-spacing-sm);
         }
 
+        /* Restart button inherits from common .btn styles */
         .restart-btn {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 12px 32px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            padding: var(--spacing-sm) var(--spacing-xl);
+            border-radius: var(--border-radius-lg);
             font-size: 16px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-md);
         }
 
         .restart-btn:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
         }
 
@@ -320,9 +283,9 @@
                 </div>
             </div>
             <div class="difficulty-buttons">
-                <button class="difficulty-btn active" data-level="easy">Easy</button>
-                <button class="difficulty-btn" data-level="medium">Medium</button>
-                <button class="difficulty-btn" data-level="hard">Hard</button>
+                <button class="btn difficulty-btn active" data-level="easy">Easy</button>
+                <button class="btn difficulty-btn" data-level="medium">Medium</button>
+                <button class="btn difficulty-btn" data-level="hard">Hard</button>
             </div>
         </div>
         
@@ -332,7 +295,7 @@
             <div class="game-over-content">
                 <h2 class="game-over-title" id="gameOverTitle">GAME OVER</h2>
                 <p class="game-over-stats" id="gameOverStats">Time: 000</p>
-                <button class="restart-btn" onclick="initGame()">Play Again</button>
+                <button class="btn restart-btn" onclick="initGame()">Play Again</button>
             </div>
         </div>
     </div>
