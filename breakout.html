@@ -4,28 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Breakout</title>
+    <link rel="stylesheet" href="common-styles.css">
     <script src="transition-common.js"></script>
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
     <style>
+        /* Game-specific overrides */
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
             cursor: none;
         }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0f0f0f;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #e5e5e5;
-            overflow: hidden;
-            position: relative;
         }
 
         /* Subtle animated background */
@@ -42,36 +33,26 @@
             z-index: -1;
         }
 
+        /* Game container inherits from common-styles.css */
         .game-container {
+            padding: var(--spacing-lg);
             position: relative;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            padding: 30px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
 
         #canvas {
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
             background: #0f0f0f;
-            display: block;
-            will-change: transform;
-            transform: translateZ(0);
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
+            border-radius: 10px;
         }
 
         .game-info {
             position: absolute;
-            top: 40px;
-            left: 40px;
-            right: 40px;
+            top: var(--spacing-xl);
+            left: var(--spacing-xl);
+            right: var(--spacing-xl);
             display: flex;
             justify-content: space-between;
             font-size: 18px;
-            font-weight: 500;
+            font-weight: var(--fw-medium);
             pointer-events: none;
             z-index: 10;
         }
@@ -80,34 +61,38 @@
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(10px);
             padding: 12px 24px;
-            border-radius: 30px;
+            border-radius: var(--border-radius-lg);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            letter-spacing: 0.5px;
+            letter-spacing: var(--letter-spacing-xs);
         }
 
+        /* Game overlay inherits from common-styles.css but with custom positioning and background */
         .game-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            transform: none !important;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             background: rgba(15, 15, 15, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
+            border-radius: var(--border-radius);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
+            padding: 0;
         }
 
         .game-overlay.active {
             opacity: 1;
             pointer-events: all;
+            display: flex;
         }
 
+        /* Custom overlay-title styles */
         .overlay-title {
             font-size: 48px;
             margin-bottom: 20px;
@@ -118,41 +103,28 @@
 
         .overlay-message {
             font-size: 18px;
-            margin-bottom: 40px;
-            color: #666;
-            font-weight: 300;
+            margin-bottom: var(--spacing-xl);
+            color: var(--color-text-muted);
+            font-weight: var(--fw-light);
         }
 
         .play-button {
-            background: transparent;
-            color: #e5e5e5;
-            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 16px 48px;
             font-size: 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 300;
-        }
-
-        .play-button:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-2px);
+            border-radius: var(--border-radius-lg);
+            font-weight: var(--fw-light);
         }
 
         .instructions {
             position: absolute;
-            bottom: 40px;
+            bottom: var(--spacing-xl);
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
-            color: #444;
+            color: var(--color-text-dim);
             font-size: 14px;
-            font-weight: 300;
-            letter-spacing: 0.5px;
+            font-weight: var(--fw-light);
+            letter-spacing: var(--letter-spacing-xs);
         }
 
         .speed-selection {
@@ -161,9 +133,9 @@
 
         .speed-label {
             font-size: 16px;
-            margin-bottom: 20px;
-            color: #666;
-            font-weight: 300;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text-muted);
+            font-weight: var(--fw-light);
         }
 
         .speed-buttons {
@@ -178,21 +150,21 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 10px 24px;
             font-size: 14px;
-            border-radius: 20px;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 300;
+            transition: var(--transition);
+            font-weight: var(--fw-light);
         }
 
         .speed-button:hover {
-            color: #fff;
+            color: var(--color-text);
             border-color: rgba(255, 255, 255, 0.4);
         }
 
         .speed-button.selected {
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.4);
-            color: #fff;
+            color: var(--color-text);
         }
 
 
@@ -214,7 +186,7 @@
 <body>
     <div class="cursor"></div>
     <div class="game-container">
-        <canvas id="canvas" width="800" height="600"></canvas>
+        <canvas id="canvas" class="game-canvas" width="800" height="600"></canvas>
         <div class="game-info">
             <div class="score">SCORE <span id="score">0</span></div>
             <div class="lives">LIVES <span id="lives">3</span></div>
@@ -225,17 +197,17 @@
             <div class="speed-selection">
                 <p class="speed-label">SELECT DIFFICULTY</p>
                 <div class="speed-buttons">
-                    <button class="speed-button" onclick="setSpeed(0.8)">EASY</button>
-                    <button class="speed-button" onclick="setSpeed(1.5)">NORMAL</button>
-                    <button class="speed-button" onclick="setSpeed(2.5)">HARD</button>
+                    <button class="btn speed-button" onclick="setSpeed(0.8)">EASY</button>
+                    <button class="btn speed-button" onclick="setSpeed(1.5)">NORMAL</button>
+                    <button class="btn speed-button" onclick="setSpeed(2.5)">HARD</button>
                 </div>
             </div>
-            <button class="play-button" onclick="startGame()">START GAME</button>
+            <button class="btn play-button" onclick="startGame()">START GAME</button>
         </div>
         <div class="game-overlay" id="gameOverScreen">
             <h1 class="overlay-title">GAME OVER</h1>
             <p class="overlay-message">FINAL SCORE <span id="finalScore">0</span></p>
-            <button class="play-button" onclick="resetGame()">PLAY AGAIN</button>
+            <button class="btn play-button" onclick="resetGame()">PLAY AGAIN</button>
         </div>
         <div class="instructions" id="instructions">MOVE MOUSE or use SHIFT KEYS</div>
     </div>
@@ -265,130 +237,136 @@
         let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false; // For sound effects
 
         // Sound effect functions
-        function playSound(type) {
-            if (isMuted) return; // Don't play sound effects if muted
-            const now = audioContext.currentTime;
+        const audioManager = {
+            playPaddleHit() {
+                if (isMuted) return;
+                const now = audioContext.currentTime;
+                
+                // Clean, high ping
+                const pingOsc = audioContext.createOscillator();
+                const pingGain = audioContext.createGain();
+                pingOsc.frequency.setValueAtTime(800, now);
+                pingOsc.type = 'sine';
+                pingGain.gain.setValueAtTime(0.08, now);
+                pingGain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
+                pingOsc.connect(pingGain);
+                pingGain.connect(audioContext.destination);
+                pingOsc.start(now);
+                pingOsc.stop(now + 0.03);
+            },
             
-            switch(type) {
-                case 'paddleHit':
-                    // Clean, high ping
-                    const pingOsc = audioContext.createOscillator();
-                    const pingGain = audioContext.createGain();
-                    pingOsc.frequency.setValueAtTime(800, now);
-                    pingOsc.type = 'sine';
-                    pingGain.gain.setValueAtTime(0.08, now);
-                    pingGain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
-                    pingOsc.connect(pingGain);
-                    pingGain.connect(audioContext.destination);
-                    pingOsc.start(now);
-                    pingOsc.stop(now + 0.03);
-                    break;
+            playBrickHit() {
+                if (isMuted) return;
+                const now = audioContext.currentTime;
+                
+                // Satisfying pop
+                const popOsc = audioContext.createOscillator();
+                const popGain = audioContext.createGain();
+                popOsc.frequency.setValueAtTime(600, now);
+                popOsc.frequency.exponentialRampToValueAtTime(300, now + 0.02);
+                popOsc.type = 'triangle';
+                popGain.gain.setValueAtTime(0.1, now);
+                popGain.gain.exponentialRampToValueAtTime(0.01, now + 0.02);
+                popOsc.connect(popGain);
+                popGain.connect(audioContext.destination);
+                popOsc.start(now);
+                popOsc.stop(now + 0.02);
+            },
+            
+            playLifeLost() {
+                if (isMuted) return;
+                const now = audioContext.currentTime;
+                
+                // Subtle descending tone
+                const lossOsc = audioContext.createOscillator();
+                const lossGain = audioContext.createGain();
+                lossOsc.frequency.setValueAtTime(300, now);
+                lossOsc.frequency.exponentialRampToValueAtTime(150, now + 0.3);
+                lossOsc.type = 'sine';
+                lossGain.gain.setValueAtTime(0.1, now);
+                lossGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                lossOsc.connect(lossGain);
+                lossGain.connect(audioContext.destination);
+                lossOsc.start(now);
+                lossOsc.stop(now + 0.3);
+            },
+            
+            playGameOver() {
+                if (isMuted) return;
+                const now = audioContext.currentTime;
+                
+                // Minimal game over sound
+                const notes = [300, 250, 200];
+                notes.forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.frequency.value = freq;
+                    osc.type = 'sine';
+                    gain.gain.setValueAtTime(0.08, now + i * 0.2);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.start(now + i * 0.2);
+                    osc.stop(now + i * 0.2 + 0.3);
+                });
+            },
+            
+            startBackgroundMusic() {
+                if (musicMuted) return;
+                
+                this.stopBackgroundMusic();
+                
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                musicPlaying = true;
+                const playMusic = () => {
+                    if (!musicPlaying || audioContext.state === 'suspended' || musicMuted) return;
                     
-                case 'brickHit':
-                    // Satisfying pop
-                    const popOsc = audioContext.createOscillator();
-                    const popGain = audioContext.createGain();
-                    popOsc.frequency.setValueAtTime(600, now);
-                    popOsc.frequency.exponentialRampToValueAtTime(300, now + 0.02);
-                    popOsc.type = 'triangle';
-                    popGain.gain.setValueAtTime(0.1, now);
-                    popGain.gain.exponentialRampToValueAtTime(0.01, now + 0.02);
-                    popOsc.connect(popGain);
-                    popGain.connect(audioContext.destination);
-                    popOsc.start(now);
-                    popOsc.stop(now + 0.02);
-                    break;
+                    const now = audioContext.currentTime;
                     
-                case 'lifeLost':
-                    // Subtle descending tone
-                    const lossOsc = audioContext.createOscillator();
-                    const lossGain = audioContext.createGain();
-                    lossOsc.frequency.setValueAtTime(300, now);
-                    lossOsc.frequency.exponentialRampToValueAtTime(150, now + 0.3);
-                    lossOsc.type = 'sine';
-                    lossGain.gain.setValueAtTime(0.1, now);
-                    lossGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    lossOsc.connect(lossGain);
-                    lossGain.connect(audioContext.destination);
-                    lossOsc.start(now);
-                    lossOsc.stop(now + 0.3);
-                    break;
+                    // Simple ambient pad
+                    const notes = [130.81, 164.81, 196.00, 164.81]; // C3, E3, G3, E3
                     
-                case 'gameOver':
-                    // Minimal game over sound
-                    const notes = [300, 250, 200];
-                    notes.forEach((freq, i) => {
+                    notes.forEach((freq, index) => {
                         const osc = audioContext.createOscillator();
                         const gain = audioContext.createGain();
-                        osc.frequency.value = freq;
+                        const filter = audioContext.createBiquadFilter();
+                        
                         osc.type = 'sine';
-                        gain.gain.setValueAtTime(0.08, now + i * 0.2);
-                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.3);
-                        osc.connect(gain);
+                        osc.frequency.value = freq;
+                        
+                        filter.type = 'lowpass';
+                        filter.frequency.value = 400;
+                        
+                        const startTime = now + index * 2;
+                        gain.gain.setValueAtTime(0, startTime);
+                        gain.gain.linearRampToValueAtTime(0.02, startTime + 0.5);
+                        gain.gain.setValueAtTime(0.02, startTime + 1.5);
+                        gain.gain.linearRampToValueAtTime(0, startTime + 2);
+                        
+                        osc.connect(filter);
+                        filter.connect(gain);
                         gain.connect(audioContext.destination);
-                        osc.start(now + i * 0.2);
-                        osc.stop(now + i * 0.2 + 0.3);
+                        
+                        osc.start(startTime);
+                        osc.stop(startTime + 2);
                     });
-                    break;
+                };
+                
+                playMusic();
+                musicInterval = setInterval(playMusic, 8000);
+            },
+            
+            stopBackgroundMusic() {
+                musicPlaying = false;
+                if (musicInterval) {
+                    clearInterval(musicInterval);
+                    musicInterval = null;
+                }
             }
-        }
-        
-        // Minimal ambient music
-        function playBackgroundMusic() {
-            if (!musicPlaying || audioContext.state === 'suspended' || musicMuted) return;
-            
-            const now = audioContext.currentTime;
-            
-            // Simple ambient pad
-            const notes = [130.81, 164.81, 196.00, 164.81]; // C3, E3, G3, E3
-            
-            notes.forEach((freq, index) => {
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
-                const filter = audioContext.createBiquadFilter();
-                
-                osc.type = 'sine';
-                osc.frequency.value = freq;
-                
-                filter.type = 'lowpass';
-                filter.frequency.value = 400;
-                
-                const startTime = now + index * 2;
-                gain.gain.setValueAtTime(0, startTime);
-                gain.gain.linearRampToValueAtTime(0.02, startTime + 0.5);
-                gain.gain.setValueAtTime(0.02, startTime + 1.5);
-                gain.gain.linearRampToValueAtTime(0, startTime + 2);
-                
-                osc.connect(filter);
-                filter.connect(gain);
-                gain.connect(audioContext.destination);
-                
-                osc.start(startTime);
-                osc.stop(startTime + 2);
-            });
-        }
-        
-        function startMusic() {
-            if (musicMuted) return;
-            
-            stopMusic();
-            
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-            
-            musicPlaying = true;
-            playBackgroundMusic();
-            musicInterval = setInterval(playBackgroundMusic, 8000);
-        }
-        
-        function stopMusic() {
-            musicPlaying = false;
-            if (musicInterval) {
-                clearInterval(musicInterval);
-                musicInterval = null;
-            }
-        }
+        };
 
         let ballSpeed = 300; // pixels per second
         let ball = {
@@ -591,7 +569,7 @@
                             score += b.points;
                             updateScore();
                             createParticles(b.x + brickWidth / 2, b.y + brickHeight / 2, b.color);
-                            playSound('brickHit');
+                            audioManager.playBrickHit();
 
                             if (score === getTotalPossibleScore()) {
                                 gameWon();
@@ -671,7 +649,7 @@
                 // Ensure ball doesn't get stuck
                 ball.y = paddle.y - ball.radius;
                 
-                playSound('paddleHit');
+                audioManager.playPaddleHit();
             }
 
             // Ball fell off screen
@@ -681,7 +659,7 @@
                 if (lives === 0) {
                     gameOver();
                 } else {
-                    playSound('lifeLost');
+                    audioManager.playLifeLost();
                     resetBall();
                 }
             }
@@ -824,20 +802,20 @@
             lives = 3;
             updateScore();
             updateLives();
-            startMusic();
+            audioManager.startBackgroundMusic();
         }
 
         function gameOver() {
             gameRunning = false;
-            stopMusic();
-            playSound('gameOver');
+            audioManager.stopBackgroundMusic();
+            audioManager.playGameOver();
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOverScreen').classList.add('active');
         }
 
         function gameWon() {
             gameRunning = false;
-            stopMusic();
+            audioManager.stopBackgroundMusic();
             document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'YOU WIN!';
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOverScreen').classList.add('active');
@@ -908,9 +886,9 @@
             isMuted = event.detail.isMuted;
             musicMuted = event.detail.isMuted;
             if (musicMuted) {
-                stopMusic();
+                audioManager.stopBackgroundMusic();
             } else if (gameRunning) {
-                startMusic();
+                audioManager.startBackgroundMusic();
             }
         });
 

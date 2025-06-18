@@ -8,84 +8,28 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
+    <link rel="stylesheet" href="common-styles.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000;
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Subtle animated background */
-        .bg-effect {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            opacity: 0.03;
-            background-image: 
-                radial-gradient(circle at 25% 25%, #fff 2%, transparent 2%),
-                radial-gradient(circle at 75% 75%, #fff 2%, transparent 2%);
-            background-size: 50px 50px;
-            animation: drift 20s linear infinite;
-            z-index: 1;
-        }
-
-        @keyframes drift {
-            from { transform: translate(0, 0); }
-            to { transform: translate(50px, 50px); }
-        }
-
-        .game-container {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
-            z-index: 10;
-            position: relative;
-        }
+        /* Game-specific styles only */
 
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: var(--spacing-lg);
             padding: 0 10px;
-        }
-
-        .score-display {
-            font-size: 24px;
-            font-weight: 200;
-            letter-spacing: 2px;
-        }
-
-        .score-value {
-            font-weight: 400;
-            color: #4ade80;
         }
 
         .high-score {
             font-size: 16px;
-            color: #666;
+            color: var(--color-text-muted);
             letter-spacing: 1px;
         }
 
         #gameCanvas {
-            background: #000;
+            background: var(--color-bg);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            border-radius: var(--border-radius-sm);
             display: block;
             position: relative;
             will-change: transform;
@@ -111,22 +55,15 @@
         }
 
         .start-title {
-            font-size: 64px;
-            font-weight: 100;
             letter-spacing: 8px;
-            margin-bottom: 20px;
+            margin-bottom: var(--spacing-md);
         }
 
         .start-instruction {
             font-size: 18px;
-            color: #666;
+            color: var(--color-text-muted);
             letter-spacing: 1px;
             animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
         }
 
         .game-over-screen {
@@ -135,8 +72,8 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.95);
-            padding: 40px 60px;
-            border-radius: 10px;
+            padding: var(--spacing-xl) var(--spacing-2xl);
+            border-radius: var(--border-radius-sm);
             border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
             display: none;
@@ -147,47 +84,23 @@
             display: block;
         }
 
-        .game-over-title {
-            font-size: 36px;
-            font-weight: 200;
-            letter-spacing: 3px;
-            margin-bottom: 20px;
-        }
-
         .final-score {
             font-size: 24px;
             margin-bottom: 10px;
-            color: #4ade80;
+            color: var(--color-success);
         }
 
         .new-record {
             font-size: 18px;
-            color: #fbbf24;
-            margin-bottom: 30px;
+            color: var(--color-warning);
+            margin-bottom: var(--spacing-lg);
             opacity: 0;
             animation: fadeIn 0.5s ease forwards;
         }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
-
         .play-again-btn {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
             padding: 12px 36px;
             font-size: 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            letter-spacing: 1px;
-        }
-
-        .play-again-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-2px);
         }
 
         .controls-hint {
@@ -196,37 +109,11 @@
             left: 50%;
             transform: translateX(-50%);
             font-size: 14px;
-            color: #444;
+            color: var(--color-text-dim);
             letter-spacing: 0.5px;
         }
 
-        .back-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 12px 24px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            color: #999;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            z-index: 100;
-            font-size: 14px;
-            letter-spacing: 1px;
-        }
-
-        .back-button:hover {
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            transform: translateX(-2px);
-        }
-
-        .back-button::before {
-            content: '←';
-            margin-right: 8px;
-        }
+        /* Removed - handled by home-button.js */
     </style>
 </head>
 <body>
@@ -244,15 +131,15 @@
             <canvas id="gameCanvas" width="600" height="600"></canvas>
             
             <div class="start-screen" id="startScreen">
-                <h1 class="start-title">SNAKE</h1>
+                <h1 class="start-title title-xl">SNAKE</h1>
                 <p class="start-instruction">PRESS ANY ARROW KEY TO START</p>
             </div>
             
             <div class="game-over-screen" id="gameOverScreen">
-                <h2 class="game-over-title">GAME OVER</h2>
+                <h2 class="overlay-title">GAME OVER</h2>
                 <p class="final-score">SCORE: <span id="finalScore">0</span></p>
                 <p class="new-record" id="newRecord">NEW RECORD!</p>
-                <button class="play-again-btn" onclick="resetGame()">PLAY AGAIN</button>
+                <button class="btn play-again-btn" onclick="resetGame()">PLAY AGAIN</button>
             </div>
             
             <div class="controls-hint">USE ARROW KEYS OR WASD TO MOVE</div>
