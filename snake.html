@@ -8,16 +8,60 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
-    <link rel="stylesheet" href="common-styles.css">
-    <script src="audio-manager.js"></script>
     <style>
-        /* Game-specific styles for Snake */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle animated background */
+        .bg-effect {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #fff 2%, transparent 2%),
+                radial-gradient(circle at 75% 75%, #fff 2%, transparent 2%);
+            background-size: 50px 50px;
+            animation: drift 20s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0, 0); }
+            to { transform: translate(50px, 50px); }
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            position: relative;
+        }
 
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: var(--spacing-lg);
+            margin-bottom: 30px;
             padding: 0 10px;
         }
 
@@ -29,19 +73,19 @@
 
         .score-value {
             font-weight: 400;
-            color: var(--color-snake);
+            color: #4ade80;
         }
 
         .high-score {
-            font-size: var(--font-lg);
-            color: var(--color-text-secondary);
+            font-size: 16px;
+            color: #666;
             letter-spacing: 1px;
         }
 
         #gameCanvas {
-            background: var(--color-bg);
-            border: 1px solid var(--color-glass-border);
-            border-radius: var(--radius-md);
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             display: block;
             position: relative;
             will-change: transform;
@@ -56,9 +100,9 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            z-index: var(--z-overlay);
+            z-index: 20;
             opacity: 1;
-            transition: opacity var(--transition-normal) ease;
+            transition: opacity 0.3s ease;
         }
 
         .start-screen.hidden {
@@ -91,12 +135,12 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.95);
-            padding: var(--spacing-xl) 60px;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--color-glass-border);
+            padding: 40px 60px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
             display: none;
-            z-index: var(--z-overlay);
+            z-index: 20;
         }
 
         .game-over-screen.active {
@@ -208,7 +252,7 @@
                 <h2 class="game-over-title">GAME OVER</h2>
                 <p class="final-score">SCORE: <span id="finalScore">0</span></p>
                 <p class="new-record" id="newRecord">NEW RECORD!</p>
-                <button class="btn btn-primary" onclick="resetGame()">PLAY AGAIN</button>
+                <button class="play-again-btn" onclick="resetGame()">PLAY AGAIN</button>
             </div>
             
             <div class="controls-hint">USE ARROW KEYS OR WASD TO MOVE</div>
@@ -237,7 +281,15 @@
         let accumulator = 0;
         let lastTime = 0;
         let particles = [];
-        // Audio manager is loaded from audio-manager.js
+        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
+        
+        // Listen for global mute changes
+        window.addEventListener('globalMuteToggle', (e) => {
+            isMuted = e.detail.isMuted;
+        });
+        
+        // Audio context
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
         // DOM elements
         const scoreElement = document.getElementById('score');
@@ -251,17 +303,57 @@
         
         // Remove local mute control since we're using global mute button
         
-        // Sound wrapper for Snake game
+        // Sound functions
         function playSound(type) {
+            if (isMuted) return;
+            
+            const now = audioContext.currentTime;
+            
             switch(type) {
                 case 'eat':
-                    window.audioManager.playSound('collect');
+                    // Quick ascending bloop
+                    const eatOsc = audioContext.createOscillator();
+                    const eatGain = audioContext.createGain();
+                    eatOsc.frequency.setValueAtTime(400, now);
+                    eatOsc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                    eatOsc.type = 'sine';
+                    eatGain.gain.setValueAtTime(0.1, now);
+                    eatGain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    eatOsc.connect(eatGain);
+                    eatGain.connect(audioContext.destination);
+                    eatOsc.start(now);
+                    eatOsc.stop(now + 0.05);
                     break;
+                    
                 case 'turn':
-                    window.audioManager.playSound('click', { volume: 0.05 });
+                    // Subtle click
+                    const turnOsc = audioContext.createOscillator();
+                    const turnGain = audioContext.createGain();
+                    turnOsc.frequency.value = 200;
+                    turnOsc.type = 'triangle';
+                    turnGain.gain.setValueAtTime(0.03, now);
+                    turnGain.gain.exponentialRampToValueAtTime(0.01, now + 0.01);
+                    turnOsc.connect(turnGain);
+                    turnGain.connect(audioContext.destination);
+                    turnOsc.start(now);
+                    turnOsc.stop(now + 0.01);
                     break;
+                    
                 case 'gameOver':
-                    window.audioManager.playSound('fail');
+                    // Descending tones
+                    const notes = [400, 300, 200];
+                    notes.forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.frequency.value = freq;
+                        osc.type = 'sine';
+                        gain.gain.setValueAtTime(0.08, now + i * 0.15);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.2);
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.start(now + i * 0.15);
+                        osc.stop(now + i * 0.15 + 0.2);
+                    });
                     break;
             }
         }
