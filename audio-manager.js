@@ -8,24 +8,12 @@ class AudioManager {
         this.audioContext = null;
         this.isMuted = false;
         this.musicMuted = false;
-        this.masterVolume = 0.6;  // Increased from 0.3 for better audibility
-        this.musicVolume = 0.2;   // Increased from 0.1
-        this.effectsVolume = 0.4; // Increased from 0.2
+        this.masterVolume = 0.3;
+        this.musicVolume = 0.1;
+        this.effectsVolume = 0.2;
         this.backgroundMusic = null;
         this.musicInterval = null;
         this.initialized = false;
-        
-        // Sound queue system
-        this.soundQueue = [];
-        this.maxConcurrentSounds = 20;  // Increased from 10 to reduce dropped sounds
-        this.activeSounds = 0;
-        
-        // Pitch variation control
-        this.enablePitchVariation = true;  // Can be disabled for consistent sounds
-        this.pitchVariationAmount = 0.02;  // Reduced from 0.05 (±2% instead of ±5%)
-        
-        // Effects volume control (separate from music)
-        this.effectsMuted = false;
         
         // Check global mute state if available
         if (window.isGloballyMuted) {
@@ -59,111 +47,20 @@ class AudioManager {
     }
     
     /**
-     * Normalize volume to ensure consistent levels across all sounds
-     */
-    normalizeVolume(volume, soundType) {
-        // Apply normalization factors based on sound type characteristics
-        // Adjusted to be closer to 1.0 for more consistent volume with originals
-        const normalizationFactors = {
-            'beep': 0.95,         // Increased from 0.8
-            'click': 0.95,        // Increased from 0.9
-            'success': 0.85,      // Increased from 0.7
-            'fail': 0.9,          // Increased from 0.8
-            'powerup': 0.9,       // Increased from 0.75
-            'explosion': 1.0,     // Unchanged
-            'jump': 0.95,         // Increased from 0.85
-            'collect': 0.95,      // Increased from 0.8
-            'thrust': 0.85,       // Increased from 0.6 (was way too quiet)
-            'laser': 0.95,        // Increased from 0.9
-            'wallBounce': 0.95,   // Increased from 0.85
-            'flag': 0.9,          // Increased from 0.75
-            'warning': 1.0,       // Increased from 0.95
-            'countdown': 0.95,    // Increased from 0.8
-            'paddleHit': 1.0      // Full volume for classic paddle sound
-        };
-        
-        const factor = normalizationFactors[soundType] || 1.0;
-        return Math.min(1.0, volume * factor * this.masterVolume);
-    }
-    
-    /**
-     * Get pitch variation for sound to prevent audio fatigue
-     */
-    getPitchVariation(soundType, baseFrequency) {
-        // Only apply variation if enabled
-        if (!this.enablePitchVariation) {
-            return baseFrequency;
-        }
-        
-        // Sounds that benefit from pitch variation
-        const variableSounds = ['beep', 'click', 'collect', 'wallBounce', 'jump', 'paddleHit'];
-        
-        if (variableSounds.includes(soundType)) {
-            // Random variation based on pitchVariationAmount (default ±2%)
-            const range = this.pitchVariationAmount * 2;
-            const variation = 1 - this.pitchVariationAmount + (Math.random() * range);
-            return baseFrequency * variation;
-        }
-        
-        return baseFrequency;
-    }
-    
-    /**
-     * Create subtle variations for repeated sounds to reduce audio fatigue
-     * This method can be called directly for custom sound variations
-     */
-    createSoundVariation(baseSound, variationOptions = {}) {
-        const {
-            pitchRange = 0.1,      // ±10% pitch variation by default
-            volumeRange = 0.05,    // ±5% volume variation by default
-            durationRange = 0.02   // ±2% duration variation by default
-        } = variationOptions;
-        
-        return {
-            pitch: 1 + (Math.random() - 0.5) * pitchRange * 2,
-            volume: 1 + (Math.random() - 0.5) * volumeRange * 2,
-            duration: 1 + (Math.random() - 0.5) * durationRange * 2
-        };
-    }
-    
-    /**
-     * Common 8-bit sound effects with enhancements
+     * Common 8-bit sound effects
      */
     playSound(type, options = {}) {
-        if (!this.initialized || this.isMuted || this.effectsMuted) return;
-        
-        // Queue system to prevent audio overload
-        if (this.activeSounds >= this.maxConcurrentSounds) {
-            this.soundQueue.push({ type, options, timestamp: Date.now() });
-            // Remove old queued sounds
-            this.soundQueue = this.soundQueue.filter(s => Date.now() - s.timestamp < 100);
-            return;
-        }
+        if (!this.initialized || this.isMuted) return;
         
         const now = this.audioContext.currentTime;
-        const baseVolume = options.volume || this.effectsVolume;
-        const volume = this.normalizeVolume(baseVolume, type);
-        
-        // Apply pitch variation for supported sounds
-        const frequency = options.frequency ? 
-            this.getPitchVariation(type, options.frequency) : 
-            options.frequency;
-        
-        this.activeSounds++;
-        
-        // Track when sound ends to update counter
-        const duration = this.getSoundDuration(type, options);
-        setTimeout(() => {
-            this.activeSounds--;
-            this.processQueue();
-        }, duration * 1000);
+        const volume = options.volume || this.effectsVolume;
         
         switch(type) {
             case 'beep':
-                this.playBeep(frequency || this.getPitchVariation('beep', 800), options.duration || 0.1, volume);
+                this.playBeep(options.frequency || 800, options.duration || 0.1, volume);
                 break;
             case 'click':
-                this.playClick(volume, this.getPitchVariation('click', 1000));
+                this.playClick(volume);
                 break;
             case 'success':
                 this.playSuccess(volume);
@@ -178,10 +75,10 @@ class AudioManager {
                 this.playExplosion(volume);
                 break;
             case 'jump':
-                this.playJump(volume, this.getPitchVariation('jump', 200));
+                this.playJump(volume);
                 break;
             case 'collect':
-                this.playCollect(volume, this.getPitchVariation('collect', 800));
+                this.playCollect(volume);
                 break;
             case 'thrust':
                 this.playThrust(volume);
@@ -189,59 +86,9 @@ class AudioManager {
             case 'laser':
                 this.playLaser(volume);
                 break;
-            case 'wallBounce':
-                this.playWallBounce(volume, this.getPitchVariation('wallBounce', 400));
-                break;
-            case 'flag':
-                this.playFlag(volume);
-                break;
-            case 'warning':
-                this.playWarning(volume);
-                break;
-            case 'countdown':
-                this.playCountdown(volume);
-                break;
-            case 'paddleHit':
-                this.playPaddleHit(volume, frequency || this.getPitchVariation('paddleHit', 600));
-                break;
             default:
                 console.warn('Unknown sound type:', type);
-                this.activeSounds--; // Decrement if unknown
         }
-    }
-    
-    /**
-     * Process queued sounds when slots become available
-     */
-    processQueue() {
-        if (this.soundQueue.length > 0 && this.activeSounds < this.maxConcurrentSounds) {
-            const { type, options } = this.soundQueue.shift();
-            this.playSound(type, options);
-        }
-    }
-    
-    /**
-     * Get estimated duration for a sound type
-     */
-    getSoundDuration(type, options = {}) {
-        const durations = {
-            'beep': options.duration || 0.1,
-            'click': 0.02,
-            'success': 0.4,
-            'fail': 0.9,
-            'powerup': 0.2,
-            'explosion': 0.3,
-            'jump': 0.1,
-            'collect': 0.1,
-            'thrust': 0.1,
-            'laser': 0.1,
-            'wallBounce': 0.1,
-            'flag': 0.05,
-            'warning': 0.45,
-            'countdown': 0.02,
-            'paddleHit': 0.05
-        };
-        return durations[type] || 0.1;
     }
     
     /**
@@ -267,13 +114,13 @@ class AudioManager {
     /**
      * Click/Select sound
      */
-    playClick(volume = 0.2, startFreq = 1000) {
+    playClick(volume = 0.2) {
         const now = this.audioContext.currentTime;
         const osc = this.audioContext.createOscillator();
         const gain = this.audioContext.createGain();
         
-        osc.frequency.setValueAtTime(startFreq, now);
-        osc.frequency.exponentialRampToValueAtTime(startFreq * 0.6, now + 0.02);
+        osc.frequency.setValueAtTime(1000, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.02);
         osc.type = 'square';
         
         gain.gain.setValueAtTime(volume, now);
@@ -407,14 +254,14 @@ class AudioManager {
     /**
      * Jump sound effect
      */
-    playJump(volume = 0.2, startFreq = 200) {
+    playJump(volume = 0.2) {
         const now = this.audioContext.currentTime;
         const osc = this.audioContext.createOscillator();
         const gain = this.audioContext.createGain();
         
         osc.type = 'square';
-        osc.frequency.setValueAtTime(startFreq, now);
-        osc.frequency.exponentialRampToValueAtTime(startFreq * 3, now + 0.1);
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
         
         gain.gain.setValueAtTime(volume, now);
         gain.gain.setValueAtTime(volume, now + 0.05);
@@ -430,7 +277,7 @@ class AudioManager {
     /**
      * Item collection sound
      */
-    playCollect(volume = 0.2, baseFreq = 800) {
+    playCollect(volume = 0.2) {
         const now = this.audioContext.currentTime;
         const osc1 = this.audioContext.createOscillator();
         const osc2 = this.audioContext.createOscillator();
@@ -439,8 +286,8 @@ class AudioManager {
         osc1.type = 'sine';
         osc2.type = 'sine';
         
-        osc1.frequency.value = baseFreq;
-        osc2.frequency.value = baseFreq * 1.5;
+        osc1.frequency.value = 800;
+        osc2.frequency.value = 1200;
         
         gain.gain.setValueAtTime(volume, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
@@ -507,124 +354,6 @@ class AudioManager {
         
         osc.start();
         osc.stop(now + 0.1);
-    }
-    
-    /**
-     * Wall bounce sound (variation of bounce for JezzBall/Breakout)
-     */
-    playWallBounce(volume = 0.2, baseFreq = 400) {
-        const now = this.audioContext.currentTime;
-        const osc = this.audioContext.createOscillator();
-        const gain = this.audioContext.createGain();
-        
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(baseFreq, now);
-        osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.75, now + 0.05);
-        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.25, now + 0.1);
-        
-        gain.gain.setValueAtTime(volume, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-        
-        osc.connect(gain);
-        gain.connect(this.audioContext.destination);
-        
-        osc.start();
-        osc.stop(now + 0.1);
-    }
-    
-    /**
-     * Flag placement sound for Minesweeper (short high-pitched beep)
-     */
-    playFlag(volume = 0.2) {
-        const now = this.audioContext.currentTime;
-        const osc = this.audioContext.createOscillator();
-        const gain = this.audioContext.createGain();
-        
-        osc.type = 'sine';
-        osc.frequency.value = 1200;
-        
-        gain.gain.setValueAtTime(volume, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        
-        osc.connect(gain);
-        gain.connect(this.audioContext.destination);
-        
-        osc.start();
-        osc.stop(now + 0.05);
-    }
-    
-    /**
-     * Warning sound for danger situations (descending tones)
-     */
-    playWarning(volume = 0.3) {
-        const now = this.audioContext.currentTime;
-        const frequencies = [800, 600, 400];
-        
-        frequencies.forEach((freq, i) => {
-            const osc = this.audioContext.createOscillator();
-            const gain = this.audioContext.createGain();
-            
-            osc.type = 'square';
-            osc.frequency.value = freq;
-            
-            const startTime = now + i * 0.15;
-            gain.gain.setValueAtTime(0, startTime);
-            gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
-            gain.gain.setValueAtTime(volume, startTime + 0.1);
-            gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
-            
-            osc.connect(gain);
-            gain.connect(this.audioContext.destination);
-            
-            osc.start(startTime);
-            osc.stop(startTime + 0.15);
-        });
-    }
-    
-    /**
-     * Countdown tick sound for timed events
-     */
-    playCountdown(volume = 0.2) {
-        const now = this.audioContext.currentTime;
-        const osc = this.audioContext.createOscillator();
-        const gain = this.audioContext.createGain();
-        
-        osc.type = 'square';
-        osc.frequency.value = 1000;
-        
-        // Create a sharp tick sound
-        gain.gain.setValueAtTime(volume, now);
-        gain.gain.setValueAtTime(volume, now + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.02);
-        
-        osc.connect(gain);
-        gain.connect(this.audioContext.destination);
-        
-        osc.start();
-        osc.stop(now + 0.02);
-    }
-    
-    /**
-     * Classic paddle hit sound (like Pong/Breakout)
-     */
-    playPaddleHit(volume = 0.2, baseFreq = 600) {
-        const now = this.audioContext.currentTime;
-        const osc = this.audioContext.createOscillator();
-        const gain = this.audioContext.createGain();
-        
-        osc.type = 'square';
-        osc.frequency.value = baseFreq;
-        
-        // Very short, punchy sound
-        gain.gain.setValueAtTime(volume, now);
-        gain.gain.setValueAtTime(volume, now + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        
-        osc.connect(gain);
-        gain.connect(this.audioContext.destination);
-        
-        osc.start();
-        osc.stop(now + 0.05);
     }
     
     /**
@@ -719,23 +448,8 @@ class AudioManager {
      */
     setMasterVolume(volume) {
         this.masterVolume = Math.max(0, Math.min(1, volume));
-        this.effectsVolume = this.masterVolume * 0.8;  // Increased from 0.7
-        this.musicVolume = this.masterVolume * 0.4;    // Increased from 0.3
-    }
-    
-    /**
-     * Set effects volume independently
-     */
-    setEffectsVolume(volume) {
-        this.effectsVolume = Math.max(0, Math.min(1, volume));
-    }
-    
-    /**
-     * Toggle sound effects mute (separate from music)
-     */
-    toggleEffects() {
-        this.effectsMuted = !this.effectsMuted;
-        return this.effectsMuted;
+        this.effectsVolume = this.masterVolume * 0.7;
+        this.musicVolume = this.masterVolume * 0.3;
     }
     
     /**
@@ -758,22 +472,6 @@ class AudioManager {
             this.stopMusic();
         }
         return this.musicMuted;
-    }
-    
-    /**
-     * Enable or disable pitch variation for sounds
-     * @param {boolean} enabled - Whether to enable pitch variation
-     */
-    setPitchVariation(enabled) {
-        this.enablePitchVariation = enabled;
-    }
-    
-    /**
-     * Set the amount of pitch variation (0.0 to 1.0)
-     * @param {number} amount - Variation amount (e.g., 0.05 for ±5%)
-     */
-    setPitchVariationAmount(amount) {
-        this.pitchVariationAmount = Math.max(0, Math.min(1, amount));
     }
 }
 
