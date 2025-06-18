@@ -260,136 +260,20 @@
             }
         });
         
-        // Initialize Web Audio API
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        let musicPlaying = false;
-        let musicMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
-        let musicInterval;
-        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false; // For sound effects
-
-        // Sound effect functions
+        // Audio manager is loaded from audio-manager.js
+        // Wrapper functions for Breakout sounds
         function playSound(type) {
-            if (isMuted) return; // Don't play sound effects if muted
-            const now = audioContext.currentTime;
-            
             switch(type) {
                 case 'paddleHit':
-                    // Clean, high ping
-                    const pingOsc = audioContext.createOscillator();
-                    const pingGain = audioContext.createGain();
-                    pingOsc.frequency.setValueAtTime(800, now);
-                    pingOsc.type = 'sine';
-                    pingGain.gain.setValueAtTime(0.08, now);
-                    pingGain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
-                    pingOsc.connect(pingGain);
-                    pingGain.connect(audioContext.destination);
-                    pingOsc.start(now);
-                    pingOsc.stop(now + 0.03);
+                    window.audioManager.playSound('paddleHit', { volume: 0.2 });
                     break;
-                    
                 case 'brickHit':
-                    // Satisfying pop
-                    const popOsc = audioContext.createOscillator();
-                    const popGain = audioContext.createGain();
-                    popOsc.frequency.setValueAtTime(600, now);
-                    popOsc.frequency.exponentialRampToValueAtTime(300, now + 0.02);
-                    popOsc.type = 'triangle';
-                    popGain.gain.setValueAtTime(0.1, now);
-                    popGain.gain.exponentialRampToValueAtTime(0.01, now + 0.02);
-                    popOsc.connect(popGain);
-                    popGain.connect(audioContext.destination);
-                    popOsc.start(now);
-                    popOsc.stop(now + 0.02);
+                    window.audioManager.playSound('collect', { volume: 0.15 });
                     break;
-                    
                 case 'lifeLost':
-                    // Subtle descending tone
-                    const lossOsc = audioContext.createOscillator();
-                    const lossGain = audioContext.createGain();
-                    lossOsc.frequency.setValueAtTime(300, now);
-                    lossOsc.frequency.exponentialRampToValueAtTime(150, now + 0.3);
-                    lossOsc.type = 'sine';
-                    lossGain.gain.setValueAtTime(0.1, now);
-                    lossGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    lossOsc.connect(lossGain);
-                    lossGain.connect(audioContext.destination);
-                    lossOsc.start(now);
-                    lossOsc.stop(now + 0.3);
-                    break;
-                    
                 case 'gameOver':
-                    // Minimal game over sound
-                    const notes = [300, 250, 200];
-                    notes.forEach((freq, i) => {
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        osc.frequency.value = freq;
-                        osc.type = 'sine';
-                        gain.gain.setValueAtTime(0.08, now + i * 0.2);
-                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.2 + 0.3);
-                        osc.connect(gain);
-                        gain.connect(audioContext.destination);
-                        osc.start(now + i * 0.2);
-                        osc.stop(now + i * 0.2 + 0.3);
-                    });
+                    window.audioManager.playSound('fail', { volume: 0.2 });
                     break;
-            }
-        }
-        
-        // Minimal ambient music
-        function playBackgroundMusic() {
-            if (!musicPlaying || audioContext.state === 'suspended' || musicMuted) return;
-            
-            const now = audioContext.currentTime;
-            
-            // Simple ambient pad
-            const notes = [130.81, 164.81, 196.00, 164.81]; // C3, E3, G3, E3
-            
-            notes.forEach((freq, index) => {
-                const osc = audioContext.createOscillator();
-                const gain = audioContext.createGain();
-                const filter = audioContext.createBiquadFilter();
-                
-                osc.type = 'sine';
-                osc.frequency.value = freq;
-                
-                filter.type = 'lowpass';
-                filter.frequency.value = 400;
-                
-                const startTime = now + index * 2;
-                gain.gain.setValueAtTime(0, startTime);
-                gain.gain.linearRampToValueAtTime(0.02, startTime + 0.5);
-                gain.gain.setValueAtTime(0.02, startTime + 1.5);
-                gain.gain.linearRampToValueAtTime(0, startTime + 2);
-                
-                osc.connect(filter);
-                filter.connect(gain);
-                gain.connect(audioContext.destination);
-                
-                osc.start(startTime);
-                osc.stop(startTime + 2);
-            });
-        }
-        
-        function startMusic() {
-            if (musicMuted) return;
-            
-            stopMusic();
-            
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-            
-            musicPlaying = true;
-            playBackgroundMusic();
-            musicInterval = setInterval(playBackgroundMusic, 8000);
-        }
-        
-        function stopMusic() {
-            musicPlaying = false;
-            if (musicInterval) {
-                clearInterval(musicInterval);
-                musicInterval = null;
             }
         }
 
@@ -804,12 +688,12 @@
             lives = 3;
             updateScore();
             updateLives();
-            startMusic();
+            window.audioManager.startMusic('default', 100);
         }
 
         function gameOver() {
             gameRunning = false;
-            stopMusic();
+            window.audioManager.stopMusic();
             playSound('gameOver');
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOverScreen').classList.add('active');
@@ -817,7 +701,7 @@
 
         function gameWon() {
             gameRunning = false;
-            stopMusic();
+            window.audioManager.stopMusic();
             document.getElementById('gameOverScreen').querySelector('.overlay-title').textContent = 'YOU WIN!';
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameOverScreen').classList.add('active');
@@ -883,16 +767,7 @@
             }
         });
 
-        // Listen for global mute toggle
-        window.addEventListener('globalMuteToggle', (event) => {
-            isMuted = event.detail.isMuted;
-            musicMuted = event.detail.isMuted;
-            if (musicMuted) {
-                stopMusic();
-            } else if (gameRunning) {
-                startMusic();
-            }
-        });
+        // Global mute is handled by audio-manager.js automatically
 
         document.getElementById('startScreen').classList.add('active');
         document.querySelectorAll('.speed-button')[1].classList.add('selected');

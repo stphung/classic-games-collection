@@ -359,7 +359,8 @@
             thrustPower: 0.3,
             rotationSpeed: 0.05,
             landed: false,
-            crashed: false
+            crashed: false,
+            lowFuelWarningPlayed: false
         };
         
         // Difficulty settings
@@ -509,6 +510,9 @@
                     break;
                 case 'beep':
                     window.audioManager.playSound('beep');
+                    break;
+                case 'warning':
+                    window.audioManager.playSound('warning');
                     break;
             }
         }
@@ -808,6 +812,12 @@
                 ctx.font = '16px monospace';
                 ctx.textAlign = 'center';
                 ctx.fillText('LOW FUEL', canvas.width/2, 50);
+                
+                // Play warning sound once when fuel gets low
+                if (!lander.lowFuelWarningPlayed) {
+                    lander.lowFuelWarningPlayed = true;
+                    playSound('warning');
+                }
             }
         }
         
@@ -841,6 +851,7 @@
             lander.fuel = difficultySettings.fuel;
             lander.landed = false;
             lander.crashed = false;
+            lander.lowFuelWarningPlayed = false;
             
             // Reset game state
             gameOver = false;

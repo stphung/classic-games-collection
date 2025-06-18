@@ -8,6 +8,7 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
+    <script src="audio-manager.js"></script>
     <style>
         * {
             margin: 0;
@@ -325,9 +326,8 @@
     </div>
 
     <script>
-        // Initialize Web Audio API
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
+        // Initialize audio - using hybrid approach with audio-manager.js and custom sounds
+        const audioContext = window.audioManager.audioContext || new (window.AudioContext || window.webkitAudioContext)();
         let musicGainNode = null;
         let musicOscillators = [];
         let musicStarted = false;
@@ -360,7 +360,7 @@
 
         // Enhanced sound functions
         function playSound(frequency, duration, type = 'sine', gain = 0.1, useReverb = false) {
-            if (isMuted) return;
+            if (window.audioManager.isMuted) return;
             
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -388,15 +388,12 @@
 
         // Enhanced sound effects
         function playRotateSound() {
-            if (isMuted) return;
-            // Crisp rotation sound
-            playSound(800, 0.03, 'square', 0.03);
-            playSound(1600, 0.02, 'sine', 0.02);
-            playSound(400, 0.04, 'triangle', 0.02, true);
+            // Use centralized click sound
+            window.audioManager.playSound('click', { volume: 0.05 });
         }
         
         function playHardDropSound() {
-            if (isMuted) return;
+            if (window.audioManager.isMuted) return;
             // Swoosh down
             const swoosh = audioContext.createOscillator();
             const swooshGain = audioContext.createGain();
@@ -417,21 +414,23 @@
             swoosh.start(audioContext.currentTime);
             swoosh.stop(audioContext.currentTime + 0.1);
             
-            // Impact
+            // Impact - check mute state again in case it changed
             setTimeout(() => {
-                playSound(60, 0.1, 'sine', 0.08);
-                playSound(120, 0.05, 'square', 0.04);
+                if (!window.audioManager.isMuted) {
+                    playSound(60, 0.1, 'sine', 0.08);
+                    playSound(120, 0.05, 'square', 0.04);
+                }
             }, 80);
         }
         
         function playSoftDropSound() {
-            if (isMuted) return;
+            if (window.audioManager.isMuted) return;
             // Very subtle tick
             playSound(150, 0.01, 'sine', 0.01);
         }
         
         function playWarningSound() {
-            if (isMuted) return;
+            if (window.audioManager.isMuted) return;
             // Pulsing warning
             for (let i = 0; i < 3; i++) {
                 setTimeout(() => {
@@ -442,27 +441,17 @@
         }
 
         function playMoveSound() {
-            if (isMuted) return;
-            // Very subtle tick sound
-            playSound(200, 0.02, 'sine', 0.015);
-            playSound(400, 0.01, 'triangle', 0.01);
+            // Very subtle beep
+            window.audioManager.playSound('beep', { frequency: 200, duration: 0.02, volume: 0.015 });
         }
 
         function playLockSound() {
-            if (isMuted) return;
-            // Impactful thud with multiple layers
-            playSound(80, 0.15, 'sine', 0.1);
-            playSound(120, 0.1, 'square', 0.05);
-            playSound(40, 0.2, 'sine', 0.08);
-            
-            // Add a crisp top layer
-            setTimeout(() => {
-                playSound(200, 0.05, 'triangle', 0.03);
-            }, 20);
+            // Use low frequency beep for lock
+            window.audioManager.playSound('beep', { frequency: 80, duration: 0.15, volume: 0.1 });
         }
 
         function playLineClearSound(linesCleared = 1) {
-            if (isMuted) return;
+            if (window.audioManager.isMuted) return;
             // Epic cascading sound that scales with lines cleared
             const baseFreq = 300;
             const freqMultiplier = 1 + (linesCleared * 0.3);
@@ -485,7 +474,7 @@
         }
 
         function playTetrisSound() {
-            if (isMuted) return;
+            if (window.audioManager.isMuted) return;
             // Special celebratory sound for 4 lines
             const melody = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
             melody.forEach((freq, i) => {
@@ -503,7 +492,7 @@
         }
 
         function playLevelUpSound() {
-            if (isMuted) return;
+            if (window.audioManager.isMuted) return;
             // Triumphant fanfare
             const fanfare = [
                 { freq: 523.25, delay: 0 },    // C5
@@ -532,7 +521,7 @@
         }
 
         function playGameOverSound() {
-            if (isMuted) return;
+            if (window.audioManager.isMuted) return;
             // Dramatic descending melody
             const notes = [
                 { freq: 1046.50, delay: 0 },    // C6
@@ -558,65 +547,14 @@
             }, 500);
         }
 
-        function playSoftDropSound() {
-            if (isMuted) return;
-            // Subtle downward whoosh
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            
-            osc.connect(gain);
-            gain.connect(masterGainNode);
-            
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(400, audioContext.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.1);
-            
-            gain.gain.setValueAtTime(0.02, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-            
-            osc.start(audioContext.currentTime);
-            osc.stop(audioContext.currentTime + 0.1);
-        }
-
-        function playHardDropSound() {
-            if (isMuted) return;
-            // Dramatic slam with echo
-            playSound(40, 0.3, 'sine', 0.2);
-            playSound(80, 0.2, 'square', 0.1);
-            playSound(160, 0.1, 'sawtooth', 0.05);
-            
-            // Add metallic ring
-            setTimeout(() => {
-                playSound(1200, 0.4, 'triangle', 0.03, true);
-                playSound(2400, 0.3, 'sine', 0.02, true);
-            }, 50);
-            
-            // Echo effect
-            setTimeout(() => {
-                playSound(40, 0.2, 'sine', 0.05);
-            }, 100);
-        }
-
-        function playWarningSound() {
-            if (isMuted) return;
-            // Pulsing warning beep
-            for (let i = 0; i < 3; i++) {
-                setTimeout(() => {
-                    playSound(880, 0.1, 'square', 0.05);
-                    playSound(440, 0.1, 'sawtooth', 0.03);
-                }, i * 150);
-            }
-        }
+        // Duplicate functions removed - using the ones defined earlier
 
         // Background music
-        // Listen for global mute changes
+        // Global mute is handled by audio-manager.js
+        // Tetris keeps its custom music but respects global mute
         window.addEventListener('globalMuteToggle', (e) => {
-            isMuted = e.detail.isMuted;
-            if (isMuted) {
+            if (e.detail.isMuted) {
                 stopBackgroundMusic();
-                if (musicGainNode) {
-                    musicGainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                }
             } else if (gameRunning) {
                 musicStarted = false;
                 startBackgroundMusic();
@@ -624,7 +562,7 @@
         });
 
         function startBackgroundMusic() {
-            if (musicStarted || isMuted) return;
+            if (musicStarted || window.audioManager.musicMuted) return;
             musicStarted = true;
 
             musicGainNode = audioContext.createGain();
@@ -945,6 +883,8 @@
         let isPaused = false;
         let particles = [];
         let lineAnimations = [];
+        let inDangerZone = false;
+        let dangerWarningPlayed = false;
 
         class Piece {
             constructor(shape, color) {
@@ -1406,6 +1346,20 @@
                     lastDrop = currentTime;
                 }
                 
+                // Check danger zone status
+                const currentlyInDanger = isDangerZone();
+                if (currentlyInDanger && !inDangerZone) {
+                    // Just entered danger zone
+                    inDangerZone = true;
+                    if (!dangerWarningPlayed) {
+                        dangerWarningPlayed = true;
+                        window.audioManager.playSound('warning', { volume: 0.2 });
+                    }
+                } else if (!currentlyInDanger && inDangerZone) {
+                    // Left danger zone
+                    inDangerZone = false;
+                }
+                
                 drawBoard();
                 drawLineAnimations();
                 drawPiece();
@@ -1488,6 +1442,8 @@
             currentPiece = null;
             nextPiece = null;
             musicStarted = false;
+            inDangerZone = false;
+            dangerWarningPlayed = false;
             document.getElementById('gameOver').style.display = 'none';
             updateScore();
             init();
@@ -1508,7 +1464,7 @@
             if (!gameRunning || isPaused) {
                 if (e.key === 'p' || e.key === 'P') {
                     isPaused = !isPaused;
-                    if (!isPaused && !musicStarted && !isMuted) {
+                    if (!isPaused && !musicStarted && !window.audioManager.musicMuted) {
                         startBackgroundMusic();
                     }
                 }

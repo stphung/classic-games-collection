@@ -105,10 +105,15 @@ Navigate your spacecraft to a safe landing on the lunar surface with limited fue
 ## Features
 
 - **Modern Design**: Sleek, dark-themed UI with smooth animations
-- **Retro Sound**: 8-bit style music and sound effects
+- **Enhanced Audio System**: 
+  - Centralized 8-bit style music and sound effects
+  - Dynamic pitch variations to prevent audio fatigue
+  - Volume normalization for consistent audio levels
+  - Sound queue system to prevent audio overload
+  - New sound effects: wall bounce, flag placement, warning alerts, countdown ticks
 - **Responsive Controls**: Smooth gameplay with intuitive controls
 - **Netflix-Style Launcher**: Easy game selection with arrow key navigation
-- **Accessibility**: Mute options for background music while keeping sound effects
+- **Accessibility**: Global mute button for background music while keeping sound effects
 
 ## Technologies Used
 

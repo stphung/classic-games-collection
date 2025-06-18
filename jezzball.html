@@ -8,6 +8,7 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
+    <script src="audio-manager.js"></script>
     <style>
         * {
             margin: 0;
@@ -313,20 +314,7 @@
         let grid = [];
         let isHorizontalMode = true;
         
-        // Audio context
-        let audioContext;
-        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
-        
-        // Listen for global mute changes
-        window.addEventListener('globalMuteToggle', (e) => {
-            isMuted = e.detail.isMuted;
-            if (musicGainNode) {
-                musicGainNode.gain.value = isMuted ? 0 : 0.1;
-            }
-        });
-        let musicGainNode;
-        let musicOscillator;
-        // Remove isMusicMuted as we'll use global isMuted
+        // Audio manager is loaded from audio-manager.js
         
         // Ball class
         class Ball {
@@ -614,128 +602,32 @@
         
         // Initialize audio
         function initAudio() {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            startBackgroundMusic();
+            window.audioManager.init();
+            window.audioManager.startMusic('default', 120);
         }
         
-        // Sound effects
+        // Sound effects using centralized audio manager
         function playSound(type) {
-            if (isMuted) return;
-            if (!audioContext) return;
-            
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            const currentTime = audioContext.currentTime;
-            
             switch(type) {
                 case 'bounce':
-                    oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(150, currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(120, currentTime + 0.03);
-                    gainNode.gain.setValueAtTime(0.05, currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.03);
-                    oscillator.start(currentTime);
-                    oscillator.stop(currentTime + 0.03);
+                    window.audioManager.playSound('beep', { frequency: 600, duration: 0.03, volume: 0.1 });
                     break;
-                
                 case 'wallComplete':
-                    oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(400, currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(800, currentTime + 0.2);
-                    gainNode.gain.setValueAtTime(0.3, currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.2);
-                    oscillator.start(currentTime);
-                    oscillator.stop(currentTime + 0.2);
+                    window.audioManager.playSound('laser', { volume: 0.4 });
                     break;
-                
                 case 'lifeLost':
-                    oscillator.type = 'sawtooth';
-                    oscillator.frequency.setValueAtTime(400, currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(100, currentTime + 0.3);
-                    gainNode.gain.setValueAtTime(0.4, currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.3);
-                    oscillator.start(currentTime);
-                    oscillator.stop(currentTime + 0.3);
+                    window.audioManager.playSound('fail', { volume: 0.5 });
                     break;
-                
                 case 'levelComplete':
-                    oscillator.type = 'square';
-                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C, E, G, C
-                    notes.forEach((freq, i) => {
-                        const noteOsc = audioContext.createOscillator();
-                        const noteGain = audioContext.createGain();
-                        noteOsc.connect(noteGain);
-                        noteGain.connect(audioContext.destination);
-                        noteOsc.type = 'square';
-                        noteOsc.frequency.setValueAtTime(freq, currentTime + i * 0.1);
-                        noteGain.gain.setValueAtTime(0.2, currentTime + i * 0.1);
-                        noteGain.gain.exponentialRampToValueAtTime(0.01, currentTime + i * 0.1 + 0.2);
-                        noteOsc.start(currentTime + i * 0.1);
-                        noteOsc.stop(currentTime + i * 0.1 + 0.2);
-                    });
+                    window.audioManager.playSound('success', { volume: 0.3 });
                     break;
-                
                 case 'gameOver':
-                    oscillator.type = 'square';
-                    const gameOverNotes = [262, 247, 233, 220]; // C, B, Bb, A
-                    gameOverNotes.forEach((freq, i) => {
-                        const noteOsc = audioContext.createOscillator();
-                        const noteGain = audioContext.createGain();
-                        noteOsc.connect(noteGain);
-                        noteGain.connect(audioContext.destination);
-                        noteOsc.type = 'square';
-                        noteOsc.frequency.setValueAtTime(freq, currentTime + i * 0.2);
-                        noteGain.gain.setValueAtTime(0.3, currentTime + i * 0.2);
-                        noteGain.gain.exponentialRampToValueAtTime(0.01, currentTime + i * 0.2 + 0.3);
-                        noteOsc.start(currentTime + i * 0.2);
-                        noteOsc.stop(currentTime + i * 0.2 + 0.3);
-                    });
+                    window.audioManager.playSound('fail', { volume: 0.4 });
                     break;
             }
         }
         
-        // Background music
-        function startBackgroundMusic() {
-            if (!audioContext || musicOscillator) return;
-            
-            musicGainNode = audioContext.createGain();
-            musicGainNode.gain.value = isMuted ? 0 : 0.1;
-            musicGainNode.connect(audioContext.destination);
-            
-            // Create a simple melody loop
-            const playMelody = () => {
-                if (!gameRunning) return;
-                
-                const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 349.23, 329.63, 293.66];
-                const noteDuration = 0.25;
-                
-                notes.forEach((freq, i) => {
-                    const osc = audioContext.createOscillator();
-                    const env = audioContext.createGain();
-                    
-                    osc.frequency.value = freq;
-                    osc.type = 'triangle';
-                    osc.connect(env);
-                    env.connect(musicGainNode);
-                    
-                    const startTime = audioContext.currentTime + i * noteDuration;
-                    env.gain.setValueAtTime(0, startTime);
-                    env.gain.linearRampToValueAtTime(0.1, startTime + 0.01);
-                    env.gain.exponentialRampToValueAtTime(0.001, startTime + noteDuration);
-                    
-                    osc.start(startTime);
-                    osc.stop(startTime + noteDuration);
-                });
-                
-                setTimeout(playMelody, notes.length * noteDuration * 1000);
-            };
-            
-            playMelody();
-        }
+        // Background music handled by audio-manager.js
         
         // Initialize grid
         function initGrid() {
@@ -1164,8 +1056,6 @@
                     break;
             }
         });
-        
-        // Remove local mute control since we're using global mute button
     </script>
 </body>
 </html>
