@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Tetris</title>
+    <link rel="stylesheet" href="common-styles.css">
     <script src="transition-common.js"></script>
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
@@ -16,13 +17,13 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0a0a0a;
+            font-family: var(--font-primary);
+            background: var(--color-bg);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: white;
+            color: var(--color-text);
             overflow: hidden;
             position: relative;
         }
@@ -54,22 +55,14 @@
             to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
+        /* Game container inherits base styles from common-styles.css */
         .game-container {
             display: flex;
-            gap: 30px;
+            gap: var(--spacing-lg);
             align-items: center;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 40px;
-            border-radius: 24px;
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.3),
-                inset 0 0 40px rgba(255, 255, 255, 0.05);
-            position: relative;
-            z-index: 1;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
         .game-container:hover {
@@ -88,7 +81,7 @@
 
         #canvas {
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
+            border-radius: var(--border-radius-sm);
             box-shadow: 
                 0 10px 30px rgba(0, 0, 0, 0.5),
                 inset 0 0 20px rgba(0, 0, 0, 0.3);
@@ -99,23 +92,17 @@
             image-rendering: crisp-edges;
         }
 
+        /* Info panel inherits from common-styles.css */
         .info-panel {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: var(--spacing-md);
             min-width: 200px;
         }
 
+        /* Info box inherits base styles from common-styles.css */
         .info-box {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 20px;
-            border-radius: 16px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            /* Keep the existing glassmorphism as defined in common-styles.css */
         }
 
         .info-box::before {
@@ -148,20 +135,20 @@
         }
 
         .info-box h3 {
-            margin-bottom: 10px;
+            margin-bottom: var(--spacing-sm);
             font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: var(--letter-spacing-md);
             opacity: 0.6;
-            font-weight: 600;
+            font-weight: var(--fw-semibold);
             position: relative;
             z-index: 1;
         }
 
         .score {
             font-size: 28px;
-            font-weight: 600;
-            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.6) 100%);
+            font-weight: var(--fw-semibold);
+            background: linear-gradient(135deg, var(--color-text) 0%, rgba(255, 255, 255, 0.6) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -191,13 +178,13 @@
             background: rgba(255, 255, 255, 0.1);
             padding: 4px 10px;
             border-radius: 6px;
-            margin-right: 5px;
-            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            margin-right: var(--spacing-xs);
+            font-family: var(--font-mono);
             font-size: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            transition: all 0.2s ease;
+            transition: var(--transition);
         }
 
         .controls-key:hover {
@@ -212,22 +199,22 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(10, 10, 10, 0.8);
-            padding: 40px;
-            border-radius: 20px;
+            padding: var(--spacing-xl);
+            border-radius: var(--border-radius);
             text-align: center;
             display: none;
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
             box-shadow: 
                 0 20px 40px rgba(0, 0, 0, 0.5),
                 inset 0 0 40px rgba(255, 255, 255, 0.05);
         }
 
         .game-over h2 {
-            margin-bottom: 20px;
+            margin-bottom: var(--spacing-md);
             font-size: 32px;
-            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.6) 100%);
+            background: linear-gradient(135deg, var(--color-text) 0%, rgba(255, 255, 255, 0.6) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -238,19 +225,19 @@
         .final-score {
             font-size: 20px;
             opacity: 0.8;
-            margin-bottom: 20px;
+            margin-bottom: var(--spacing-md);
         }
 
         .play-button {
             background: rgba(79, 70, 229, 0.2);
-            color: white;
+            color: var(--color-text);
             border: 1px solid rgba(79, 70, 229, 0.3);
-            padding: 12px 30px;
+            padding: 12px var(--spacing-lg);
             font-size: 16px;
-            font-weight: 600;
+            font-weight: var(--fw-semibold);
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             position: relative;
@@ -291,7 +278,7 @@
             <div class="game-over" id="gameOver">
                 <h2>Game Over</h2>
                 <p class="final-score">Score: <span id="finalScore">0</span></p>
-                <button class="play-button" onclick="resetGame()">Play Again</button>
+                <button class="btn play-button" onclick="resetGame()">Play Again</button>
             </div>
         </div>
         <div class="info-panel">
