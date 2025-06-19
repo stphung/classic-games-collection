@@ -1747,8 +1747,8 @@
             { title: 'Missile Command', icon: '⟟', cssClass: 'missile', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html' },
             { title: 'Snake', icon: '▪', cssClass: 'snake', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html' },
             { title: 'JezzBall', icon: '◈', cssClass: 'jezzball', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html' },
-            { title: 'Minesweeper', icon: '⚑', cssClass: 'minesweeper', color: '#60a5fa', description: 'Clear the minefield using logic and careful deduction', url: 'minesweeper.html', isNew: true },
-            { title: 'Lunar Lander', icon: '🚀', cssClass: 'lunarlander', color: '#93c5fd', description: 'Land safely on the moon with limited fuel', url: 'lunarlander.html', isNew: true }
+            { title: 'Minesweeper', icon: '⚑', cssClass: 'minesweeper', color: '#60a5fa', description: 'Clear the minefield using logic and careful deduction', url: 'minesweeper.html' },
+            { title: 'Lunar Lander', icon: '🚀', cssClass: 'lunarlander', color: '#93c5fd', description: 'Land safely on the moon with limited fuel', url: 'lunarlander.html' }
         ];
         
         // CarouselController - Manages carousel navigation and game cards
@@ -1946,16 +1946,7 @@
                     card.className = 'game-card glass-panel';
                     card.setAttribute('data-game', game.url);
                     
-                    // Add new badge if applicable
-                    let badgeHtml = '';
-                    if (game.isNew) {
-                        badgeHtml = '<span class="new-badge">New</span>';
-                    } else if (game.isUpdated) {
-                        badgeHtml = '<span class="updated-badge">Updated</span>';
-                    }
-                    
                     card.innerHTML = `
-                        ${badgeHtml}
                         <div class="game-content">
                             <div class="game-icon ${game.cssClass || ''}">${game.icon}</div>
                             <h2 class="game-title">${game.title}</h2>
@@ -2015,8 +2006,6 @@
                     card.style.animationDelay = `${index * 0.05}s`;
                     
                     card.innerHTML = `
-                        ${game.isNew ? '<span class="new-badge">New</span>' : ''}
-                        ${game.isUpdated ? '<span class="updated-badge">Updated</span>' : ''}
                         <div class="game-icon ${game.cssClass || ''}" style="color: ${game.color}">${game.icon}</div>
                         <h3 class="game-title">${game.title}</h3>
                         <p class="game-description">${game.description}</p>
