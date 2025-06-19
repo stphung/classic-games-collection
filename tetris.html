@@ -9,6 +9,8 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
+    <script src="audio-manager.js"></script>
+    <script src="audio-configs.js"></script>
     <style>
         * {
             margin: 0;
@@ -312,583 +314,69 @@
     </div>
 
     <script>
-        // Initialize Web Audio API
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
-        let musicGainNode = null;
-        let musicOscillators = [];
+        // Initialize audio
+        audioManager.init();
         let musicStarted = false;
-        let masterGainNode = audioContext.createGain();
-        masterGainNode.connect(audioContext.destination);
-        masterGainNode.gain.setValueAtTime(0.7, audioContext.currentTime);
+        const tetrisAudio = AUDIO_CONFIGS.tetris;
 
-        // Create reverb effect
-        function createReverb() {
-            const convolver = audioContext.createConvolver();
-            const length = audioContext.sampleRate * 2;
-            const impulse = audioContext.createBuffer(2, length, audioContext.sampleRate);
-            
-            for (let channel = 0; channel < 2; channel++) {
-                const channelData = impulse.getChannelData(channel);
-                for (let i = 0; i < length; i++) {
-                    channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2);
-                }
-            }
-            
-            convolver.buffer = impulse;
-            return convolver;
-        }
+        // Set up reverb for Tetris
+        audioManager.reverb = audioManager.createReverb();
 
-        const reverb = createReverb();
-        const reverbGain = audioContext.createGain();
-        reverbGain.gain.setValueAtTime(0.15, audioContext.currentTime);
-        reverb.connect(reverbGain);
-        reverbGain.connect(masterGainNode);
 
-        // Enhanced sound functions
-        function playSound(frequency, duration, type = 'sine', gain = 0.1, useReverb = false) {
-            if (isMuted) return;
-            
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            const filter = audioContext.createBiquadFilter();
-            
-            oscillator.connect(filter);
-            filter.connect(gainNode);
-            
-            if (useReverb) {
-                gainNode.connect(reverb);
-            }
-            gainNode.connect(masterGainNode);
-            
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(2000, audioContext.currentTime);
-            
-            oscillator.type = type;
-            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-            gainNode.gain.setValueAtTime(gain, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + duration);
-        }
-
-        // Enhanced sound effects
+        // Sound effect wrapper functions
         function playRotateSound() {
-            if (isMuted) return;
-            // Crisp rotation sound
-            playSound(800, 0.03, 'square', 0.03);
-            playSound(1600, 0.02, 'sine', 0.02);
-            playSound(400, 0.04, 'triangle', 0.02, true);
+            tetrisAudio.sounds.rotate();
         }
         
         function playHardDropSound() {
-            if (isMuted) return;
-            // Swoosh down
-            const swoosh = audioContext.createOscillator();
-            const swooshGain = audioContext.createGain();
-            const swooshFilter = audioContext.createBiquadFilter();
-            
-            swoosh.connect(swooshFilter);
-            swooshFilter.connect(swooshGain);
-            swooshGain.connect(masterGainNode);
-            
-            swoosh.type = 'sawtooth';
-            swooshFilter.type = 'lowpass';
-            swooshFilter.frequency.setValueAtTime(2000, audioContext.currentTime);
-            swooshFilter.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.1);
-            
-            swooshGain.gain.setValueAtTime(0.05, audioContext.currentTime);
-            swooshGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-            
-            swoosh.start(audioContext.currentTime);
-            swoosh.stop(audioContext.currentTime + 0.1);
-            
-            // Impact
-            setTimeout(() => {
-                playSound(60, 0.1, 'sine', 0.08);
-                playSound(120, 0.05, 'square', 0.04);
-            }, 80);
+            tetrisAudio.sounds.hardDrop();
         }
         
         function playSoftDropSound() {
-            if (isMuted) return;
-            // Very subtle tick
-            playSound(150, 0.01, 'sine', 0.01);
+            tetrisAudio.sounds.softDrop();
         }
         
         function playWarningSound() {
-            if (isMuted) return;
-            // Pulsing warning
-            for (let i = 0; i < 3; i++) {
-                setTimeout(() => {
-                    playSound(440, 0.1, 'square', 0.05);
-                    playSound(220, 0.1, 'sawtooth', 0.03);
-                }, i * 150);
-            }
+            tetrisAudio.sounds.warning();
         }
 
         function playMoveSound() {
-            if (isMuted) return;
-            // Very subtle tick sound
-            playSound(200, 0.02, 'sine', 0.015);
-            playSound(400, 0.01, 'triangle', 0.01);
+            tetrisAudio.sounds.move();
         }
 
         function playLockSound() {
-            if (isMuted) return;
-            // Impactful thud with multiple layers
-            playSound(80, 0.15, 'sine', 0.1);
-            playSound(120, 0.1, 'square', 0.05);
-            playSound(40, 0.2, 'sine', 0.08);
-            
-            // Add a crisp top layer
-            setTimeout(() => {
-                playSound(200, 0.05, 'triangle', 0.03);
-            }, 20);
+            tetrisAudio.sounds.lock();
         }
 
         function playLineClearSound(linesCleared = 1) {
-            if (isMuted) return;
-            // Epic cascading sound that scales with lines cleared
-            const baseFreq = 300;
-            const freqMultiplier = 1 + (linesCleared * 0.3);
-            
-            for (let i = 0; i < linesCleared; i++) {
-                setTimeout(() => {
-                    const freq = baseFreq * freqMultiplier * (1 + i * 0.5);
-                    playSound(freq, 0.3, 'sawtooth', 0.1, true);
-                    playSound(freq * 1.5, 0.2, 'square', 0.05, true);
-                    playSound(freq * 2, 0.15, 'sine', 0.08, true);
-                }, i * 50);
-            }
-            
-            // Add sparkle effect
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    playSound(1000 + Math.random() * 1000, 0.1, 'sine', 0.02, true);
-                }, i * 30);
-            }
+            tetrisAudio.sounds.lineClear(linesCleared);
         }
 
         function playTetrisSound() {
-            if (isMuted) return;
-            // Special celebratory sound for 4 lines
-            const melody = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
-            melody.forEach((freq, i) => {
-                setTimeout(() => {
-                    playSound(freq, 0.4, 'square', 0.15, true);
-                    playSound(freq * 0.5, 0.4, 'sine', 0.1, true);
-                    playSound(freq * 2, 0.2, 'triangle', 0.05, true);
-                }, i * 80);
-            });
-            
-            // Add bass boom
-            setTimeout(() => {
-                playSound(65.41, 0.8, 'sine', 0.2); // C2
-            }, 100);
+            tetrisAudio.sounds.tetris();
         }
 
         function playLevelUpSound() {
-            if (isMuted) return;
-            // Triumphant fanfare
-            const fanfare = [
-                { freq: 523.25, delay: 0 },    // C5
-                { freq: 659.25, delay: 100 },  // E5
-                { freq: 783.99, delay: 200 },  // G5
-                { freq: 1046.50, delay: 300 }, // C6
-                { freq: 783.99, delay: 400 },  // G5
-                { freq: 1046.50, delay: 500 }, // C6
-                { freq: 1318.51, delay: 600 }  // E6
-            ];
-            
-            fanfare.forEach(({ freq, delay }) => {
-                setTimeout(() => {
-                    playSound(freq, 0.3, 'square', 0.12, true);
-                    playSound(freq * 0.5, 0.3, 'triangle', 0.08);
-                    playSound(freq * 2, 0.15, 'sine', 0.04, true);
-                }, delay);
-            });
-            
-            // Add timpani roll
-            for (let i = 0; i < 8; i++) {
-                setTimeout(() => {
-                    playSound(82.41, 0.05, 'sine', 0.1); // E2
-                }, i * 50);
-            }
+            tetrisAudio.sounds.levelUp();
         }
 
         function playGameOverSound() {
-            if (isMuted) return;
-            // Dramatic descending melody
-            const notes = [
-                { freq: 1046.50, delay: 0 },    // C6
-                { freq: 830.61, delay: 200 },   // G#5
-                { freq: 698.46, delay: 400 },   // F5
-                { freq: 523.25, delay: 600 },   // C5
-                { freq: 415.30, delay: 800 },   // G#4
-                { freq: 349.23, delay: 1000 },  // F4
-                { freq: 261.63, delay: 1200 },  // C4
-                { freq: 130.81, delay: 1400 }   // C3
-            ];
-            
-            notes.forEach(({ freq, delay }) => {
-                setTimeout(() => {
-                    playSound(freq, 0.5, 'sine', 0.15, true);
-                    playSound(freq * 0.5, 0.5, 'triangle', 0.1);
-                }, delay);
-            });
-            
-            // Add low rumble
-            setTimeout(() => {
-                playSound(55, 1.5, 'sine', 0.2);
-            }, 500);
+            tetrisAudio.sounds.gameOver();
         }
 
-        function playSoftDropSound() {
-            if (isMuted) return;
-            // Subtle downward whoosh
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            
-            osc.connect(gain);
-            gain.connect(masterGainNode);
-            
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(400, audioContext.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.1);
-            
-            gain.gain.setValueAtTime(0.02, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-            
-            osc.start(audioContext.currentTime);
-            osc.stop(audioContext.currentTime + 0.1);
-        }
-
-        function playHardDropSound() {
-            if (isMuted) return;
-            // Dramatic slam with echo
-            playSound(40, 0.3, 'sine', 0.2);
-            playSound(80, 0.2, 'square', 0.1);
-            playSound(160, 0.1, 'sawtooth', 0.05);
-            
-            // Add metallic ring
-            setTimeout(() => {
-                playSound(1200, 0.4, 'triangle', 0.03, true);
-                playSound(2400, 0.3, 'sine', 0.02, true);
-            }, 50);
-            
-            // Echo effect
-            setTimeout(() => {
-                playSound(40, 0.2, 'sine', 0.05);
-            }, 100);
-        }
-
-        function playWarningSound() {
-            if (isMuted) return;
-            // Pulsing warning beep
-            for (let i = 0; i < 3; i++) {
-                setTimeout(() => {
-                    playSound(880, 0.1, 'square', 0.05);
-                    playSound(440, 0.1, 'sawtooth', 0.03);
-                }, i * 150);
-            }
-        }
 
         // Background music
-        // Listen for global mute changes
-        window.addEventListener('globalMuteToggle', (e) => {
-            isMuted = e.detail.isMuted;
-            if (isMuted) {
-                stopBackgroundMusic();
-                if (musicGainNode) {
-                    musicGainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                }
-            } else if (gameRunning) {
-                musicStarted = false;
-                startBackgroundMusic();
-            }
-        });
-
         function startBackgroundMusic() {
-            if (musicStarted || isMuted) return;
+            if (musicStarted) return;
             musicStarted = true;
-
-            musicGainNode = audioContext.createGain();
-            musicGainNode.connect(masterGainNode);
-            musicGainNode.gain.setValueAtTime(0.06, audioContext.currentTime); // Much quieter
-
-            // Simplified, ambient Tetris theme - very relaxing
-            const melody = [
-                // Sparse, ambient version of the theme
-                { note: 659.25, duration: 1.0 }, // E5
-                { note: 0, duration: 0.5 }, // Rest
-                { note: 493.88, duration: 0.5 }, // B4
-                { note: 523.25, duration: 0.5 }, // C5
-                { note: 587.33, duration: 1.0 }, // D5
-                { note: 0, duration: 0.5 }, // Rest
-                { note: 493.88, duration: 0.5 }, // B4
-                { note: 440.00, duration: 1.5 }, // A4
-                { note: 0, duration: 1.0 }, // Rest
-                { note: 523.25, duration: 0.5 }, // C5
-                { note: 659.25, duration: 1.0 }, // E5
-                { note: 0, duration: 0.5 }, // Rest
-                { note: 523.25, duration: 0.5 }, // C5
-                { note: 493.88, duration: 2.0 }, // B4
-                { note: 0, duration: 1.0 }, // Rest
-                { note: 587.33, duration: 1.0 }, // D5
-                { note: 659.25, duration: 1.0 }, // E5
-                { note: 523.25, duration: 1.0 }, // C5
-                { note: 440.00, duration: 2.0 }, // A4
-                { note: 0, duration: 2.0 }, // Long rest
-            ];
-
-            const bassline = [
-                // Enhanced bass pattern with walking bass - adjusted for slower tempo
-                { note: 164.81, duration: 0.5 }, // E3
-                { note: 164.81, duration: 0.5 }, // E3
-                { note: 164.81, duration: 0.5 }, // E3
-                { note: 164.81, duration: 0.5 }, // E3
-                { note: 146.83, duration: 0.5 }, // D3
-                { note: 146.83, duration: 0.5 }, // D3
-                { note: 146.83, duration: 0.5 }, // D3
-                { note: 146.83, duration: 0.5 }, // D3
-                { note: 130.81, duration: 0.5 }, // C3
-                { note: 130.81, duration: 0.5 }, // C3
-                { note: 130.81, duration: 0.5 }, // C3
-                { note: 130.81, duration: 0.5 }, // C3
-                { note: 123.47, duration: 0.5 }, // B2
-                { note: 123.47, duration: 0.5 }, // B2
-                { note: 146.83, duration: 0.5 }, // D3
-                { note: 164.81, duration: 0.5 }, // E3
-                { note: 110.00, duration: 0.5 }, // A2
-                { note: 110.00, duration: 0.5 }, // A2
-                { note: 110.00, duration: 0.5 }, // A2
-                { note: 110.00, duration: 0.5 }, // A2
-            ];
-
-            const harmony = [
-                // Harmony layer - adjusted for slower tempo
-                { note: 329.63, duration: 1.0 }, // E4
-                { note: 329.63, duration: 1.0 }, // E4
-                { note: 293.66, duration: 1.0 }, // D4
-                { note: 293.66, duration: 1.0 }, // D4
-                { note: 261.63, duration: 1.0 }, // C4
-                { note: 261.63, duration: 1.0 }, // C4
-                { note: 246.94, duration: 1.0 }, // B3
-                { note: 246.94, duration: 1.0 }, // B3
-                { note: 220.00, duration: 2.0 }, // A3
-            ];
-
-            // Minimal percussion pattern - very subtle
-            const percussion = [
-                { type: 'kick', delay: 0 },
-                { type: 'hat', delay: 0.5 },
-                { type: 'kick', delay: 1.0 },
-                { type: 'hat', delay: 1.5 },
-            ];
-
-            let currentTime = 0;
-            const tempo = 60; // Very slow, ambient tempo
-            const beatDuration = 60 / tempo;
-            let loopInterval;
-
-            function playPercussion(type, time) {
-                if (type === 'kick') {
-                    // Kick drum
-                    const osc = audioContext.createOscillator();
-                    const gain = audioContext.createGain();
-                    
-                    osc.connect(gain);
-                    gain.connect(musicGainNode);
-                    
-                    osc.frequency.setValueAtTime(60, time);
-                    osc.frequency.exponentialRampToValueAtTime(40, time + 0.05);
-                    
-                    gain.gain.setValueAtTime(0.08, time);
-                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
-                    
-                    osc.start(time);
-                    osc.stop(time + 0.1);
-                    musicOscillators.push(osc);
-                } else if (type === 'snare') {
-                    // Snare drum (noise burst)
-                    const bufferSize = audioContext.sampleRate * 0.05;
-                    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                    const data = buffer.getChannelData(0);
-                    
-                    for (let i = 0; i < bufferSize; i++) {
-                        data[i] = Math.random() * 2 - 1;
-                    }
-                    
-                    const noise = audioContext.createBufferSource();
-                    const filter = audioContext.createBiquadFilter();
-                    const gain = audioContext.createGain();
-                    
-                    noise.buffer = buffer;
-                    noise.connect(filter);
-                    filter.connect(gain);
-                    gain.connect(musicGainNode);
-                    
-                    filter.type = 'highpass';
-                    filter.frequency.setValueAtTime(3000, time);
-                    
-                    gain.gain.setValueAtTime(0.02, time);
-                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
-                    
-                    noise.start(time);
-                    noise.stop(time + 0.05);
-                } else if (type === 'hat') {
-                    // Hi-hat
-                    const osc = audioContext.createOscillator();
-                    const filter = audioContext.createBiquadFilter();
-                    const gain = audioContext.createGain();
-                    
-                    osc.connect(filter);
-                    filter.connect(gain);
-                    gain.connect(musicGainNode);
-                    
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(8000, time);
-                    
-                    filter.type = 'highpass';
-                    filter.frequency.setValueAtTime(7000, time);
-                    
-                    gain.gain.setValueAtTime(0.01, time);
-                    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
-                    
-                    osc.start(time);
-                    osc.stop(time + 0.03);
-                    musicOscillators.push(osc);
-                }
-            }
-
-            function scheduleMusic() {
-                const startTime = audioContext.currentTime;
-                currentTime = 0;
-
-                // Schedule melody
-                melody.forEach(({ note, duration }) => {
-                    if (note > 0) {
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        const vibrato = audioContext.createOscillator();
-                        const vibratoGain = audioContext.createGain();
-                        
-                        // Add subtle vibrato
-                        vibrato.frequency.setValueAtTime(5, startTime + currentTime);
-                        vibratoGain.gain.setValueAtTime(2, startTime + currentTime);
-                        vibrato.connect(vibratoGain);
-                        vibratoGain.connect(osc.frequency);
-                        
-                        osc.connect(gain);
-                        gain.connect(musicGainNode);
-                        
-                        osc.type = 'sine'; // Softer waveform
-                        osc.frequency.setValueAtTime(note, startTime + currentTime);
-                        
-                        // Gentle fade in and out
-                        gain.gain.setValueAtTime(0, startTime + currentTime);
-                        gain.gain.linearRampToValueAtTime(0.03, startTime + currentTime + 0.1);
-                        gain.gain.setValueAtTime(0.03, startTime + currentTime + duration * beatDuration * 0.7);
-                        gain.gain.exponentialRampToValueAtTime(0.001, startTime + currentTime + duration * beatDuration);
-                        
-                        vibrato.start(startTime + currentTime);
-                        osc.start(startTime + currentTime);
-                        vibrato.stop(startTime + currentTime + duration * beatDuration);
-                        osc.stop(startTime + currentTime + duration * beatDuration);
-                        
-                        musicOscillators.push(osc);
-                    }
-                    currentTime += duration * beatDuration;
-                });
-
-                // Schedule bass
-                currentTime = 0;
-                bassline.forEach(({ note, duration }) => {
-                    const osc = audioContext.createOscillator();
-                    const gain = audioContext.createGain();
-                    
-                    osc.connect(gain);
-                    gain.connect(musicGainNode);
-                    
-                    osc.type = 'triangle'; // Softer bass
-                    osc.frequency.setValueAtTime(note, startTime + currentTime);
-                    
-                    gain.gain.setValueAtTime(0.04, startTime + currentTime);
-                    gain.gain.setValueAtTime(0.035, startTime + currentTime + 0.01);
-                    
-                    osc.start(startTime + currentTime);
-                    osc.stop(startTime + currentTime + duration * beatDuration);
-                    
-                    musicOscillators.push(osc);
-                    currentTime += duration * beatDuration;
-                });
-
-                // Schedule harmony
-                currentTime = 0;
-                harmony.forEach(({ note, duration }) => {
-                    const osc = audioContext.createOscillator();
-                    const gain = audioContext.createGain();
-                    
-                    osc.connect(gain);
-                    gain.connect(musicGainNode);
-                    
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(note, startTime + currentTime);
-                    
-                    gain.gain.setValueAtTime(0.03, startTime + currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + currentTime + duration * beatDuration);
-                    
-                    osc.start(startTime + currentTime);
-                    osc.stop(startTime + currentTime + duration * beatDuration);
-                    
-                    musicOscillators.push(osc);
-                    currentTime += duration * beatDuration;
-                });
-
-                // Schedule percussion
-                for (let i = 0; i < 8; i++) {
-                    percussion.forEach(({ type, delay }) => {
-                        playPercussion(type, startTime + (i * beatDuration) + (delay * beatDuration));
-                    });
-                }
-            }
-
-            // Initial schedule
-            scheduleMusic();
-
-            // Loop the music
-            const totalDuration = melody.reduce((sum, { duration }) => sum + duration, 0) * beatDuration;
-            loopInterval = setInterval(() => {
-                if (!gameRunning) {
-                    clearInterval(loopInterval);
-                    stopBackgroundMusic();
-                    return;
-                }
-
-                // Clean up old oscillators
-                musicOscillators = musicOscillators.filter(osc => {
-                    try {
-                        return osc.context.currentTime < osc.stopTime;
-                    } catch {
-                        return false;
-                    }
-                });
-                
-                scheduleMusic();
-            }, totalDuration * 1000);
+            audioManager.startBackgroundMusic(tetrisAudio.music);
         }
-
+        
         function stopBackgroundMusic() {
-            musicOscillators.forEach(osc => {
-                try {
-                    osc.stop();
-                } catch {}
-            });
-            musicOscillators = [];
             musicStarted = false;
+            audioManager.stopBackgroundMusic();
         }
+
 
 
         const canvas = document.getElementById('canvas');
@@ -1019,13 +507,9 @@
             spawnPiece();
             
             // Start music with user interaction to comply with browser policies
-            if (audioContext.state === 'suspended') {
-                audioContext.resume().then(() => {
-                    startBackgroundMusic();
-                });
-            } else {
+            audioManager.resume().then(() => {
                 startBackgroundMusic();
-            }
+            });
             
             gameLoop();
         }
@@ -1482,9 +966,7 @@
 
         document.addEventListener('keydown', (e) => {
             // Resume audio context on first interaction
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
+            audioManager.resume();
             
             // ESC key to return to index.html
             if (e.key === 'Escape') {
@@ -1495,7 +977,7 @@
             if (!gameRunning || isPaused) {
                 if (e.key === 'p' || e.key === 'P') {
                     isPaused = !isPaused;
-                    if (!isPaused && !musicStarted && !isMuted) {
+                    if (!isPaused && !musicStarted) {
                         startBackgroundMusic();
                     }
                 }

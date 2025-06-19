@@ -9,6 +9,8 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
+    <script src="audio-manager.js"></script>
+    <script src="audio-configs.js"></script>
     <style>
         * {
             margin: 0;
@@ -299,20 +301,9 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d', { alpha: false }); // Disable alpha for performance
 
-        // Web Audio API setup
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        let musicInterval;
-        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
-
-        // Listen for global mute changes
-        window.addEventListener('globalMuteToggle', (e) => {
-            isMuted = e.detail.isMuted;
-            if (isMuted) {
-                stopMusic();
-            } else if (gameRunning && !isPaused) {
-                startMusic();
-            }
-        });
+        // Initialize audio
+        audioManager.init();
+        const missileCommandAudio = AUDIO_CONFIGS.missileCommand;
         
         // Game state
         let gameRunning = false;
@@ -903,146 +894,30 @@
         
         // Sound functions
         function playSoundEffect(type) {
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-            
-            const now = audioContext.currentTime;
+            audioManager.resume();
             
             switch(type) {
                 case 'launch':
-                    const launchOsc = audioContext.createOscillator();
-                    const launchGain = audioContext.createGain();
-                    launchOsc.type = 'sawtooth';
-                    launchOsc.frequency.setValueAtTime(200, now);
-                    launchOsc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
-                    launchGain.gain.setValueAtTime(0.3, now);
-                    launchGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                    launchOsc.connect(launchGain);
-                    launchGain.connect(audioContext.destination);
-                    launchOsc.start(now);
-                    launchOsc.stop(now + 0.2);
+                    missileCommandAudio.sounds.launch();
                     break;
-                    
                 case 'explosion':
-                    // Create noise for explosion
-                    const bufferSize = audioContext.sampleRate * 0.5;
-                    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                    const data = buffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) {
-                        data[i] = (Math.random() - 0.5) * 2 * Math.exp(-i / bufferSize * 5);
-                    }
-                    
-                    const explosionSource = audioContext.createBufferSource();
-                    explosionSource.buffer = buffer;
-                    
-                    const explosionFilter = audioContext.createBiquadFilter();
-                    explosionFilter.type = 'lowpass';
-                    explosionFilter.frequency.setValueAtTime(3000, now);
-                    explosionFilter.frequency.exponentialRampToValueAtTime(400, now + 0.5);
-                    
-                    const explosionGain = audioContext.createGain();
-                    explosionGain.gain.setValueAtTime(0.5, now);
-                    explosionGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-                    
-                    explosionSource.connect(explosionFilter);
-                    explosionFilter.connect(explosionGain);
-                    explosionGain.connect(audioContext.destination);
-                    explosionSource.start(now);
+                    missileCommandAudio.sounds.explosion();
                     break;
-                    
                 case 'impact':
-                    const impactOsc = audioContext.createOscillator();
-                    const impactGain = audioContext.createGain();
-                    impactOsc.type = 'sine';
-                    impactOsc.frequency.setValueAtTime(150, now);
-                    impactOsc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
-                    impactGain.gain.setValueAtTime(0.3, now);
-                    impactGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    impactOsc.connect(impactGain);
-                    impactGain.connect(audioContext.destination);
-                    impactOsc.start(now);
-                    impactOsc.stop(now + 0.1);
+                    missileCommandAudio.sounds.impact();
                     break;
-                    
                 case 'waveComplete':
-                    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
-                    notes.forEach((freq, i) => {
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        osc.type = 'square';
-                        osc.frequency.setValueAtTime(freq, now + i * 0.1);
-                        gain.gain.setValueAtTime(0.2, now + i * 0.1);
-                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
-                        osc.connect(gain);
-                        gain.connect(audioContext.destination);
-                        osc.start(now + i * 0.1);
-                        osc.stop(now + i * 0.1 + 0.3);
-                    });
+                    missileCommandAudio.sounds.waveComplete();
                     break;
             }
-        }
-        
-        function playBackgroundMusic() {
-            if (isMuted || !gameRunning) return;
-            
-            const now = audioContext.currentTime;
-            const bassDuration = 0.2;
-            
-            // Bass line pattern
-            const bassNotes = [55, 0, 55, 0, 82.5, 0, 82.5, 0]; // A1, rest, A1, rest, E2, rest, E2, rest
-            
-            bassNotes.forEach((freq, i) => {
-                if (freq > 0) {
-                    const osc = audioContext.createOscillator();
-                    const gain = audioContext.createGain();
-                    
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now + i * bassDuration);
-                    
-                    gain.gain.setValueAtTime(0, now + i * bassDuration);
-                    gain.gain.linearRampToValueAtTime(0.1, now + i * bassDuration + 0.01);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + (i + 1) * bassDuration);
-                    
-                    osc.connect(gain);
-                    gain.connect(audioContext.destination);
-                    
-                    osc.start(now + i * bassDuration);
-                    osc.stop(now + (i + 1) * bassDuration);
-                }
-            });
-            
-            // Ominous pad
-            const padOsc = audioContext.createOscillator();
-            const padGain = audioContext.createGain();
-            padOsc.type = 'sawtooth';
-            padOsc.frequency.setValueAtTime(110, now); // A2
-            padGain.gain.setValueAtTime(0.03, now);
-            
-            const padFilter = audioContext.createBiquadFilter();
-            padFilter.type = 'lowpass';
-            padFilter.frequency.setValueAtTime(200, now);
-            
-            padOsc.connect(padFilter);
-            padFilter.connect(padGain);
-            padGain.connect(audioContext.destination);
-            
-            padOsc.start(now);
-            padOsc.stop(now + bassNotes.length * bassDuration);
         }
         
         function startMusic() {
-            if (!isMuted) {
-                playBackgroundMusic();
-                musicInterval = setInterval(playBackgroundMusic, 1600);
-            }
+            audioManager.startBackgroundMusic(missileCommandAudio.music);
         }
         
         function stopMusic() {
-            if (musicInterval) {
-                clearInterval(musicInterval);
-                musicInterval = null;
-            }
+            audioManager.stopBackgroundMusic();
         }
         
         // UI updates

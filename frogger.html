@@ -9,6 +9,8 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
+    <script src="audio-manager.js"></script>
+    <script src="audio-configs.js"></script>
     <style>
         * {
             margin: 0;
@@ -441,266 +443,36 @@
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
-        
-        // Listen for global mute changes
-        window.addEventListener('globalMuteToggle', (e) => {
-            isMuted = e.detail.isMuted;
-            if (isMuted) {
-                stopMusic();
-            } else if (gameRunning && !isPaused) {
-                startMusic();
-            }
-        });
-        
-        // Initialize Web Audio API for retro music
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Initialize audio
+        audioManager.init();
+        const froggerAudio = AUDIO_CONFIGS.frogger;
         let musicPlaying = false;
-        let musicInterval;
-        
-        // Subtle ambient retro synthesizer
-        function playNote(frequency, duration, startTime, waveType = 'square', volume = 0.03) {
-            if (isMuted) return;
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            const filter = audioContext.createBiquadFilter();
-            const delay = audioContext.createDelay();
-            const delayGain = audioContext.createGain();
-            
-            // Retro wave with subtle filtering
-            oscillator.type = waveType;
-            oscillator.frequency.setValueAtTime(frequency, startTime);
-            
-            // Gentle low-pass for vintage warmth
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(4000, startTime);
-            filter.Q.value = 0.5;
-            
-            // Subtle delay for ambient space
-            delay.delayTime.setValueAtTime(0.15, startTime);
-            delayGain.gain.setValueAtTime(0.1, startTime);
-            
-            // Very gentle envelope for background ambience
-            gainNode.gain.setValueAtTime(0, startTime);
-            gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.1);
-            gainNode.gain.setValueAtTime(volume, startTime + duration * 0.8);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-            
-            // Connect with subtle delay
-            oscillator.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            // Add subtle delay trail
-            gainNode.connect(delay);
-            delay.connect(delayGain);
-            delayGain.connect(audioContext.destination);
-            
-            oscillator.start(startTime);
-            oscillator.stop(startTime + duration);
-        }
-        
-        // Ambient melody - sparse and atmospheric
-        const melody = [
-            { note: 440, duration: 2.0, wave: 'sine' },    // A4 - long, gentle
-            { note: 523, duration: 2.4, wave: 'sine' },    // C5
-            { note: 392, duration: 1.6, wave: 'sine' },    // G4
-            { note: 349, duration: 3.0, wave: 'sine' },    // F4 - sustained
-            { note: 330, duration: 2.0, wave: 'sine' },    // E4
-            { note: 440, duration: 4.0, wave: 'sine' },    // A4 - resolution
-        ];
-        
-        // Deep ambient bass - slow moving drone
-        const bassLine = [
-            { note: 55, duration: 8.0, wave: 'sine' },     // A1 - deep drone
-            { note: 65.5, duration: 8.0, wave: 'sine' },   // C2
-            { note: 49, duration: 8.0, wave: 'sine' },     // G1
-            { note: 55, duration: 8.0, wave: 'sine' },     // A1
-        ];
-        
-        // Soft ambient texture - creates atmosphere
-        const ambientTexture = [
-            { note: 220, duration: 4.0, wave: 'triangle' },  // A3 - soft pad
-            { note: 262, duration: 4.0, wave: 'triangle' },  // C4
-            { note: 330, duration: 4.0, wave: 'triangle' },  // E4
-            { note: 262, duration: 4.0, wave: 'triangle' },  // C4
-            { note: 220, duration: 4.0, wave: 'triangle' },  // A3
-            { note: 196, duration: 4.0, wave: 'triangle' },  // G3
-            { note: 175, duration: 4.0, wave: 'triangle' },  // F3
-            { note: 220, duration: 4.0, wave: 'triangle' },  // A3
-        ];
-        
-        // High ambient shimmer - ethereal layer
-        const shimmerLayer = [
-            { note: 880, duration: 6.0, wave: 'sine' },     // A5 - very soft
-            { note: 1047, duration: 6.0, wave: 'sine' },    // C6
-            { note: 784, duration: 6.0, wave: 'sine' },     // G5
-            { note: 698, duration: 6.0, wave: 'sine' },     // F5
-            { note: 880, duration: 8.0, wave: 'sine' },     // A5
-        ];
-        
-        function playMusic() {
-            if (!musicPlaying || audioContext.state === 'suspended') return;
-            
-            const now = audioContext.currentTime;
-            
-            // Play ambient melody - soft and sparse
-            let melodyTime = 0;
-            melody.forEach(note => {
-                playNote(note.note, note.duration, now + melodyTime, note.wave, 0.04); // Reduced by half
-                melodyTime += note.duration;
-            });
-            
-            // Play deep bass drone - foundation
-            let bassTime = 0;
-            bassLine.forEach(note => {
-                playNote(note.note, note.duration, now + bassTime, note.wave, 0.05); // Reduced by half
-                bassTime += note.duration;
-            });
-            
-            // Play ambient texture - mid layer
-            let textureTime = 0;
-            ambientTexture.forEach(note => {
-                playNote(note.note, note.duration, now + textureTime, note.wave, 0.025); // Reduced by half
-                textureTime += note.duration;
-            });
-            
-            // Play high shimmer - ethereal top layer
-            let shimmerTime = 0;
-            shimmerLayer.forEach(note => {
-                playNote(note.note, note.duration, now + shimmerTime, note.wave, 0.015); // Reduced by half
-                shimmerTime += note.duration;
-            });
-        }
-        
+        // Background music functions
         function startMusic() {
-            if (isMuted) return;
-            
-            // Stop any existing music first
-            stopMusic();
-            
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-            
+            if (musicPlaying) return;
             musicPlaying = true;
-            playMusic();
-            musicInterval = setInterval(playMusic, 32000); // Loop every 32 seconds for ambient atmosphere
+            audioManager.startBackgroundMusic(froggerAudio.music);
         }
         
         function stopMusic() {
             musicPlaying = false;
-            if (musicInterval) {
-                clearInterval(musicInterval);
-            }
+            audioManager.stopBackgroundMusic();
         }
         
-        // Sound Effects
+        // Sound Effects wrapper
         function playSoundEffect(type) {
-            if (isMuted) return;
-            // Sound effects always play regardless of music mute state
-            const now = audioContext.currentTime;
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
             switch(type) {
                 case 'hop':
-                    // Quick hop sound
-                    oscillator.type = 'square';
-                    oscillator.frequency.setValueAtTime(400, now);
-                    oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-                    gainNode.gain.setValueAtTime(0.15, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.1);
+                    froggerAudio.sounds.hop();
                     break;
-                    
                 case 'crash':
-                    // Car crash sound - noise burst
-                    const bufferSize = audioContext.sampleRate * 0.3;
-                    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                    const data = buffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) {
-                        data[i] = (Math.random() - 0.5) * 2;
-                    }
-                    const noiseSource = audioContext.createBufferSource();
-                    noiseSource.buffer = buffer;
-                    
-                    const noiseGain = audioContext.createGain();
-                    noiseGain.gain.setValueAtTime(0.3, now);
-                    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    
-                    noiseSource.connect(noiseGain);
-                    noiseGain.connect(audioContext.destination);
-                    noiseSource.start(now);
+                    froggerAudio.sounds.crash();
                     break;
-                    
                 case 'splash':
-                    // Water splash sound - more prominent
-                    // Create white noise
-                    const splashBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.5, audioContext.sampleRate);
-                    const splashData = splashBuffer.getChannelData(0);
-                    for (let i = 0; i < splashBuffer.length; i++) {
-                        splashData[i] = (Math.random() - 0.5) * 2;
-                    }
-                    const splashSource = audioContext.createBufferSource();
-                    splashSource.buffer = splashBuffer;
-                    
-                    // Add filter for water-like sound
-                    const splashFilter = audioContext.createBiquadFilter();
-                    splashFilter.type = 'bandpass';
-                    splashFilter.frequency.setValueAtTime(1500, now);
-                    splashFilter.frequency.exponentialRampToValueAtTime(400, now + 0.3);
-                    splashFilter.Q.value = 2;
-                    
-                    // Add initial "plop" sound
-                    const plopOsc = audioContext.createOscillator();
-                    plopOsc.type = 'sine';
-                    plopOsc.frequency.setValueAtTime(200, now);
-                    plopOsc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
-                    
-                    const plopGain = audioContext.createGain();
-                    plopGain.gain.setValueAtTime(0.4, now);
-                    plopGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    
-                    const splashGain = audioContext.createGain();
-                    splashGain.gain.setValueAtTime(0.5, now);
-                    splashGain.gain.linearRampToValueAtTime(0.3, now + 0.1);
-                    splashGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-                    
-                    // Connect the plop
-                    plopOsc.connect(plopGain);
-                    plopGain.connect(audioContext.destination);
-                    plopOsc.start(now);
-                    plopOsc.stop(now + 0.1);
-                    
-                    // Connect the splash
-                    splashSource.connect(splashFilter);
-                    splashFilter.connect(splashGain);
-                    splashGain.connect(audioContext.destination);
-                    splashSource.start(now);
+                    froggerAudio.sounds.splash();
                     break;
-                    
                 case 'success':
-                    // Success fanfare - ascending notes
-                    const successNotes = [523, 659, 784, 1047]; // C5, E5, G5, C6
-                    successNotes.forEach((freq, i) => {
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        
-                        osc.type = 'square';
-                        osc.frequency.setValueAtTime(freq, now + i * 0.1);
-                        
-                        gain.gain.setValueAtTime(0.2, now + i * 0.1);
-                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
-                        
-                        osc.connect(gain);
-                        gain.connect(audioContext.destination);
-                        osc.start(now + i * 0.1);
-                        osc.stop(now + i * 0.1 + 0.3);
-                    });
+                    froggerAudio.sounds.success();
                     break;
             }
         }
@@ -2231,11 +2003,7 @@
             stopMusic();
             
             // Resume audio context on user interaction
-            if (audioContext.state === 'suspended') {
-                audioContext.resume().then(() => {
-                    console.log('Audio context resumed');
-                });
-            }
+            audioManager.resume();
             
             document.getElementById('startScreen').classList.remove('active');
             gameRunning = true;

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Engine Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #444;
+        }
+        .game-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 10px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+    </style>
+    <script src="audio-engine.js"></script>
+    <script src="audio/snake-sounds.js"></script>
+    <script src="audio/breakout-sounds.js"></script>
+    <script>
+        // Register games
+        window.audioEngine.registerGame('snake', window.SNAKE_SOUNDS);
+        window.audioEngine.registerGame('breakout', window.BREAKOUT_SOUNDS);
+        
+        // Log engine state
+        console.log('Audio Engine Test Page Loaded');
+        console.log('AudioContext state:', window.audioEngine.context.state);
+        console.log('Registered sounds:', Array.from(window.audioEngine.sounds.keys()));
+        
+        // Make functions available globally
+        window.playSnakeSound = (sound) => {
+            console.log(`Test: Playing snake.${sound}`);
+            window.audioEngine.playSound(`snake.${sound}`);
+        };
+        window.playBreakoutSound = (sound) => {
+            console.log(`Test: Playing breakout.${sound}`);
+            window.audioEngine.playSound(`breakout.${sound}`);
+        };
+        window.toggleBreakoutMusic = () => {
+            if (window.musicPlaying) {
+                window.audioEngine.stopMusic('breakout');
+                window.musicPlaying = false;
+                document.getElementById('musicBtn').textContent = 'Start Music';
+            } else {
+                window.audioEngine.startMusic('breakout', window.BREAKOUT_MUSIC);
+                window.musicPlaying = true;
+                document.getElementById('musicBtn').textContent = 'Stop Music';
+            }
+        };
+    </script>
+</head>
+<body>
+    <h1>Audio Engine Test</h1>
+    
+    <div class="game-section">
+        <h2>Snake Sounds</h2>
+        <button onclick="playSnakeSound('eat')">Eat Sound</button>
+        <button onclick="playSnakeSound('turn')">Turn Sound</button>
+        <button onclick="playSnakeSound('gameOver')">Game Over Sound</button>
+    </div>
+    
+    <div class="game-section">
+        <h2>Breakout Sounds</h2>
+        <button onclick="playBreakoutSound('paddleHit')">Paddle Hit</button>
+        <button onclick="playBreakoutSound('brickHit')">Brick Hit</button>
+        <button onclick="playBreakoutSound('lifeLost')">Life Lost</button>
+        <button onclick="playBreakoutSound('gameOver')">Game Over</button>
+        <button id="musicBtn" onclick="toggleBreakoutMusic()">Start Music</button>
+    </div>
+    
+    <div class="game-section">
+        <h2>Test Results</h2>
+        <p>Click the buttons above to test each sound. They should match exactly the original game sounds.</p>
+        <p>Open the browser console to see any errors.</p>
+        <button onclick="testDirectSound()">Test Direct Sound (No Engine)</button>
+    </div>
+    
+    <script>
+        // Direct sound test to verify browser audio works
+        function testDirectSound() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            console.log('Direct test context state:', ctx.state);
+            
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.frequency.value = 440;
+            osc.type = 'sine';
+            gain.gain.value = 0.1;
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.start();
+            osc.stop(ctx.currentTime + 0.2);
+            
+            console.log('Direct sound test executed');
+        }
+    </script>
+</body>
+</html>

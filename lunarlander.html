@@ -9,6 +9,8 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
+    <script src="audio-manager.js"></script>
+    <script src="audio-configs.js"></script>
     <style>
         * {
             margin: 0;
@@ -527,144 +529,35 @@
         let totalScore = 0;
         
         // Audio
-        let audioContext;
-        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
+        audioManager.init();
+        const lunarLanderAudio = AUDIO_CONFIGS.lunarLander;
         let backgroundMusic;
         
-        function initAudio() {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Create background music
-            backgroundMusic = createBackgroundMusic();
+        function startBackgroundMusic() {
+            audioManager.startBackgroundMusic(lunarLanderAudio.music);
         }
         
-        function createBackgroundMusic() {
-            const tempo = 100;
-            const beatDuration = 60 / tempo;
-            
-            const notes = [
-                { freq: 110, duration: 0.5 },    // A2
-                { freq: 123.47, duration: 0.5 },  // B2
-                { freq: 130.81, duration: 0.5 },  // C3
-                { freq: 146.83, duration: 0.5 },  // D3
-                { freq: 130.81, duration: 0.5 },  // C3
-                { freq: 123.47, duration: 0.5 },  // B2
-                { freq: 110, duration: 0.5 },     // A2
-                { freq: 98, duration: 0.5 },      // G2
-            ];
-
-            let musicGain = audioContext.createGain();
-            musicGain.gain.value = 0.08;
-            musicGain.connect(audioContext.destination);
-
-            let currentTime = 0;
-            
-            function playSequence() {
-                if (isMuted || !audioContext || !gameRunning) return;
-                
-                currentTime = audioContext.currentTime;
-                
-                notes.forEach((note, index) => {
-                    const oscillator = audioContext.createOscillator();
-                    const noteGain = audioContext.createGain();
-                    
-                    oscillator.type = 'square';
-                    oscillator.frequency.value = note.freq;
-                    
-                    noteGain.gain.setValueAtTime(0, currentTime + index * beatDuration * 0.5);
-                    noteGain.gain.linearRampToValueAtTime(0.08, currentTime + index * beatDuration * 0.5 + 0.01);
-                    noteGain.gain.exponentialRampToValueAtTime(0.001, currentTime + index * beatDuration * 0.5 + note.duration * beatDuration);
-                    
-                    oscillator.connect(noteGain);
-                    noteGain.connect(musicGain);
-                    
-                    oscillator.start(currentTime + index * beatDuration * 0.5);
-                    oscillator.stop(currentTime + index * beatDuration * 0.5 + note.duration * beatDuration);
-                });
-                
-                setTimeout(playSequence, notes.length * beatDuration * 500);
-            }
-            
-            return { play: playSequence, stop: () => {} };
+        function stopBackgroundMusic() {
+            audioManager.stopBackgroundMusic();
         }
         
         function playSound(type) {
-            if (isMuted || !audioContext) return;
-            
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            const now = audioContext.currentTime;
-            
             switch(type) {
                 case 'thrust':
-                    // Create white noise for thrust
-                    const bufferSize = audioContext.sampleRate * 0.1;
-                    const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                    const data = noiseBuffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) {
-                        data[i] = Math.random() * 2 - 1;
-                    }
-                    
-                    const noise = audioContext.createBufferSource();
-                    noise.buffer = noiseBuffer;
-                    
-                    const filter = audioContext.createBiquadFilter();
-                    filter.type = 'lowpass';
-                    filter.frequency.value = 400;
-                    
-                    noise.connect(filter);
-                    filter.connect(gainNode);
-                    
-                    gainNode.gain.setValueAtTime(0.1, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    
-                    noise.start(now);
-                    noise.stop(now + 0.1);
+                    lunarLanderAudio.sounds.thrust();
                     break;
-                    
                 case 'landing':
-                    oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(400, now);
-                    oscillator.frequency.exponentialRampToValueAtTime(800, now + 0.2);
-                    gainNode.gain.setValueAtTime(0.2, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.2);
+                    lunarLanderAudio.sounds.landing();
                     break;
-                    
                 case 'crash':
-                    oscillator.type = 'sawtooth';
-                    oscillator.frequency.setValueAtTime(150, now);
-                    oscillator.frequency.exponentialRampToValueAtTime(50, now + 0.5);
-                    gainNode.gain.setValueAtTime(0.3, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.5);
+                    lunarLanderAudio.sounds.crash();
                     break;
-                    
                 case 'beep':
-                    oscillator.type = 'sine';
-                    oscillator.frequency.value = 880;
-                    gainNode.gain.setValueAtTime(0.1, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.05);
+                    lunarLanderAudio.sounds.beep();
                     break;
             }
         }
         
-        // Listen for global mute toggle
-        window.addEventListener('globalMuteToggle', (event) => {
-            isMuted = event.detail.isMuted;
-            if (!isMuted && !audioContext && gameRunning) {
-                initAudio();
-                backgroundMusic.play();
-            }
-        });
         
         function initTerrain() {
             terrain = [];
@@ -1001,10 +894,9 @@
             gameRunning = true;
             
             if (!audioContext && !isMuted) {
-                initAudio();
-                backgroundMusic.play();
+                startBackgroundMusic();
             } else if (audioContext && !isMuted) {
-                backgroundMusic.play();
+                startBackgroundMusic();
             }
             
             gameLoop();
@@ -1037,7 +929,7 @@
             
             // Restart background music if not muted
             if (audioContext && !isMuted) {
-                backgroundMusic.play();
+                startBackgroundMusic();
             }
             
             // Restart the game loop

@@ -9,6 +9,8 @@
     <script src="submit-idea-button.js"></script>
     <script src="home-button.js"></script>
     <script src="mute-button.js"></script>
+    <script src="audio-manager.js"></script>
+    <script src="audio-configs.js"></script>
     <style>
         * {
             margin: 0;
@@ -324,145 +326,34 @@
         };
 
         // Audio setup
-        let audioContext;
-        let isMuted = window.isGloballyMuted ? window.isGloballyMuted() : false;
+        audioManager.init();
+        const minesweeperAudio = AUDIO_CONFIGS.minesweeper;
         let backgroundMusic;
 
-        function initAudio() {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Create background music
-            backgroundMusic = createBackgroundMusic();
-        }
-
-        function createBackgroundMusic() {
-            const tempo = 120;
-            const beatDuration = 60 / tempo;
-            
-            const notes = [
-                { freq: 130.81, duration: 0.5 }, // C3
-                { freq: 146.83, duration: 0.5 }, // D3
-                { freq: 164.81, duration: 0.5 }, // E3
-                { freq: 130.81, duration: 0.5 }, // C3
-                { freq: 174.61, duration: 0.5 }, // F3
-                { freq: 164.81, duration: 0.5 }, // E3
-                { freq: 146.83, duration: 0.5 }, // D3
-                { freq: 130.81, duration: 0.5 }, // C3
-            ];
-
-            let musicGain = audioContext.createGain();
-            musicGain.gain.value = 0.1;
-            musicGain.connect(audioContext.destination);
-
-            let currentTime = 0;
-            
-            function playSequence() {
-                if (isMuted || !audioContext) return;
-                
-                currentTime = audioContext.currentTime;
-                
-                notes.forEach((note, index) => {
-                    const oscillator = audioContext.createOscillator();
-                    const noteGain = audioContext.createGain();
-                    
-                    oscillator.type = 'square';
-                    oscillator.frequency.value = note.freq;
-                    
-                    noteGain.gain.setValueAtTime(0, currentTime + index * beatDuration * 0.5);
-                    noteGain.gain.linearRampToValueAtTime(0.1, currentTime + index * beatDuration * 0.5 + 0.01);
-                    noteGain.gain.exponentialRampToValueAtTime(0.001, currentTime + index * beatDuration * 0.5 + note.duration * beatDuration);
-                    
-                    oscillator.connect(noteGain);
-                    noteGain.connect(musicGain);
-                    
-                    oscillator.start(currentTime + index * beatDuration * 0.5);
-                    oscillator.stop(currentTime + index * beatDuration * 0.5 + note.duration * beatDuration);
-                });
-                
-                setTimeout(playSequence, notes.length * beatDuration * 500);
-            }
-            
-            return { play: playSequence, stop: () => {} };
-        }
-
         function playSound(type) {
-            if (isMuted || !audioContext) return;
-            
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            const now = audioContext.currentTime;
-            
             switch(type) {
                 case 'reveal':
-                    oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(800, now);
-                    oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.1);
-                    gainNode.gain.setValueAtTime(0.2, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.1);
+                    minesweeperAudio.sounds.reveal();
                     break;
-                    
                 case 'flag':
-                    oscillator.type = 'square';
-                    oscillator.frequency.setValueAtTime(600, now);
-                    gainNode.gain.setValueAtTime(0.1, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.05);
+                    minesweeperAudio.sounds.flag();
                     break;
-                    
                 case 'mine':
-                    oscillator.type = 'sawtooth';
-                    oscillator.frequency.setValueAtTime(100, now);
-                    oscillator.frequency.exponentialRampToValueAtTime(50, now + 0.3);
-                    gainNode.gain.setValueAtTime(0.3, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    
-                    const noise = audioContext.createBufferSource();
-                    const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.3, audioContext.sampleRate);
-                    const data = buffer.getChannelData(0);
-                    for (let i = 0; i < data.length; i++) {
-                        data[i] = Math.random() * 2 - 1;
-                    }
-                    noise.buffer = buffer;
-                    noise.connect(gainNode);
-                    
-                    oscillator.start(now);
-                    oscillator.stop(now + 0.3);
-                    noise.start(now);
+                    minesweeperAudio.sounds.mine();
                     break;
-                    
                 case 'win':
-                    const winNotes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-                    winNotes.forEach((freq, i) => {
-                        const osc = audioContext.createOscillator();
-                        const gain = audioContext.createGain();
-                        osc.type = 'square';
-                        osc.frequency.value = freq;
-                        osc.connect(gain);
-                        gain.connect(audioContext.destination);
-                        gain.gain.setValueAtTime(0.1, now + i * 0.1);
-                        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.2);
-                        osc.start(now + i * 0.1);
-                        osc.stop(now + i * 0.1 + 0.2);
-                    });
+                    minesweeperAudio.sounds.win();
                     break;
             }
         }
 
-        // Listen for global mute toggle
-        window.addEventListener('globalMuteToggle', (event) => {
-            isMuted = event.detail.isMuted;
-            if (!isMuted && !audioContext) {
-                initAudio();
-                backgroundMusic.play();
-            }
-        });
+        function startBackgroundMusic() {
+            audioManager.startBackgroundMusic(minesweeperAudio.music);
+        }
+        
+        function stopBackgroundMusic() {
+            audioManager.stopBackgroundMusic();
+        }
 
         function initGame() {
             const config = DIFFICULTIES[currentDifficulty];
@@ -785,9 +676,9 @@
 
         // Initialize audio on first interaction
         document.addEventListener('click', () => {
-            if (!audioContext && !isMuted) {
-                initAudio();
-                backgroundMusic.play();
+            if (true) {
+                audioManager.resume();
+                startBackgroundMusic();
             }
         }, { once: true });
 
