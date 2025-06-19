@@ -1609,12 +1609,18 @@
         </div>
         <div class="patch-updates">
             <div class="patch-update">
-                <div class="patch-date">Jun 17, 2025</div>
+                <div class="patch-date">Jun 18, 2025</div>
                 <div class="patch-content">
-                    New games added: <span class="patch-games">Minesweeper</span> and <span class="patch-games">Lunar Lander</span>!
+                    New game added: <span class="patch-games">Pong</span> - The granddaddy of all video games!
                 </div>
             </div>
             <div class="older-updates">
+                <div class="patch-update">
+                    <div class="patch-date">Jun 17, 2025</div>
+                    <div class="patch-content">
+                        New games added: <span class="patch-games">Minesweeper</span> and <span class="patch-games">Lunar Lander</span>!
+                    </div>
+                </div>
                 <div class="patch-update">
                     <div class="patch-date">Jun 16, 2025</div>
                     <div class="patch-content">
@@ -1709,6 +1715,12 @@
             </div>
             <div class="patch-notes-content">
                 <div class="patch-update">
+                    <div class="patch-date">Jun 18, 2025</div>
+                    <div class="patch-content">
+                        New game added: <span class="patch-games">Pong</span> - The granddaddy of all video games!
+                    </div>
+                </div>
+                <div class="patch-update" style="margin-top: 20px;">
                     <div class="patch-date">Jun 17, 2025</div>
                     <div class="patch-content">
                         New games added: <span class="patch-games">Minesweeper</span> and <span class="patch-games">Lunar Lander</span><br>
@@ -1748,7 +1760,8 @@
             { title: 'Snake', icon: '▪', cssClass: 'snake', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html' },
             { title: 'JezzBall', icon: '◈', cssClass: 'jezzball', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html' },
             { title: 'Minesweeper', icon: '⚑', cssClass: 'minesweeper', color: '#60a5fa', description: 'Clear the minefield using logic and careful deduction', url: 'minesweeper.html' },
-            { title: 'Lunar Lander', icon: '🚀', cssClass: 'lunarlander', color: '#93c5fd', description: 'Land safely on the moon with limited fuel', url: 'lunarlander.html' }
+            { title: 'Lunar Lander', icon: '🚀', cssClass: 'lunarlander', color: '#93c5fd', description: 'Land safely on the moon with limited fuel', url: 'lunarlander.html' },
+            { title: 'Pong', icon: '▐', cssClass: 'pong', color: '#22c55e', description: 'Classic paddle tennis - the granddaddy of all video games', url: 'pong.html', isNew: true }
         ];
         
         // CarouselController - Manages carousel navigation and game cards
@@ -1946,7 +1959,16 @@
                     card.className = 'game-card glass-panel';
                     card.setAttribute('data-game', game.url);
                     
+                    // Add new badge if applicable
+                    let badgeHtml = '';
+                    if (game.isNew) {
+                        badgeHtml = '<span class="new-badge">New</span>';
+                    } else if (game.isUpdated) {
+                        badgeHtml = '<span class="updated-badge">Updated</span>';
+                    }
+                    
                     card.innerHTML = `
+                        ${badgeHtml}
                         <div class="game-content">
                             <div class="game-icon ${game.cssClass || ''}">${game.icon}</div>
                             <h2 class="game-title">${game.title}</h2>
@@ -2006,6 +2028,8 @@
                     card.style.animationDelay = `${index * 0.05}s`;
                     
                     card.innerHTML = `
+                        ${game.isNew ? '<span class="new-badge">New</span>' : ''}
+                        ${game.isUpdated ? '<span class="updated-badge">Updated</span>' : ''}
                         <div class="game-icon ${game.cssClass || ''}" style="color: ${game.color}">${game.icon}</div>
                         <h3 class="game-title">${game.title}</h3>
                         <p class="game-description">${game.description}</p>
