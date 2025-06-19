@@ -1150,6 +1150,12 @@
             max-height: 80vh;
             overflow-y: auto;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        
+        .patch-notes.expanded::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
         }
         
         .patch-header {
@@ -1185,15 +1191,6 @@
             50% { opacity: 1; }
         }
         
-        .expand-icon {
-            font-size: 12px;
-            color: #666;
-            transition: transform 0.3s ease;
-        }
-        
-        .patch-notes.expanded .expand-icon {
-            transform: rotate(-90deg);
-        }
         
         .patch-updates {
             display: flex;
@@ -1657,7 +1654,6 @@
                 <span class="patch-indicator"></span>
                 <span>Recent Updates</span>
             </div>
-            <span class="expand-icon">◀</span>
         </div>
         <div class="patch-updates" id="desktop-patch-content">
             <!-- Patch notes will be rendered here by JavaScript -->
@@ -1795,7 +1791,7 @@
                     {
                         title: '🔄 Game Updates',
                         items: [
-                            { game: 'Snake', description: 'Added 4 difficulty modes with score multipliers' },
+                            { game: 'Snake', description: 'Added 2-player battle mode with WASD controls and 4 difficulty modes' },
                             { game: 'Minesweeper', description: 'New Nightmare mode for expert players' },
                             { game: 'Tetris', description: 'Rebalanced difficulty settings for better progression' },
                             { game: 'Breakout', description: 'Features standardized 4-difficulty system' },
