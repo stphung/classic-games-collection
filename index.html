@@ -1635,6 +1635,568 @@
                 height: 60px;
             }
         }
+        
+        /* Notification System Styles */
+        .notification-bell {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-circle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: var(--z-top);
+            transition: all var(--transition-normal);
+        }
+        
+        .notification-bell:hover {
+            background: var(--color-glass-bg-hover);
+            border-color: var(--color-glass-border-hover);
+            transform: scale(1.05);
+        }
+        
+        .bell-icon {
+            font-size: 22px;
+            transition: transform var(--transition-fast);
+        }
+        
+        .notification-bell:hover .bell-icon {
+            animation: ring 0.5s ease-in-out;
+        }
+        
+        @keyframes ring {
+            0%, 100% { transform: rotate(0); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--color-missile);
+            color: var(--color-text);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+        
+        .notification-badge.hidden {
+            display: none;
+        }
+        
+        @keyframes pulse-badge {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4);
+            }
+            50% { 
+                transform: scale(1.1);
+                box-shadow: 0 0 0 8px rgba(248, 113, 113, 0);
+            }
+        }
+        
+        /* Notification Dropdown */
+        .notification-dropdown {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            width: 380px;
+            max-height: 500px;
+            border-radius: var(--radius-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all var(--transition-normal);
+            z-index: calc(var(--z-top) - 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .notification-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .notification-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--color-glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-title {
+            font-size: var(--font-xl);
+            font-weight: 200;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .mark-all-read {
+            background: transparent;
+            border: none;
+            color: var(--color-text-secondary);
+            font-size: var(--font-sm);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color var(--transition-fast);
+        }
+        
+        .mark-all-read:hover {
+            color: var(--color-text);
+        }
+        
+        .notification-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .notification-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: var(--color-glass-bg);
+            border: 1px solid var(--color-glass-border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+        
+        .notification-item.unread {
+            border-left: 3px solid var(--color-snake);
+        }
+        
+        .notification-item:hover {
+            background: var(--color-glass-bg-hover);
+            border-color: var(--color-glass-border-hover);
+            transform: translateX(2px);
+        }
+        
+        .notification-date {
+            font-size: var(--font-xs);
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .notification-content {
+            font-size: var(--font-md);
+            line-height: 1.5;
+        }
+        
+        .notification-games {
+            color: var(--color-minesweeper);
+            font-weight: 500;
+        }
+        
+        .notification-type {
+            display: inline-block;
+            font-size: var(--font-xs);
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .notification-type.new {
+            background: rgba(74, 222, 128, 0.2);
+            color: var(--color-snake);
+        }
+        
+        .notification-type.update {
+            background: rgba(129, 140, 248, 0.2);
+            color: var(--color-tetris);
+        }
+        
+        .notification-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--color-glass-border);
+            text-align: center;
+        }
+        
+        .view-all-updates {
+            background: transparent;
+            border: 1px solid var(--color-btn-border);
+            color: var(--color-text);
+            padding: 8px 24px;
+            border-radius: var(--radius-round);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: var(--font-sm);
+            transition: all var(--transition-normal);
+        }
+        
+        .view-all-updates:hover {
+            background: var(--color-btn-bg-hover);
+            border-color: var(--color-btn-border-hover);
+            transform: translateY(-1px);
+        }
+        
+        /* Changelog Modal */
+        .changelog-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: var(--z-modal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        }
+        
+        .changelog-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .changelog-content {
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            animation: modalSlideIn var(--transition-normal) ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .changelog-header {
+            padding: 30px;
+            border-bottom: 1px solid var(--color-glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .changelog-title {
+            font-size: var(--font-3xl);
+            font-weight: 200;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        
+        .changelog-close {
+            background: transparent;
+            border: none;
+            color: var(--color-text-secondary);
+            font-size: var(--font-3xl);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-circle);
+        }
+        
+        .changelog-close:hover {
+            color: var(--color-text);
+            background: var(--color-glass-bg-hover);
+        }
+        
+        .changelog-filters {
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--color-glass-border);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .changelog-search {
+            flex: 1;
+            background: var(--color-glass-bg);
+            border: 1px solid var(--color-glass-border);
+            border-radius: var(--radius-round);
+            padding: 10px 20px;
+            color: var(--color-text);
+            font-size: var(--font-md);
+            outline: none;
+            transition: all var(--transition-fast);
+        }
+        
+        .changelog-search::placeholder {
+            color: var(--color-text-secondary);
+        }
+        
+        .changelog-search:focus {
+            background: var(--color-glass-bg-hover);
+            border-color: var(--color-glass-border-hover);
+        }
+        
+        .changelog-filter {
+            background: var(--color-glass-bg);
+            border: 1px solid var(--color-glass-border);
+            border-radius: var(--radius-round);
+            padding: 10px 20px;
+            color: var(--color-text);
+            font-size: var(--font-md);
+            outline: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .changelog-filter:hover {
+            background: var(--color-glass-bg-hover);
+            border-color: var(--color-glass-border-hover);
+        }
+        
+        .changelog-timeline {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 40px;
+            animation: fadeInLeft var(--transition-normal) ease-out;
+        }
+        
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            background: var(--color-glass-bg);
+            border: 2px solid var(--color-glass-border-hover);
+            border-radius: var(--radius-circle);
+            z-index: 1;
+        }
+        
+        .timeline-item.type-new::before {
+            background: var(--color-snake);
+            border-color: var(--color-snake);
+        }
+        
+        .timeline-item.type-update::before {
+            background: var(--color-tetris);
+            border-color: var(--color-tetris);
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 24px;
+            bottom: -40px;
+            width: 2px;
+            background: var(--color-glass-border);
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+        
+        .timeline-date {
+            font-size: var(--font-sm);
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .timeline-card {
+            background: var(--color-glass-bg);
+            border: 1px solid var(--color-glass-border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            transition: all var(--transition-fast);
+        }
+        
+        .timeline-card:hover {
+            background: var(--color-glass-bg-hover);
+            border-color: var(--color-glass-border-hover);
+            transform: translateX(5px);
+        }
+        
+        .timeline-title {
+            font-size: var(--font-xl);
+            font-weight: 300;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .timeline-description {
+            font-size: var(--font-md);
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .timeline-details {
+            font-size: var(--font-sm);
+            color: var(--color-text-muted);
+            line-height: 1.8;
+        }
+        
+        .timeline-details li {
+            list-style: none;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .timeline-details li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--color-text-secondary);
+        }
+        
+        .timeline-games {
+            display: inline-flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .timeline-game-tag {
+            background: var(--color-glass-bg-hover);
+            border: 1px solid var(--color-glass-border-hover);
+            padding: 4px 12px;
+            border-radius: var(--radius-round);
+            font-size: var(--font-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Empty states */
+        .notification-empty,
+        .timeline-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--color-text-secondary);
+            font-size: var(--font-md);
+        }
+        
+        /* Highlight effect for timeline items */
+        .timeline-item.highlight .timeline-card {
+            animation: highlight-pulse 2s ease-out;
+        }
+        
+        @keyframes highlight-pulse {
+            0% {
+                background: var(--color-glass-bg);
+                box-shadow: 0 0 0 0 rgba(129, 140, 248, 0.4);
+            }
+            50% {
+                background: rgba(129, 140, 248, 0.1);
+                box-shadow: 0 0 0 20px rgba(129, 140, 248, 0);
+            }
+            100% {
+                background: var(--color-glass-bg);
+                box-shadow: 0 0 0 0 rgba(129, 140, 248, 0);
+            }
+        }
+        
+        /* Mobile Notification Styles */
+        @media (max-width: 768px) {
+            .notification-bell {
+                top: 15px;
+                left: 15px;
+                width: 40px;
+                height: 40px;
+            }
+            
+            .bell-icon {
+                font-size: 18px;
+            }
+            
+            .notification-badge {
+                top: 5px;
+                right: 5px;
+                font-size: 9px;
+                padding: 1px 5px;
+                min-width: 16px;
+            }
+            
+            .notification-dropdown {
+                top: 60px;
+                left: 10px;
+                right: 10px;
+                width: auto;
+                max-height: 70vh;
+            }
+            
+            .changelog-content {
+                width: 95%;
+                max-height: 95vh;
+            }
+            
+            .changelog-header {
+                padding: 20px;
+            }
+            
+            .changelog-title {
+                font-size: var(--font-2xl);
+            }
+            
+            .changelog-filters {
+                flex-direction: column;
+                padding: 15px 20px;
+            }
+            
+            .changelog-search,
+            .changelog-filter {
+                width: 100%;
+            }
+            
+            .changelog-timeline {
+                padding: 20px;
+            }
+            
+            .timeline-item {
+                padding-left: 30px;
+                margin-bottom: 30px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1648,23 +2210,55 @@
         </div>
     </div>
     
-    <div class="patch-notes" id="patchNotes">
-        <div class="patch-header" data-action="toggle-patch-notes">
-            <div class="patch-title">
-                <span class="patch-indicator"></span>
-                <span>Recent Updates</span>
-            </div>
-        </div>
-        <div class="patch-updates" id="desktop-patch-content">
-            <!-- Patch notes will be rendered here by JavaScript -->
-        </div>
-    </div>
     
     
     <header class="header">
         <h1 class="logo">ARCADE</h1>
         <p class="subtitle">Classic Games Collection</p>
     </header>
+    
+    <!-- Notification Bell -->
+    <button class="notification-bell glass-panel" data-action="toggle-notifications">
+        <span class="bell-icon">🔔</span>
+        <span class="notification-badge" id="notificationBadge">3</span>
+    </button>
+    
+    <!-- Notification Dropdown -->
+    <div class="notification-dropdown glass-panel" id="notificationDropdown">
+        <div class="notification-header">
+            <h3 class="notification-title">Updates</h3>
+            <button class="mark-all-read" data-action="mark-all-read">Mark all as read</button>
+        </div>
+        <div class="notification-list" id="notificationList">
+            <!-- Notifications will be populated here -->
+        </div>
+        <div class="notification-footer">
+            <button class="view-all-updates" data-action="open-changelog">View All Updates</button>
+        </div>
+    </div>
+    
+    <!-- Full Changelog Modal -->
+    <div class="changelog-modal" id="changelogModal">
+        <div class="changelog-content glass-panel">
+            <div class="changelog-header">
+                <h2 class="changelog-title">Update History</h2>
+                <button class="changelog-close" data-action="close-changelog">×</button>
+            </div>
+            <div class="changelog-filters">
+                <input type="text" class="changelog-search" placeholder="Search updates..." data-action="search-updates">
+                <select class="changelog-filter" data-action="filter-updates">
+                    <option value="all">All Updates</option>
+                    <option value="new">New Games</option>
+                    <option value="update">Game Updates</option>
+                    <option value="recent">Last 7 Days</option>
+                    <option value="month">Last Month</option>
+                </select>
+            </div>
+            <div class="changelog-timeline" id="changelogTimeline">
+                <!-- Timeline will be populated here -->
+            </div>
+        </div>
+    </div>
     
     <!-- Browse/Search Controls -->
     <div class="browse-controls">
@@ -1728,24 +2322,6 @@
         </button>
     </div>
     
-    <!-- Updates Popup Button (hidden on desktop) -->
-    <button class="updates-popup-button" data-action="toggle-updates-popup" style="display: none;">
-        Recent Updates
-        <span class="updates-indicator"></span>
-    </button>
-    
-    <!-- Updates Popup -->
-    <div class="updates-popup">
-        <div class="updates-popup-content">
-            <div class="updates-popup-header">
-                <h2 class="updates-popup-title">Recent Updates</h2>
-                <button class="updates-popup-close" data-action="close-updates-popup">×</button>
-            </div>
-            <div class="patch-notes-content" id="mobile-patch-content">
-                <!-- Patch notes will be rendered here by JavaScript -->
-            </div>
-        </div>
-    </div>
     
     <!-- Mobile Navigation Footer (simplified) -->
     <div class="mobile-nav-footer" style="display: none;">
@@ -1803,11 +2379,40 @@
             },
             {
                 date: 'Jun 17, 2025',
-                content: 'New games added: <span class="patch-games">Minesweeper</span> and <span class="patch-games">Lunar Lander</span>!<br>Feature update: <span class="patch-games">Breakout</span> now supports keyboard controls!'
+                sections: [
+                    {
+                        title: '🆕 New Games',
+                        items: [
+                            { game: 'Minesweeper', description: 'Clear the minefield using logic and careful deduction' },
+                            { game: 'Lunar Lander', description: 'Land safely on the moon with limited fuel' }
+                        ]
+                    },
+                    {
+                        title: '🔄 Game Updates',
+                        items: [
+                            { game: 'Breakout', description: 'Added keyboard control support for better accessibility' }
+                        ]
+                    }
+                ]
             },
             {
                 date: 'Jun 16, 2025',
-                content: 'New games added: <span class="patch-games">Missile Command</span>, <span class="patch-games">Snake</span>, and <span class="patch-games">JezzBall</span><br>Game update: <span class="patch-games">Frogger</span> now includes endless mode!'
+                sections: [
+                    {
+                        title: '🆕 New Games',
+                        items: [
+                            { game: 'Missile Command', description: 'Defend your cities from incoming missile attacks' },
+                            { game: 'Snake', description: 'Guide the snake to grow longer without hitting walls' },
+                            { game: 'JezzBall', description: 'Trap bouncing balls by building walls strategically' }
+                        ]
+                    },
+                    {
+                        title: '🔄 Game Updates',
+                        items: [
+                            { game: 'Frogger', description: 'New endless mode for infinite gameplay' }
+                        ]
+                    }
+                ]
             }
         ];
         
@@ -2190,6 +2795,316 @@
             };
         })();
 
+        // Convert patchNotesData to updateHistory format for notifications
+        const updateHistory = patchNotesData.flatMap((patch, index) => {
+            const updates = [];
+            if (patch.sections) {
+                // Convert structured patch to update history items
+                patch.sections.forEach(section => {
+                    const type = section.title.includes('New') ? 'new' : 'update';
+                    const games = section.items.map(item => item.game);
+                    const title = section.title.replace(/[🆕🔄]/g, '').trim();
+                    const description = section.items.map(item => `${item.game}: ${item.description}`).join('. ');
+                    const details = section.items.map(item => `${item.game} - ${item.description}`);
+                    
+                    updates.push({
+                        id: `update-${patch.date}-${type}`,
+                        date: patch.date,
+                        type: type,
+                        games: games,
+                        title: title,
+                        description: description,
+                        details: details
+                    });
+                });
+            } else {
+                // Legacy format
+                updates.push({
+                    id: `update-legacy-${index}`,
+                    date: patch.date,
+                    type: 'mixed',
+                    games: [],
+                    title: 'Updates',
+                    description: patch.content.replace(/<[^>]*>/g, ''),
+                    details: []
+                });
+            }
+            return updates;
+        });
+        
+        // NotificationController - Manages update notifications and changelog
+        const NotificationController = (function() {
+            // Private state
+            const STORAGE_KEY = 'seenUpdates';
+            let seenUpdates = new Set();
+            let notificationDropdownOpen = false;
+            let changelogModalOpen = false;
+            let currentFilter = 'all';
+            let searchTerm = '';
+            
+            // Private methods
+            function loadSeenUpdates() {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    seenUpdates = new Set(JSON.parse(stored));
+                }
+            }
+            
+            function saveSeenUpdates() {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify([...seenUpdates]));
+            }
+            
+            function getUnreadCount() {
+                const recentCutoff = new Date();
+                recentCutoff.setDate(recentCutoff.getDate() - 7);
+                
+                return updateHistory.filter(update => {
+                    const updateDate = new Date(update.date.replace(/Jun/, 'June'));
+                    return updateDate >= recentCutoff && !seenUpdates.has(update.id);
+                }).length;
+            }
+            
+            function updateBadge() {
+                const badge = document.getElementById('notificationBadge');
+                const count = getUnreadCount();
+                
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+            
+            function formatDate(dateString) {
+                const date = new Date(dateString.replace(/Jun/, 'June'));
+                const now = new Date();
+                const diffTime = Math.abs(now - date);
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) return 'Today';
+                if (diffDays === 1) return 'Yesterday';
+                if (diffDays < 7) return `${diffDays} days ago`;
+                
+                return dateString;
+            }
+            
+            function renderNotificationList() {
+                const list = document.getElementById('notificationList');
+                const recentCutoff = new Date();
+                recentCutoff.setDate(recentCutoff.getDate() - 7);
+                
+                const recentUpdates = updateHistory.filter(update => {
+                    const updateDate = new Date(update.date.replace(/Jun/, 'June'));
+                    return updateDate >= recentCutoff;
+                });
+                
+                list.innerHTML = '';
+                
+                if (recentUpdates.length === 0) {
+                    list.innerHTML = '<div class="notification-empty">No recent updates</div>';
+                    return;
+                }
+                
+                recentUpdates.forEach(update => {
+                    const item = document.createElement('div');
+                    item.className = `notification-item ${!seenUpdates.has(update.id) ? 'unread' : ''}`;
+                    item.setAttribute('data-update-id', update.id);
+                    
+                    item.innerHTML = `
+                        <div class="notification-date">${formatDate(update.date)}</div>
+                        <div class="notification-content">
+                            ${update.title}
+                            <span class="notification-type ${update.type}">${update.type}</span>
+                        </div>
+                        <div class="notification-games">
+                            ${update.games.map(game => `<span class="notification-games">${game}</span>`).join(', ')}
+                        </div>
+                    `;
+                    
+                    item.addEventListener('click', () => {
+                        markAsRead(update.id);
+                        openChangelog();
+                        scrollToUpdate(update.id);
+                    });
+                    
+                    list.appendChild(item);
+                });
+            }
+            
+            function renderTimeline() {
+                const timeline = document.getElementById('changelogTimeline');
+                timeline.innerHTML = '';
+                
+                let filteredUpdates = updateHistory;
+                
+                // Apply filters
+                if (currentFilter === 'new') {
+                    filteredUpdates = filteredUpdates.filter(u => u.type === 'new');
+                } else if (currentFilter === 'update') {
+                    filteredUpdates = filteredUpdates.filter(u => u.type === 'update');
+                } else if (currentFilter === 'recent') {
+                    const cutoff = new Date();
+                    cutoff.setDate(cutoff.getDate() - 7);
+                    filteredUpdates = filteredUpdates.filter(u => new Date(u.date.replace(/Jun/, 'June')) >= cutoff);
+                } else if (currentFilter === 'month') {
+                    const cutoff = new Date();
+                    cutoff.setMonth(cutoff.getMonth() - 1);
+                    filteredUpdates = filteredUpdates.filter(u => new Date(u.date.replace(/Jun/, 'June')) >= cutoff);
+                }
+                
+                // Apply search
+                if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    filteredUpdates = filteredUpdates.filter(update => 
+                        update.title.toLowerCase().includes(term) ||
+                        update.description.toLowerCase().includes(term) ||
+                        update.games.some(game => game.toLowerCase().includes(term)) ||
+                        (update.details && update.details.some(detail => detail.toLowerCase().includes(term)))
+                    );
+                }
+                
+                if (filteredUpdates.length === 0) {
+                    timeline.innerHTML = '<div class="timeline-empty">No updates match your criteria</div>';
+                    return;
+                }
+                
+                filteredUpdates.forEach((update, index) => {
+                    const item = document.createElement('div');
+                    item.className = `timeline-item type-${update.type}`;
+                    item.id = `update-${update.id}`;
+                    item.style.animationDelay = `${index * 0.1}s`;
+                    
+                    item.innerHTML = `
+                        <div class="timeline-date">${formatDate(update.date)}</div>
+                        <div class="timeline-card">
+                            <div class="timeline-title">
+                                ${update.title}
+                                <span class="notification-type ${update.type}">${update.type}</span>
+                            </div>
+                            ${update.details && update.details.length > 0 ? `
+                                <ul class="timeline-details">
+                                    ${update.details.map(detail => `<li>${detail}</li>`).join('')}
+                                </ul>
+                            ` : ''}
+                            <div class="timeline-games">
+                                ${update.games.map(game => `<span class="timeline-game-tag">${game}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    timeline.appendChild(item);
+                });
+            }
+            
+            function toggleNotificationDropdown() {
+                const dropdown = document.getElementById('notificationDropdown');
+                notificationDropdownOpen = !notificationDropdownOpen;
+                dropdown.classList.toggle('active', notificationDropdownOpen);
+                
+                if (notificationDropdownOpen) {
+                    renderNotificationList();
+                }
+            }
+            
+            function openChangelog() {
+                const modal = document.getElementById('changelogModal');
+                changelogModalOpen = true;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                renderTimeline();
+                
+                // Close notification dropdown if open
+                if (notificationDropdownOpen) {
+                    toggleNotificationDropdown();
+                }
+            }
+            
+            function closeChangelog() {
+                const modal = document.getElementById('changelogModal');
+                changelogModalOpen = false;
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            function markAsRead(updateId) {
+                seenUpdates.add(updateId);
+                saveSeenUpdates();
+                updateBadge();
+                
+                // Update UI
+                const item = document.querySelector(`[data-update-id="${updateId}"]`);
+                if (item) {
+                    item.classList.remove('unread');
+                }
+            }
+            
+            function markAllAsRead() {
+                const recentCutoff = new Date();
+                recentCutoff.setDate(recentCutoff.getDate() - 7);
+                
+                updateHistory.forEach(update => {
+                    const updateDate = new Date(update.date.replace(/Jun/, 'June'));
+                    if (updateDate >= recentCutoff) {
+                        seenUpdates.add(update.id);
+                    }
+                });
+                
+                saveSeenUpdates();
+                updateBadge();
+                renderNotificationList();
+            }
+            
+            function scrollToUpdate(updateId) {
+                setTimeout(() => {
+                    const element = document.getElementById(`update-${updateId}`);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        element.classList.add('highlight');
+                        setTimeout(() => element.classList.remove('highlight'), 2000);
+                    }
+                }, 300);
+            }
+            
+            function filterUpdates(filter) {
+                currentFilter = filter;
+                renderTimeline();
+            }
+            
+            function searchUpdates(term) {
+                searchTerm = term;
+                renderTimeline();
+            }
+            
+            function setupOutsideClickHandler() {
+                document.addEventListener('click', (e) => {
+                    const bell = document.querySelector('.notification-bell');
+                    const dropdown = document.getElementById('notificationDropdown');
+                    
+                    if (notificationDropdownOpen && 
+                        !bell.contains(e.target) && 
+                        !dropdown.contains(e.target)) {
+                        toggleNotificationDropdown();
+                    }
+                });
+            }
+            
+            // Public interface
+            return {
+                init: function() {
+                    loadSeenUpdates();
+                    updateBadge();
+                    setupOutsideClickHandler();
+                },
+                toggleDropdown: toggleNotificationDropdown,
+                openChangelog: openChangelog,
+                closeChangelog: closeChangelog,
+                markAllAsRead: markAllAsRead,
+                filterUpdates: filterUpdates,
+                searchUpdates: searchUpdates
+            };
+        })();
+        
         // UIController - Manages UI interactions and transitions
         const UIController = (function() {
             // Private state
@@ -2285,10 +3200,8 @@
             CarouselController.init();
             BrowseController.init();
             UIController.init();
+            NotificationController.init();
             
-            // Render patch notes in both containers
-            renderPatchNotes('desktop-patch-content');
-            renderPatchNotes('mobile-patch-content');
             
             // Set up event delegation
             document.addEventListener('click', function(e) {
@@ -2327,15 +3240,6 @@
                     case 'toggle-mobile-menu':
                         UIController.toggleMobileMenu();
                         break;
-                    case 'toggle-patch-notes':
-                        UIController.togglePatchNotes();
-                        break;
-                    case 'toggle-updates-popup':
-                        UIController.toggleUpdatesPopup();
-                        break;
-                    case 'close-updates-popup':
-                        UIController.toggleUpdatesPopup();
-                        break;
                         
                     // Mobile menu actions
                     case 'mobile-browse':
@@ -2350,6 +3254,23 @@
                         window.open('https://github.com/stphung/classic-games-collection/issues/new', '_blank');
                         UIController.toggleMobileMenu();
                         break;
+                        
+                    // Notification actions
+                    case 'toggle-notifications':
+                        NotificationController.toggleDropdown();
+                        break;
+                    case 'mark-all-read':
+                        NotificationController.markAllAsRead();
+                        break;
+                    case 'open-changelog':
+                        NotificationController.openChangelog();
+                        break;
+                    case 'close-changelog':
+                        NotificationController.closeChangelog();
+                        break;
+                    case 'filter-updates':
+                        NotificationController.filterUpdates(target.value);
+                        break;
                 }
             });
             
@@ -2357,6 +3278,8 @@
             document.addEventListener('input', function(e) {
                 if (e.target.matches('[data-action="search-games"]')) {
                     BrowseController.searchGames(e.target.value);
+                } else if (e.target.matches('[data-action="search-updates"]')) {
+                    NotificationController.searchUpdates(e.target.value);
                 }
             });
         }
