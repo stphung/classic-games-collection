@@ -376,8 +376,9 @@
     </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
         
         // Game state
         let gameRunning = false;
@@ -893,11 +894,8 @@
             resetGame();
             gameRunning = true;
             
-            if (!audioContext && !isMuted) {
-                startBackgroundMusic();
-            } else if (audioContext && !isMuted) {
-                startBackgroundMusic();
-            }
+            // Start background music using audio manager
+            startBackgroundMusic();
             
             gameLoop();
         }
@@ -927,10 +925,8 @@
             
             updateDisplay();
             
-            // Restart background music if not muted
-            if (audioContext && !isMuted) {
-                startBackgroundMusic();
-            }
+            // Restart background music
+            startBackgroundMusic();
             
             // Restart the game loop
             gameLoop();
@@ -978,6 +974,11 @@
             keys[e.key] = false;
         });
         
+        // Make functions globally accessible for onclick handlers
+        window.startGame = startGame;
+        window.resetGame = resetGame;
+        window.selectStartDifficulty = selectStartDifficulty;
+        
         // Initialize
         initTerrain();
         initStars();
@@ -988,6 +989,8 @@
         window.addEventListener('resize', () => {
             // Keep canvas size fixed for consistent gameplay
         });
+        
+        }); // End of DOMContentLoaded
     </script>
 </body>
 </html>
