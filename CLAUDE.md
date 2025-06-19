@@ -8,4 +8,4 @@
 - Always do a basic review on the game logic to ensure it won't run into obvious problems on start
 - All games should have rendering loop and a game loop independently to play at the same pace on all systems
 - When committing always add new badges for games implemented today and remove badges for games implemented before today. Add a new entry to the patch notes to indicate that the new games were added.
-- All games have 4 standard difficulties
+- All games have 4 standard difficulties - Easy, Normal, Hard, Nightmare

@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Frogger</title>
-    <link rel="stylesheet" href="common-styles.css">
-    <script src="transition-common.js"></script>
-    <script src="submit-idea-button.js"></script>
-    <script src="home-button.js"></script>
-    <script src="mute-button.js"></script>
-    <script src="audio-manager.js"></script>
-    <script src="audio-configs.js"></script>
+    <link rel="stylesheet" href="../lib/styles/common-styles.css">
+    <script src="../lib/common/transition-common.js"></script>
+    <script src="../lib/ui/submit-idea-button.js"></script>
+    <script src="../lib/ui/home-button.js"></script>
+    <script src="../lib/ui/mute-button.js"></script>
+    <script src="../lib/audio/audio-manager.js"></script>
+    <script src="../lib/audio/audio-configs.js"></script>
     <style>
         * {
             margin: 0;
@@ -579,10 +579,10 @@
         let gameMode = 'classic'; // 'classic' or 'endless'
         let difficulty = 'normal'; // 'easy', 'normal', 'hard', 'nightmare'
         let difficultySettings = {
-            easy: { speed: 0.6, gapMultiplier: 1.4, name: 'Easy' },
-            normal: { speed: 1.0, gapMultiplier: 1.0, name: 'Normal' },
-            hard: { speed: 1.4, gapMultiplier: 0.7, name: 'Hard' },
-            nightmare: { speed: 1.8, gapMultiplier: 0.5, name: 'Nightmare' }
+            easy: { speed: 1.0, carGapMultiplier: 1.0, logGapMultiplier: 1.0, name: 'Easy' },
+            normal: { speed: 1.3, carGapMultiplier: 0.8, logGapMultiplier: 1.2, name: 'Normal' },
+            hard: { speed: 1.6, carGapMultiplier: 0.7, logGapMultiplier: 1.4, name: 'Hard' },
+            nightmare: { speed: 1.8, carGapMultiplier: 0.6, logGapMultiplier: 1.6, name: 'Nightmare' }
         };
         let scrollOffset = 0;
         let distanceTraveled = 0;
@@ -616,7 +616,8 @@
 
         // Generate procedural lanes for endless mode
         function generateNewLane() {
-            const gapMultiplier = difficultySettings[difficulty].gapMultiplier;
+            const carGapMultiplier = difficultySettings[difficulty].carGapMultiplier;
+            const logGapMultiplier = difficultySettings[difficulty].logGapMultiplier;
             const baseSpeed = difficultySettings[difficulty].speed;
             
             const lanePatterns = [
@@ -624,26 +625,26 @@
                 () => ({ 
                     type: 'road', 
                     speed: (0.3 + Math.random() * 0.4) * (1 + distanceTraveled / 1000) * baseSpeed, 
-                    carGap: Math.max(150, (250 + Math.random() * 150 - distanceTraveled / 10) * gapMultiplier), 
+                    carGap: Math.max(150, (250 + Math.random() * 150 - distanceTraveled / 10) * carGapMultiplier), 
                     carWidth: 70 + Math.random() * 30 
                 }),
                 () => ({ 
                     type: 'road', 
                     speed: -(0.3 + Math.random() * 0.4) * (1 + distanceTraveled / 1000) * baseSpeed, 
-                    carGap: Math.max(150, (250 + Math.random() * 150 - distanceTraveled / 10) * gapMultiplier), 
+                    carGap: Math.max(150, (250 + Math.random() * 150 - distanceTraveled / 10) * carGapMultiplier), 
                     carWidth: 70 + Math.random() * 30 
                 }),
                 // Water patterns with difficulty scaling
                 () => ({ 
                     type: 'water', 
                     speed: (0.2 + Math.random() * 0.3) * (1 + distanceTraveled / 1000) * baseSpeed, 
-                    logGap: Math.max(100, (140 + Math.random() * 60 - distanceTraveled / 15) * gapMultiplier), 
+                    logGap: Math.max(100, (140 + Math.random() * 60 - distanceTraveled / 15) * logGapMultiplier), 
                     logWidth: Math.max(60, 80 + Math.random() * 40 - distanceTraveled / 20) 
                 }),
                 () => ({ 
                     type: 'water', 
-                    speed: -(0.2 + Math.random() * 0.3) * (1 + distanceTraveled / 1000), 
-                    logGap: Math.max(120, 140 + Math.random() * 60 - distanceTraveled / 15), 
+                    speed: -(0.2 + Math.random() * 0.3) * (1 + distanceTraveled / 1000) * baseSpeed, 
+                    logGap: Math.max(120, (140 + Math.random() * 60 - distanceTraveled / 15) * logGapMultiplier), 
                     logWidth: Math.max(60, 80 + Math.random() * 40 - distanceTraveled / 20) 
                 }),
                 // Safe zones become rarer as distance increases
@@ -717,7 +718,8 @@
             cars = [];
             logs = [];
             
-            const gapMultiplier = difficultySettings[difficulty].gapMultiplier;
+            const carGapMultiplier = difficultySettings[difficulty].carGapMultiplier;
+            const logGapMultiplier = difficultySettings[difficulty].logGapMultiplier;
             const baseSpeed = difficultySettings[difficulty].speed;
             
             // Start with a safe zone at the bottom of the screen
@@ -726,11 +728,11 @@
             let currentY = 13;
             const lanePatterns = [
                 // Road patterns
-                () => ({ type: 'road', speed: (0.3 + Math.random() * 0.4) * baseSpeed, carGap: (250 + Math.random() * 150) * gapMultiplier, carWidth: 70 + Math.random() * 30 }),
-                () => ({ type: 'road', speed: -(0.3 + Math.random() * 0.4) * baseSpeed, carGap: (250 + Math.random() * 150) * gapMultiplier, carWidth: 70 + Math.random() * 30 }),
+                () => ({ type: 'road', speed: (0.3 + Math.random() * 0.4) * baseSpeed, carGap: (250 + Math.random() * 150) * carGapMultiplier, carWidth: 70 + Math.random() * 30 }),
+                () => ({ type: 'road', speed: -(0.3 + Math.random() * 0.4) * baseSpeed, carGap: (250 + Math.random() * 150) * carGapMultiplier, carWidth: 70 + Math.random() * 30 }),
                 // Water patterns
-                () => ({ type: 'water', speed: (0.2 + Math.random() * 0.3) * baseSpeed, logGap: (140 + Math.random() * 60) * gapMultiplier, logWidth: 80 + Math.random() * 40 }),
-                () => ({ type: 'water', speed: -(0.2 + Math.random() * 0.3) * baseSpeed, logGap: (140 + Math.random() * 60) * gapMultiplier, logWidth: 80 + Math.random() * 40 }),
+                () => ({ type: 'water', speed: (0.2 + Math.random() * 0.3) * baseSpeed, logGap: (140 + Math.random() * 60) * logGapMultiplier, logWidth: 80 + Math.random() * 40 }),
+                () => ({ type: 'water', speed: -(0.2 + Math.random() * 0.3) * baseSpeed, logGap: (140 + Math.random() * 60) * logGapMultiplier, logWidth: 80 + Math.random() * 40 }),
                 // Safe zones
                 () => ({ type: 'safe' })
             ];
@@ -775,11 +777,12 @@
             cars = [];
             logs = [];
             
-            const gapMultiplier = difficultySettings[difficulty].gapMultiplier;
+            const carGapMultiplier = difficultySettings[difficulty].carGapMultiplier;
+            const logGapMultiplier = difficultySettings[difficulty].logGapMultiplier;
             
             lanes.forEach(lane => {
                 if (lane.type === 'road') {
-                    const adjustedGap = lane.carGap * gapMultiplier;
+                    const adjustedGap = lane.carGap * carGapMultiplier;
                     const numCars = Math.floor(600 / adjustedGap) + 1;
                     for (let i = 0; i < numCars; i++) {
                         cars.push({
@@ -793,7 +796,7 @@
                         });
                     }
                 } else if (lane.type === 'water') {
-                    const adjustedGap = lane.logGap * gapMultiplier;
+                    const adjustedGap = lane.logGap * logGapMultiplier;
                     const numLogs = Math.floor(600 / adjustedGap) + 1;
                     for (let i = 0; i < numLogs; i++) {
                         logs.push({
