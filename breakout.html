@@ -70,9 +70,21 @@
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(10px);
             padding: 12px 24px;
-            border-radius: var(--border-radius-lg);
+            border-radius: var(--border-radius-sm);
             border: 1px solid rgba(255, 255, 255, 0.1);
             letter-spacing: var(--letter-spacing-xs);
+        }
+
+        /* Fix for score text visibility - override common-styles.css gradient text effect */
+        .score {
+            -webkit-text-fill-color: inherit !important;
+            text-fill-color: inherit !important;
+            background: rgba(0, 0, 0, 0.7) !important;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+            color: #ffffff !important;
+            font-size: 18px !important;
+            font-weight: var(--fw-medium) !important;
         }
 
         /* Game overlay inherits from common-styles.css but with custom positioning and background */
@@ -120,7 +132,7 @@
         .play-button {
             padding: 16px 48px;
             font-size: 16px;
-            border-radius: var(--border-radius-lg);
+            border-radius: var(--border-radius-sm);
             font-weight: var(--fw-light);
         }
 
@@ -149,20 +161,22 @@
 
         .speed-buttons {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .speed-button {
             background: transparent;
             color: #999;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 24px;
-            font-size: 14px;
+            padding: 10px 16px;
+            font-size: 13px;
             border-radius: var(--border-radius);
             cursor: pointer;
             transition: var(--transition);
             font-weight: var(--fw-light);
+            min-width: 80px;
         }
 
         .speed-button:hover {
@@ -206,9 +220,10 @@
             <div class="speed-selection">
                 <p class="speed-label">SELECT DIFFICULTY</p>
                 <div class="speed-buttons">
-                    <button class="btn speed-button" onclick="setSpeed(0.8)">EASY</button>
-                    <button class="btn speed-button" onclick="setSpeed(1.5)">NORMAL</button>
-                    <button class="btn speed-button" onclick="setSpeed(2.5)">HARD</button>
+                    <button class="btn speed-button" onclick="setSpeed(0.6)">EASY</button>
+                    <button class="btn speed-button" onclick="setSpeed(1.0)">NORMAL</button>
+                    <button class="btn speed-button" onclick="setSpeed(1.8)">HARD</button>
+                    <button class="btn speed-button" onclick="setSpeed(3.0)">NIGHTMARE</button>
                 </div>
             </div>
             <button class="btn play-button" onclick="startGame()">START GAME</button>
@@ -661,17 +676,20 @@
         canvas.addEventListener('mousemove', (e) => {
             if (gameRunning) {
                 const rect = canvas.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                paddle.x = mouseX - paddle.width / 2;
+                const canvasMouseX = e.clientX - rect.left;
+                paddle.x = canvasMouseX - paddle.width / 2;
                 
                 if (paddle.x < 0) paddle.x = 0;
                 if (paddle.x + paddle.width > canvas.width) {
                     paddle.x = canvas.width - paddle.width;
                 }
                 
-                // Show cursor when using mouse
+                // Show cursor when using mouse (only if not already visible)
                 usingKeyboard = false;
-                cursor.style.display = 'block';
+                if (!cursorVisible) {
+                    cursor.style.display = 'block';
+                    cursorVisible = true;
+                }
             }
         });
         
@@ -781,7 +799,10 @@
                 
                 // Hide cursor when using keyboard controls
                 usingKeyboard = true;
-                cursor.style.display = 'none';
+                if (cursorVisible) {
+                    cursor.style.display = 'none';
+                    cursorVisible = false;
+                }
             }
         });
         
@@ -797,7 +818,7 @@
 
 
         document.getElementById('startScreen').classList.add('active');
-        document.querySelectorAll('.speed-button')[1].classList.add('selected');
+        document.querySelectorAll('.speed-button')[1].classList.add('selected'); // Normal is still index 1
         draw();
     </script>
 </body>

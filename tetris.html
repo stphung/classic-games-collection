@@ -271,6 +271,167 @@
             opacity: 1;
         }
 
+        /* Difficulty Selection Modal */
+        .difficulty-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .difficulty-selector {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                inset 0 0 50px rgba(255, 255, 255, 0.05);
+        }
+
+        .difficulty-selector h2 {
+            margin-bottom: var(--spacing-lg);
+            font-size: 32px;
+            background: linear-gradient(135deg, var(--color-text) 0%, rgba(255, 255, 255, 0.6) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        .difficulty-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .difficulty-option {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-sm);
+            padding: var(--spacing-lg);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .difficulty-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .difficulty-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(79, 70, 229, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 10px 30px rgba(79, 70, 229, 0.2),
+                0 0 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .difficulty-option:hover::before {
+            opacity: 1;
+        }
+
+        .difficulty-option.selected {
+            background: rgba(79, 70, 229, 0.2);
+            border-color: rgba(79, 70, 229, 0.6);
+            box-shadow: 
+                0 0 30px rgba(79, 70, 229, 0.4),
+                inset 0 0 20px rgba(79, 70, 229, 0.1);
+        }
+
+        .difficulty-name {
+            font-size: 20px;
+            font-weight: var(--fw-semibold);
+            margin-bottom: var(--spacing-sm);
+            position: relative;
+            z-index: 1;
+        }
+
+        .difficulty-description {
+            font-size: 14px;
+            opacity: 0.7;
+            line-height: 1.4;
+            position: relative;
+            z-index: 1;
+        }
+
+        .start-game-button {
+            background: rgba(79, 70, 229, 0.3);
+            color: var(--color-text);
+            border: 1px solid rgba(79, 70, 229, 0.5);
+            padding: 12px var(--spacing-xl);
+            font-size: 18px;
+            font-weight: var(--fw-semibold);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-game-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.4) 0%, rgba(147, 51, 234, 0.4) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .start-game-button:hover {
+            transform: translateY(-2px);
+            background: rgba(79, 70, 229, 0.4);
+            border-color: rgba(79, 70, 229, 0.7);
+            box-shadow: 
+                0 15px 40px rgba(79, 70, 229, 0.3),
+                0 0 30px rgba(79, 70, 229, 0.4);
+        }
+
+        .start-game-button:hover::before {
+            opacity: 1;
+        }
+
+        .start-game-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .difficulty-display {
+            font-size: 12px;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-md);
+        }
+
     </style>
 </head>
 <body>
@@ -293,6 +454,10 @@
                 <div class="score" id="level">1</div>
             </div>
             <div class="info-box">
+                <h3>Difficulty</h3>
+                <div class="difficulty-display" id="difficulty">Normal</div>
+            </div>
+            <div class="info-box">
                 <h3>Lines</h3>
                 <div class="score" id="lines">0</div>
             </div>
@@ -310,6 +475,34 @@
                     <div><span class="controls-key">P</span> Pause</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Difficulty Selection Modal -->
+    <div class="difficulty-modal" id="difficultyModal">
+        <div class="difficulty-selector">
+            <h2>Select Difficulty</h2>
+            <div class="difficulty-options" id="difficultyOptions">
+                <div class="difficulty-option" data-difficulty="easy">
+                    <div class="difficulty-name">Easy</div>
+                    <div class="difficulty-description">Relaxed pace, more forgiving</div>
+                </div>
+                <div class="difficulty-option selected" data-difficulty="normal">
+                    <div class="difficulty-name">Normal</div>
+                    <div class="difficulty-description">Classic Tetris experience</div>
+                </div>
+                <div class="difficulty-option" data-difficulty="hard">
+                    <div class="difficulty-name">Hard</div>
+                    <div class="difficulty-description">Faster pace, quick progression</div>
+                </div>
+                <div class="difficulty-option" data-difficulty="nightmare">
+                    <div class="difficulty-name">Nightmare</div>
+                    <div class="difficulty-description">Maximum challenge, no assists</div>
+                </div>
+            </div>
+            <button class="start-game-button" id="startGameButton">
+                <span>Start Game</span>
+            </button>
         </div>
     </div>
 
@@ -420,6 +613,52 @@
         let isPaused = false;
         let particles = [];
         let lineAnimations = [];
+        let currentDifficulty = 'normal';
+        let gameStarted = false;
+
+        // Difficulty configurations
+        const DIFFICULTY_CONFIGS = {
+            easy: {
+                name: 'Easy',
+                initialDropTime: 1500,
+                linesPerLevel: 15,
+                speedIncreasePerLevel: 75,
+                minDropTime: 200,
+                showGhostPiece: true,
+                showNextPiece: true,
+                description: 'Relaxed pace, more forgiving'
+            },
+            normal: {
+                name: 'Normal',
+                initialDropTime: 1000,
+                linesPerLevel: 10,
+                speedIncreasePerLevel: 100,
+                minDropTime: 100,
+                showGhostPiece: true,
+                showNextPiece: true,
+                description: 'Classic Tetris experience'
+            },
+            hard: {
+                name: 'Hard',
+                initialDropTime: 300,
+                linesPerLevel: 4,
+                speedIncreasePerLevel: 80,
+                minDropTime: 30,
+                showGhostPiece: true,
+                showNextPiece: true,
+                description: 'Expert pace with assists'
+            },
+            nightmare: {
+                name: 'Nightmare',
+                initialDropTime: 200,
+                linesPerLevel: 3,
+                speedIncreasePerLevel: 60,
+                minDropTime: 20,
+                showGhostPiece: false,
+                showNextPiece: false,
+                description: 'Insane speed, no mercy'
+            }
+        };
 
         class Piece {
             constructor(shape, color) {
@@ -501,9 +740,65 @@
             }
         }
 
-        function init() {
+        // Difficulty selection functionality
+        function setupDifficultySelector() {
+            const modal = document.getElementById('difficultyModal');
+            const options = document.querySelectorAll('.difficulty-option');
+            const startButton = document.getElementById('startGameButton');
+            
+            // Handle difficulty option selection
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    currentDifficulty = option.dataset.difficulty;
+                });
+            });
+            
+            // Handle start game button
+            startButton.addEventListener('click', () => {
+                modal.style.display = 'none';
+                startNewGame();
+            });
+            
+            // Show the modal initially
+            if (!gameStarted) {
+                modal.style.display = 'flex';
+            }
+        }
+
+        function applyDifficultySettings() {
+            const config = DIFFICULTY_CONFIGS[currentDifficulty];
+            dropTime = config.initialDropTime;
+            document.getElementById('difficulty').textContent = config.name;
+            
+            // Show/hide next piece panel based on difficulty
+            const nextCanvas = document.getElementById('nextCanvas');
+            const nextPieceBox = nextCanvas.closest('.info-box');
+            if (nextPieceBox) {
+                nextPieceBox.style.display = config.showNextPiece ? 'block' : 'none';
+            }
+        }
+
+        function startNewGame() {
+            gameStarted = true;
+            applyDifficultySettings();
+            
             board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+            score = 0;
+            level = 1;
+            lines = 0;
+            lastDrop = 0;
             gameRunning = true;
+            isPaused = false;
+            currentPiece = null;
+            nextPiece = null;
+            musicStarted = false;
+            particles = [];
+            lineAnimations = [];
+            
+            document.getElementById('gameOver').style.display = 'none';
+            updateScore();
             spawnPiece();
             
             // Start music with user interaction to comply with browser policies
@@ -512,6 +807,10 @@
             });
             
             gameLoop();
+        }
+
+        function init() {
+            setupDifficultySelector();
         }
 
         function spawnPiece() {
@@ -675,8 +974,11 @@
         function drawPiece() {
             if (!currentPiece) return;
             
-            // Draw ghost piece first
-            drawGhostPiece();
+            // Draw ghost piece first (only if enabled for this difficulty)
+            const config = DIFFICULTY_CONFIGS[currentDifficulty];
+            if (config.showGhostPiece) {
+                drawGhostPiece();
+            }
             
             // Draw actual piece
             for (let y = 0; y < currentPiece.shape.length; y++) {
@@ -731,7 +1033,17 @@
             nextCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
             
-            if (!nextPiece) return;
+            const config = DIFFICULTY_CONFIGS[currentDifficulty];
+            if (!nextPiece || !config.showNextPiece) {
+                // Draw "?" or hide next piece for expert difficulty
+                if (!config.showNextPiece) {
+                    nextCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    nextCtx.font = '24px Arial';
+                    nextCtx.textAlign = 'center';
+                    nextCtx.fillText('?', nextCanvas.width / 2, nextCanvas.height / 2 + 8);
+                }
+                return;
+            }
             
             const blockSize = 20;
             const offsetX = (nextCanvas.width - nextPiece.shape[0].length * blockSize) / 2;
@@ -841,9 +1153,10 @@
                 score += [40, 100, 300, 1200][linesCleared - 1] * level;
                 
                 const oldLevel = level;
-                if (lines >= level * 10) {
+                const config = DIFFICULTY_CONFIGS[currentDifficulty];
+                if (lines >= level * config.linesPerLevel) {
                     level++;
-                    dropTime = Math.max(100, dropTime - 100);
+                    dropTime = Math.max(config.minDropTime, dropTime - config.speedIncreasePerLevel);
                     if (level > oldLevel) {
                         playLevelUpSound();
                     }
@@ -948,20 +1261,30 @@
         }
 
         function resetGame() {
-            board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
-            score = 0;
-            level = 1;
-            lines = 0;
-            dropTime = 1000;
-            lastDrop = 0;
-            gameRunning = true;
-            isPaused = false;
-            currentPiece = null;
-            nextPiece = null;
-            musicStarted = false;
+            gameStarted = false;
+            gameRunning = false;
+            currentDifficulty = 'normal';
+            
+            // Stop music
+            stopBackgroundMusic();
+            
+            // Reset difficulty selector to normal
+            const options = document.querySelectorAll('.difficulty-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            document.querySelector('.difficulty-option[data-difficulty="normal"]').classList.add('selected');
+            
+            // Show next piece panel again (in case it was hidden)
+            const nextCanvas = document.getElementById('nextCanvas');
+            const nextPieceBox = nextCanvas.closest('.info-box');
+            if (nextPieceBox) {
+                nextPieceBox.style.display = 'block';
+            }
+            
+            // Reset difficulty display
+            document.getElementById('difficulty').textContent = 'Normal';
+            
             document.getElementById('gameOver').style.display = 'none';
-            updateScore();
-            init();
+            document.getElementById('difficultyModal').style.display = 'flex';
         }
 
         document.addEventListener('keydown', (e) => {

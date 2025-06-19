@@ -265,7 +265,54 @@
         }
         
         /* Distance indicator removed - using right panel display instead */
-        .speed-control {
+        /* Difficulty selection styles */
+        .difficulty-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            max-width: 600px;
+        }
+
+        .difficulty-btn {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-sm);
+            padding: var(--spacing-md);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .difficulty-btn.active {
+            border-color: var(--color-success);
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+        }
+
+        .difficulty-name {
+            font-size: 18px;
+            font-weight: var(--fw-bold);
+            color: var(--color-text);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .difficulty-desc {
+            font-size: 14px;
+            color: var(--color-text-muted);
+            line-height: 1.4;
+        }
+
+        .difficulty-display {
             position: absolute;
             bottom: var(--spacing-lg);
             right: var(--spacing-lg);
@@ -278,12 +325,12 @@
             transition: var(--transition);
         }
 
-        .speed-control:hover {
+        .difficulty-display:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
 
-        .speed-control label {
+        .difficulty-display label {
             display: block;
             color: var(--color-text-muted);
             font-size: 14px;
@@ -292,40 +339,10 @@
             letter-spacing: var(--letter-spacing-sm);
         }
 
-        .speed-slider {
-            width: 150px;
-            height: 6px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            outline: none;
-        }
-
-        .speed-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            background: var(--color-success);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(74, 222, 128, 0.6);
-        }
-
-        .speed-slider::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            background: var(--color-success);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(74, 222, 128, 0.6);
-        }
-
-        .speed-value {
+        .difficulty-current {
             color: var(--color-text);
             font-size: 16px;
-            margin-top: var(--spacing-xs);
+            font-weight: var(--fw-bold);
             text-align: center;
         }
         
@@ -387,6 +404,28 @@
                         <span class="mode-desc">How far can you go?</span>
                     </button>
                 </div>
+                <div class="difficulty-selection" id="difficultySelection" style="display: none;">
+                    <p class="overlay-message">Choose difficulty level</p>
+                    <div class="difficulty-buttons">
+                        <button class="difficulty-btn active" data-difficulty="easy" onclick="selectDifficulty('easy')">
+                            <span class="difficulty-name">Easy</span>
+                            <span class="difficulty-desc">0.6x speed • Wider gaps</span>
+                        </button>
+                        <button class="difficulty-btn" data-difficulty="normal" onclick="selectDifficulty('normal')">
+                            <span class="difficulty-name">Normal</span>
+                            <span class="difficulty-desc">1.0x speed • Standard gameplay</span>
+                        </button>
+                        <button class="difficulty-btn" data-difficulty="hard" onclick="selectDifficulty('hard')">
+                            <span class="difficulty-name">Hard</span>
+                            <span class="difficulty-desc">1.4x speed • Tighter gaps</span>
+                        </button>
+                        <button class="difficulty-btn" data-difficulty="nightmare" onclick="selectDifficulty('nightmare')">
+                            <span class="difficulty-name">Nightmare</span>
+                            <span class="difficulty-desc">1.8x speed • Minimal gaps</span>
+                        </button>
+                    </div>
+                    <button class="back-button" onclick="showModeSelection()">← Back</button>
+                </div>
                 <div class="player-selection" id="playerSelection" style="display: none;">
                     <p class="overlay-message">Select number of players</p>
                     <div style="display: flex; gap: var(--spacing-md); justify-content: center; margin-top: var(--spacing-lg);">
@@ -397,7 +436,7 @@
                         <p>Player 1: Arrow Keys (Green Frog)</p>
                         <p>Player 2: WASD Keys (Orange Frog)</p>
                     </div>
-                    <button class="back-button" onclick="showModeSelection()">← Back</button>
+                    <button class="back-button" onclick="showDifficultySelection()">← Back</button>
                 </div>
             </div>
             <div class="game-overlay" id="gameOverScreen">
@@ -432,10 +471,9 @@
                 </div>
             </div>
         </div>
-        <div class="speed-control">
-            <label>Game Speed</label>
-            <input type="range" class="speed-slider" id="speedSlider" min="0.2" max="2" step="0.1" value="1">
-            <div class="speed-value" id="speedValue">1.0x</div>
+        <div class="difficulty-display">
+            <label>Difficulty</label>
+            <div class="difficulty-current" id="difficultyDisplay">Normal</div>
         </div>
     </div>
     
@@ -537,8 +575,15 @@
         let speedMultiplier = 1;
         // Remove musicMuted as we'll use global isMuted
         
-        // Game mode variables
+        // Game mode and difficulty variables
         let gameMode = 'classic'; // 'classic' or 'endless'
+        let difficulty = 'normal'; // 'easy', 'normal', 'hard', 'nightmare'
+        let difficultySettings = {
+            easy: { speed: 0.6, gapMultiplier: 1.4, name: 'Easy' },
+            normal: { speed: 1.0, gapMultiplier: 1.0, name: 'Normal' },
+            hard: { speed: 1.4, gapMultiplier: 0.7, name: 'Hard' },
+            nightmare: { speed: 1.8, gapMultiplier: 0.5, name: 'Nightmare' }
+        };
         let scrollOffset = 0;
         let distanceTraveled = 0;
         let maxFrogProgress = 0; // Track frog's maximum forward progress
@@ -571,25 +616,28 @@
 
         // Generate procedural lanes for endless mode
         function generateNewLane() {
+            const gapMultiplier = difficultySettings[difficulty].gapMultiplier;
+            const baseSpeed = difficultySettings[difficulty].speed;
+            
             const lanePatterns = [
                 // Road patterns with difficulty scaling
                 () => ({ 
                     type: 'road', 
-                    speed: (0.3 + Math.random() * 0.4) * (1 + distanceTraveled / 1000), 
-                    carGap: Math.max(200, 250 + Math.random() * 150 - distanceTraveled / 10), 
+                    speed: (0.3 + Math.random() * 0.4) * (1 + distanceTraveled / 1000) * baseSpeed, 
+                    carGap: Math.max(150, (250 + Math.random() * 150 - distanceTraveled / 10) * gapMultiplier), 
                     carWidth: 70 + Math.random() * 30 
                 }),
                 () => ({ 
                     type: 'road', 
-                    speed: -(0.3 + Math.random() * 0.4) * (1 + distanceTraveled / 1000), 
-                    carGap: Math.max(200, 250 + Math.random() * 150 - distanceTraveled / 10), 
+                    speed: -(0.3 + Math.random() * 0.4) * (1 + distanceTraveled / 1000) * baseSpeed, 
+                    carGap: Math.max(150, (250 + Math.random() * 150 - distanceTraveled / 10) * gapMultiplier), 
                     carWidth: 70 + Math.random() * 30 
                 }),
                 // Water patterns with difficulty scaling
                 () => ({ 
                     type: 'water', 
-                    speed: (0.2 + Math.random() * 0.3) * (1 + distanceTraveled / 1000), 
-                    logGap: Math.max(120, 140 + Math.random() * 60 - distanceTraveled / 15), 
+                    speed: (0.2 + Math.random() * 0.3) * (1 + distanceTraveled / 1000) * baseSpeed, 
+                    logGap: Math.max(100, (140 + Math.random() * 60 - distanceTraveled / 15) * gapMultiplier), 
                     logWidth: Math.max(60, 80 + Math.random() * 40 - distanceTraveled / 20) 
                 }),
                 () => ({ 
@@ -669,17 +717,20 @@
             cars = [];
             logs = [];
             
+            const gapMultiplier = difficultySettings[difficulty].gapMultiplier;
+            const baseSpeed = difficultySettings[difficulty].speed;
+            
             // Start with a safe zone at the bottom of the screen
             endlessLanes.push({ type: 'safe', y: 14 });
             
             let currentY = 13;
             const lanePatterns = [
                 // Road patterns
-                () => ({ type: 'road', speed: 0.3 + Math.random() * 0.4, carGap: 250 + Math.random() * 150, carWidth: 70 + Math.random() * 30 }),
-                () => ({ type: 'road', speed: -(0.3 + Math.random() * 0.4), carGap: 250 + Math.random() * 150, carWidth: 70 + Math.random() * 30 }),
+                () => ({ type: 'road', speed: (0.3 + Math.random() * 0.4) * baseSpeed, carGap: (250 + Math.random() * 150) * gapMultiplier, carWidth: 70 + Math.random() * 30 }),
+                () => ({ type: 'road', speed: -(0.3 + Math.random() * 0.4) * baseSpeed, carGap: (250 + Math.random() * 150) * gapMultiplier, carWidth: 70 + Math.random() * 30 }),
                 // Water patterns
-                () => ({ type: 'water', speed: 0.2 + Math.random() * 0.3, logGap: 140 + Math.random() * 60, logWidth: 80 + Math.random() * 40 }),
-                () => ({ type: 'water', speed: -(0.2 + Math.random() * 0.3), logGap: 140 + Math.random() * 60, logWidth: 80 + Math.random() * 40 }),
+                () => ({ type: 'water', speed: (0.2 + Math.random() * 0.3) * baseSpeed, logGap: (140 + Math.random() * 60) * gapMultiplier, logWidth: 80 + Math.random() * 40 }),
+                () => ({ type: 'water', speed: -(0.2 + Math.random() * 0.3) * baseSpeed, logGap: (140 + Math.random() * 60) * gapMultiplier, logWidth: 80 + Math.random() * 40 }),
                 // Safe zones
                 () => ({ type: 'safe' })
             ];
@@ -724,12 +775,15 @@
             cars = [];
             logs = [];
             
+            const gapMultiplier = difficultySettings[difficulty].gapMultiplier;
+            
             lanes.forEach(lane => {
                 if (lane.type === 'road') {
-                    const numCars = Math.floor(600 / lane.carGap) + 1;
+                    const adjustedGap = lane.carGap * gapMultiplier;
+                    const numCars = Math.floor(600 / adjustedGap) + 1;
                     for (let i = 0; i < numCars; i++) {
                         cars.push({
-                            x: i * lane.carGap,
+                            x: i * adjustedGap,
                             y: lane.y * GRID_SIZE,
                             width: lane.carWidth,
                             height: 40,
@@ -739,10 +793,11 @@
                         });
                     }
                 } else if (lane.type === 'water') {
-                    const numLogs = Math.floor(600 / lane.logGap) + 1;
+                    const adjustedGap = lane.logGap * gapMultiplier;
+                    const numLogs = Math.floor(600 / adjustedGap) + 1;
                     for (let i = 0; i < numLogs; i++) {
                         logs.push({
-                            x: i * lane.logGap,
+                            x: i * adjustedGap,
                             y: lane.y * GRID_SIZE,
                             width: lane.logWidth,
                             height: 40,
@@ -1984,8 +2039,26 @@
         function selectMode(mode) {
             gameMode = mode;
             document.getElementById('modeSelection').style.display = 'none';
+            document.getElementById('difficultySelection').style.display = 'flex';
+        }
+        
+        function selectDifficulty(diff) {
+            difficulty = diff;
+            const settings = difficultySettings[diff];
+            speedMultiplier = settings.speed;
             
-            if (mode === 'classic') {
+            // Update difficulty display
+            document.getElementById('difficultyDisplay').textContent = settings.name;
+            
+            // Update active button
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-difficulty="${diff}"]`).classList.add('active');
+            
+            document.getElementById('difficultySelection').style.display = 'none';
+            
+            if (gameMode === 'classic') {
                 document.getElementById('playerSelection').style.display = 'block';
             } else {
                 // Endless mode is single player only
@@ -1995,6 +2068,13 @@
         
         function showModeSelection() {
             document.getElementById('modeSelection').style.display = 'flex';
+            document.getElementById('difficultySelection').style.display = 'none';
+            document.getElementById('playerSelection').style.display = 'none';
+        }
+        
+        function showDifficultySelection() {
+            document.getElementById('modeSelection').style.display = 'none';
+            document.getElementById('difficultySelection').style.display = 'flex';
             document.getElementById('playerSelection').style.display = 'none';
         }
         
@@ -2194,15 +2274,8 @@
 
         document.getElementById('startScreen').classList.add('active');
         
-        // Speed slider functionality
-        const speedSlider = document.getElementById('speedSlider');
-        const speedValue = document.getElementById('speedValue');
-        // Remove muteCheckbox as we're using global mute button
-        
-        speedSlider.addEventListener('input', (e) => {
-            speedMultiplier = parseFloat(e.target.value);
-            speedValue.textContent = speedMultiplier.toFixed(1) + 'x';
-        });
+        // Initialize difficulty display
+        document.getElementById('difficultyDisplay').textContent = difficultySettings[difficulty].name;
         
         // Remove local mute control since we're using global mute button
     </script>

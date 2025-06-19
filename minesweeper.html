@@ -156,6 +156,13 @@
         .cell[data-count="7"] { color: #ec4899; }
         .cell[data-count="8"] { color: #ef4444; }
 
+        /* Smaller cells for nightmare difficulty */
+        .game-board.nightmare .cell {
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+        }
+
         .game-over-overlay {
             position: absolute;
             top: 0;
@@ -260,11 +267,20 @@
             .difficulty-buttons {
                 flex-wrap: wrap;
                 justify-content: center;
+                gap: 8px;
             }
 
             .difficulty-btn {
+                font-size: 11px;
+                padding: 5px 10px;
+                min-width: 60px;
+            }
+            
+            /* Smaller cells for nightmare mode on mobile */
+            .game-board.nightmare .cell {
+                width: 18px;
+                height: 18px;
                 font-size: 12px;
-                padding: 6px 12px;
             }
         }
     </style>
@@ -285,9 +301,10 @@
                 </div>
             </div>
             <div class="difficulty-buttons">
-                <button class="btn difficulty-btn active" data-level="easy">Easy</button>
-                <button class="btn difficulty-btn" data-level="medium">Medium</button>
-                <button class="btn difficulty-btn" data-level="hard">Hard</button>
+                <button class="btn difficulty-btn active" data-difficulty="easy">Easy</button>
+                <button class="btn difficulty-btn" data-difficulty="normal">Normal</button>
+                <button class="btn difficulty-btn" data-difficulty="hard">Hard</button>
+                <button class="btn difficulty-btn" data-difficulty="nightmare">Nightmare</button>
             </div>
         </div>
         
@@ -306,9 +323,30 @@
     <script>
         // Game configuration
         const DIFFICULTIES = {
-            easy: { rows: 9, cols: 9, mines: 10 },
-            medium: { rows: 16, cols: 16, mines: 40 },
-            hard: { rows: 16, cols: 30, mines: 99 }
+            easy: { 
+                rows: 9, 
+                cols: 9, 
+                mines: 10,
+                description: "Classic beginner • Small grid • Perfect for learning"
+            },
+            normal: { 
+                rows: 13, 
+                cols: 13, 
+                mines: 25,
+                description: "Balanced challenge • Medium grid • Standard gameplay"
+            },
+            hard: { 
+                rows: 16, 
+                cols: 16, 
+                mines: 40,
+                description: "Advanced play • Large grid • Requires strategy"
+            },
+            nightmare: { 
+                rows: 20, 
+                cols: 20, 
+                mines: 80,
+                description: "Expert only • Massive grid • Ultimate challenge"
+            }
         };
 
         let currentDifficulty = 'easy';
@@ -619,6 +657,9 @@
             board.innerHTML = '';
             board.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
             
+            // Add difficulty class for responsive styling
+            board.className = `game-board ${currentDifficulty}`;
+            
             for (let i = 0; i < config.rows; i++) {
                 for (let j = 0; j < config.cols; j++) {
                     const cell = document.createElement('div');
@@ -637,7 +678,7 @@
             
             // Update button states
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.level === level);
+                btn.classList.toggle('active', btn.dataset.difficulty === level);
             });
             
             initGame();
@@ -645,7 +686,7 @@
 
         // Event listeners
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
-            btn.addEventListener('click', () => changeDifficulty(btn.dataset.level));
+            btn.addEventListener('click', () => changeDifficulty(btn.dataset.difficulty));
         });
 
         // Touch support for mobile

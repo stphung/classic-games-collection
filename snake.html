@@ -122,6 +122,106 @@
             letter-spacing: 0.5px;
         }
 
+        /* Difficulty selection styles */
+        .difficulty-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 20;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .difficulty-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .difficulty-selection {
+            margin-top: var(--spacing-lg);
+        }
+
+        .difficulty-label {
+            font-size: 18px;
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-md);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .difficulty-btn {
+            background: transparent;
+            color: var(--color-text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 100px;
+        }
+
+        .difficulty-btn:hover,
+        .difficulty-btn.active {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.5);
+            color: #4caf50;
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .difficulty-desc {
+            font-size: 14px;
+            color: var(--color-text-dim);
+            letter-spacing: 0.5px;
+            min-height: 20px;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .current-difficulty {
+            font-size: 14px;
+            color: var(--color-success);
+            margin-top: var(--spacing-md);
+            letter-spacing: 1px;
+        }
+
+        .back-to-difficulty-btn {
+            margin-top: var(--spacing-md);
+            padding: 8px 20px;
+            font-size: 12px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-to-difficulty-btn:hover {
+            opacity: 1;
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .difficulty-buttons {
+                gap: 10px;
+            }
+            
+            .difficulty-btn {
+                padding: 10px 16px;
+                font-size: 12px;
+                min-width: 80px;
+            }
+        }
+
         /* Removed - handled by home-button.js */
     </style>
 </head>
@@ -139,9 +239,25 @@
         <div style="position: relative;">
             <canvas id="gameCanvas" width="600" height="600"></canvas>
             
-            <div class="start-screen" id="startScreen">
+            <div class="difficulty-screen" id="difficultyScreen">
+                <h1 class="start-title title-xl">SNAKE</h1>
+                <div class="difficulty-selection">
+                    <p class="difficulty-label">Select Difficulty</p>
+                    <div class="difficulty-buttons">
+                        <button class="difficulty-btn active" data-difficulty="easy" onclick="selectDifficulty('easy')">Easy</button>
+                        <button class="difficulty-btn" data-difficulty="normal" onclick="selectDifficulty('normal')">Normal</button>
+                        <button class="difficulty-btn" data-difficulty="hard" onclick="selectDifficulty('hard')">Hard</button>
+                        <button class="difficulty-btn" data-difficulty="nightmare" onclick="selectDifficulty('nightmare')">Nightmare</button>
+                    </div>
+                    <p class="difficulty-desc" id="difficultyDesc">Relaxed pace • Larger playing field • Perfect for beginners</p>
+                </div>
+            </div>
+            
+            <div class="start-screen hidden" id="startScreen">
                 <h1 class="start-title title-xl">SNAKE</h1>
                 <p class="start-instruction">PRESS ANY ARROW KEY TO START</p>
+                <p class="current-difficulty">Difficulty: <span id="currentDifficulty">Easy</span></p>
+                <button class="btn back-to-difficulty-btn" onclick="backToDifficulty()">Change Difficulty</button>
             </div>
             
             <div class="game-over-screen" id="gameOverScreen">
@@ -160,18 +276,55 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Game constants
-        const GRID_SIZE = 30;
-        const CELL_SIZE = canvas.width / GRID_SIZE;
-        const INITIAL_SPEED = 120; // milliseconds per move
-        const MOVES_PER_SECOND = 1000 / INITIAL_SPEED; // moves per second
+        // Difficulty configurations
+        const difficulties = {
+            easy: {
+                gridSize: 25,
+                initialSpeed: 150,
+                speedIncrease: 0.98,
+                scoreMultiplier: 1,
+                description: "Relaxed pace • Larger playing field • Perfect for beginners"
+            },
+            normal: {
+                gridSize: 30,
+                initialSpeed: 120,
+                speedIncrease: 0.96,
+                scoreMultiplier: 1.5,
+                description: "Standard challenge • Balanced gameplay"
+            },
+            hard: {
+                gridSize: 35,
+                initialSpeed: 90,
+                speedIncrease: 0.94,
+                scoreMultiplier: 2,
+                description: "Fast-paced • Smaller field • Challenging reflexes"
+            },
+            nightmare: {
+                gridSize: 40,
+                initialSpeed: 60,
+                speedIncrease: 0.92,
+                scoreMultiplier: 3,
+                description: "Lightning fast • Tiny field • Expert only"
+            }
+        };
+
+        // Current difficulty settings
+        let currentDifficulty = localStorage.getItem('snakeDifficulty') || 'easy';
+        let difficultyConfig = difficulties[currentDifficulty];
+        
+        // Dynamic game constants
+        let GRID_SIZE = difficultyConfig.gridSize;
+        let CELL_SIZE = canvas.width / GRID_SIZE;
+        let INITIAL_SPEED = difficultyConfig.initialSpeed;
+        let SPEED_INCREASE = difficultyConfig.speedIncrease;
+        let SCORE_MULTIPLIER = difficultyConfig.scoreMultiplier;
         
         // Game state
         let snake = [];
         let direction = { x: 1, y: 0 };
         let food = {};
         let score = 0;
-        let highScore = localStorage.getItem('snakeHighScore') || 0;
+        let highScore = getHighScore();
         let gameRunning = false;
         let gameSpeed = INITIAL_SPEED;
         let accumulator = 0;
@@ -184,9 +337,72 @@
         const finalScoreElement = document.getElementById('finalScore');
         const gameOverScreen = document.getElementById('gameOverScreen');
         const startScreen = document.getElementById('startScreen');
+        const difficultyScreen = document.getElementById('difficultyScreen');
         const newRecordElement = document.getElementById('newRecord');
+        const difficultyDescElement = document.getElementById('difficultyDesc');
+        const currentDifficultyElement = document.getElementById('currentDifficulty');
         
-        highScoreElement.textContent = highScore;
+        // Get high score for current difficulty
+        function getHighScore() {
+            return localStorage.getItem(`snakeHighScore_${currentDifficulty}`) || 0;
+        }
+        
+        // Save high score for current difficulty
+        function saveHighScore(score) {
+            localStorage.setItem(`snakeHighScore_${currentDifficulty}`, score);
+        }
+        
+        // Select difficulty function
+        function selectDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+            difficultyConfig = difficulties[difficulty];
+            
+            // Update game constants
+            GRID_SIZE = difficultyConfig.gridSize;
+            CELL_SIZE = canvas.width / GRID_SIZE;
+            INITIAL_SPEED = difficultyConfig.initialSpeed;
+            SPEED_INCREASE = difficultyConfig.speedIncrease;
+            SCORE_MULTIPLIER = difficultyConfig.scoreMultiplier;
+            
+            // Update UI
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-difficulty="${difficulty}"]`).classList.add('active');
+            difficultyDescElement.textContent = difficultyConfig.description;
+            currentDifficultyElement.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+            
+            // Update high score display
+            highScore = getHighScore();
+            highScoreElement.textContent = highScore;
+            
+            // Save difficulty preference
+            localStorage.setItem('snakeDifficulty', difficulty);
+            
+            // Show start screen
+            difficultyScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+        
+        // Initialize UI
+        function initializeUI() {
+            // Set initial difficulty button state
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-difficulty="${currentDifficulty}"]`).classList.add('active');
+            difficultyDescElement.textContent = difficultyConfig.description;
+            currentDifficultyElement.textContent = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
+            highScoreElement.textContent = highScore;
+        }
+        
+        initializeUI();
+        
+        // Go back to difficulty selection
+        function backToDifficulty() {
+            startScreen.classList.add('hidden');
+            difficultyScreen.classList.remove('hidden');
+        }
         
         // Initialize game
         function init() {
@@ -256,7 +472,9 @@
             
             // Check food collision
             if (head.x === food.x && head.y === food.y) {
-                score += 10;
+                const baseScore = 10;
+                const multipliedScore = Math.floor(baseScore * SCORE_MULTIPLIER);
+                score += multipliedScore;
                 scoreElement.textContent = score;
                 if (window.audioEngine) {
                     window.audioEngine.playSound('snake.eat');
@@ -264,8 +482,8 @@
                 createParticles(food.x * CELL_SIZE + CELL_SIZE / 2, food.y * CELL_SIZE + CELL_SIZE / 2);
                 placeFood();
                 
-                // Increase speed
-                gameSpeed = Math.max(50, gameSpeed - 2); // Speed up by reducing interval
+                // Increase speed based on difficulty
+                gameSpeed = Math.max(30, Math.floor(gameSpeed * SPEED_INCREASE));
             } else {
                 snake.pop();
             }
@@ -465,9 +683,10 @@
             
             finalScoreElement.textContent = score;
             
+            // Check if new high score for current difficulty
             if (score > highScore) {
                 highScore = score;
-                localStorage.setItem('snakeHighScore', highScore);
+                saveHighScore(highScore);
                 highScoreElement.textContent = highScore;
                 newRecordElement.style.display = 'block';
             } else {
@@ -480,10 +699,9 @@
         // Reset game
         function resetGame() {
             gameOverScreen.classList.remove('active');
+            startScreen.classList.add('hidden');
+            difficultyScreen.classList.remove('hidden');
             init();
-            gameRunning = true;
-            lastDirection = { x: 1, y: 0 };
-            requestAnimationFrame(gameLoop);
         }
         
         // Initialize

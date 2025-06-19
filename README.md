@@ -2,13 +2,14 @@
 
 🎮 **[Play the games here!](https://stphung.github.io/classic-games-collection/)**
 
-A collection of ten classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
+A collection of eleven classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
 
 ## Games Included
 
 ### 🟦 Tetris
 The timeless block-stacking puzzle game. Arrange falling tetrominoes to clear lines and score points.
 - **How to Play**: 
+  - Select your difficulty level (Easy, Normal, Hard, Nightmare)
   - Use ← → to move pieces left/right
   - Use ↑ to rotate pieces
   - Use ↓ for soft drop (faster fall)
@@ -16,7 +17,12 @@ The timeless block-stacking puzzle game. Arrange falling tetrominoes to clear li
   - Clear complete horizontal lines to score points
   - Game speeds up as you progress through levels
 - **Controls**: Arrow keys to move/rotate, Space for hard drop, P to pause
-- **Features**: Next piece preview, level progression, score tracking
+- **Difficulty Modes**:
+  - **Easy**: Relaxed pace (1.5s drop time), 15 lines per level, ghost piece and next piece preview enabled
+  - **Normal**: Classic experience (1s drop time), 10 lines per level, all assists enabled
+  - **Hard**: Expert pace (0.3s drop time), 4 lines per level, rapid progression, all assists enabled
+  - **Nightmare**: Insane speed (0.2s drop time), 3 lines per level, lightning progression, no assists
+- **Features**: Four difficulty levels, next piece preview (except Nightmare), ghost piece (except Nightmare), level progression, score tracking
 
 ### 🔴 Breakout
 Smash through bricks with precision and skill using your paddle and ball.
@@ -58,13 +64,14 @@ Defend your cities from incoming missile attacks using anti-ballistic missiles.
 ### 🐍 Snake
 The classic snake game where you grow longer by eating food while avoiding collisions.
 - **How to Play**:
+  - Select your difficulty level (Easy, Normal, Hard, Nightmare)
   - Guide the snake to eat the red food pellets
   - Each food item eaten makes the snake grow longer
   - Avoid hitting the walls or your own tail
   - The game speeds up as you score more points
-  - Try to beat your high score!
+  - Higher difficulties offer faster gameplay and score multipliers
 - **Controls**: Arrow keys or WASD to change direction, ESC to return home
-- **Features**: High score tracking, increasing difficulty, smooth controls, glowing visual effects
+- **Features**: Four difficulty levels with different speeds and score multipliers, per-difficulty high score tracking, dynamic grid sizes, smooth controls, glowing visual effects
 
 ### ◈ JezzBall
 A strategic puzzle game where you trap bouncing balls by building walls to clear the playing field.
@@ -86,9 +93,9 @@ The classic logic puzzle game where you clear a minefield using deduction and ca
   - Numbers show how many mines are in the 8 adjacent cells
   - Use logic to deduce which cells contain mines
   - Flag all mines and reveal all safe cells to win
-  - Choose from three difficulty levels: Easy (9x9, 10 mines), Medium (16x16, 40 mines), Hard (16x30, 99 mines)
+  - Choose from four difficulty levels: Easy (9x9, 10 mines), Normal (13x13, 25 mines), Hard (16x16, 40 mines), Nightmare (20x20, 80 mines)
 - **Controls**: Left-click to reveal, Right-click to flag, Click difficulty buttons to change level
-- **Features**: Three difficulty levels, timer, mine counter, first-click protection (never hit a mine on first click)
+- **Features**: Four difficulty levels, timer, mine counter, first-click protection (never hit a mine on first click)
 
 ### 🚀 Lunar Lander
 Navigate your spacecraft to a safe landing on the lunar surface with limited fuel.
@@ -124,6 +131,18 @@ Defend Earth from waves of descending alien invaders in this arcade classic.
   - Each wave moves faster than the last
 - **Controls**: ←/→ or A/D to move, Space to shoot
 - **Features**: Four difficulty levels, destructible barriers, mystery ship bonuses, progressive waves
+
+### ◇ Asteroids *(Coming Soon)*
+Navigate through space destroying asteroids and UFOs in this vector-graphics classic.
+- **How to Play**:
+  - Control your ship with rotation and thrust (momentum-based physics)
+  - Shoot asteroids to break them into smaller pieces
+  - Large asteroids split into 2 medium, medium split into 2 small
+  - Destroy UFOs for bonus points (they shoot back!)
+  - Use hyperspace as emergency escape (but risk explosion)
+  - All objects wrap around screen edges
+- **Controls**: ↑/W for thrust, ←/→ or A/D to rotate, Space to fire, Shift for hyperspace
+- **Features**: Four difficulty levels, physics-based movement, particle effects, score multipliers
 
 ## Features
 

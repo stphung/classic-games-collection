@@ -1222,6 +1222,48 @@
             color: #fff;
             font-weight: 400;
         }
+
+        /* Improved patch notes formatting */
+        .patch-section {
+            margin-bottom: 15px;
+        }
+
+        .patch-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .patch-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .patch-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .patch-list li {
+            margin-bottom: 4px;
+            padding-left: 12px;
+            position: relative;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .patch-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #666;
+        }
+
+        .patch-list li:last-child {
+            margin-bottom: 0;
+        }
         
         .older-updates {
             display: none;
@@ -1255,6 +1297,9 @@
         .jezzball { color: var(--color-jezzball); }
         .minesweeper { color: var(--color-minesweeper); }
         .lunarlander { color: var(--color-lunarlander); }
+        .donkey-kong { color: #dc2626; }
+        .qbert { color: #ff6b6b; }
+        .asteroids { color: #f59e0b; }
 
         /* Mobile responsiveness */
         @media (max-width: 768px) {
@@ -1611,16 +1656,26 @@
             <div class="patch-update">
                 <div class="patch-date">Jun 19, 2025</div>
                 <div class="patch-content">
-                    New game added: <span class="patch-games">Space Invaders</span> - Defend Earth from alien invasion!
+                    <div class="patch-section">
+                        <div class="patch-section-title">🆕 New Games</div>
+                        <ul class="patch-list">
+                            <li><span class="patch-games">Space Invaders</span> - Defend Earth from alien invaders</li>
+                            <li><span class="patch-games">Pong</span> - Classic paddle tennis game</li>
+                            <li><span class="patch-games">Asteroids</span> - Navigate space and destroy asteroids</li>
+                        </ul>
+                    </div>
+                    <div class="patch-section">
+                        <div class="patch-section-title">🔄 Game Updates</div>
+                        <ul class="patch-list">
+                            <li><span class="patch-games">Snake</span> - Added 4 difficulty modes with score multipliers</li>
+                            <li><span class="patch-games">Minesweeper</span> - New Nightmare mode for expert players</li>
+                            <li><span class="patch-games">Tetris</span> - Rebalanced difficulty settings for better progression</li>
+                            <li><span class="patch-games">Breakout</span> - Features standardized 4-difficulty system</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="older-updates">
-                <div class="patch-update">
-                    <div class="patch-date">Jun 18, 2025</div>
-                    <div class="patch-content">
-                        New game added: <span class="patch-games">Pong</span> - The granddaddy of all video games!
-                    </div>
-                </div>
                 <div class="patch-update">
                     <div class="patch-date">Jun 17, 2025</div>
                     <div class="patch-content">
@@ -1723,13 +1778,23 @@
                 <div class="patch-update">
                     <div class="patch-date">Jun 19, 2025</div>
                     <div class="patch-content">
-                        New game added: <span class="patch-games">Space Invaders</span> - Defend Earth from alien invasion!
-                    </div>
-                </div>
-                <div class="patch-update" style="margin-top: 20px;">
-                    <div class="patch-date">Jun 18, 2025</div>
-                    <div class="patch-content">
-                        New game added: <span class="patch-games">Pong</span> - The granddaddy of all video games!
+                        <div class="patch-section">
+                            <div class="patch-section-title">🆕 New Games</div>
+                            <ul class="patch-list">
+                                <li><span class="patch-games">Space Invaders</span> - Defend Earth from alien invaders</li>
+                                <li><span class="patch-games">Pong</span> - Classic paddle tennis game</li>
+                                <li><span class="patch-games">Asteroids</span> - Navigate space and destroy asteroids</li>
+                            </ul>
+                        </div>
+                        <div class="patch-section">
+                            <div class="patch-section-title">🔄 Game Updates</div>
+                            <ul class="patch-list">
+                                <li><span class="patch-games">Snake</span> - Added 4 difficulty modes with score multipliers</li>
+                                <li><span class="patch-games">Minesweeper</span> - New Nightmare mode for expert players</li>
+                                <li><span class="patch-games">Tetris</span> - Rebalanced difficulty settings for better progression</li>
+                                <li><span class="patch-games">Breakout</span> - Features standardized 4-difficulty system</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 <div class="patch-update" style="margin-top: 20px;">
@@ -1765,16 +1830,17 @@
         
         // Game data - single source of truth
         const gameData = [
-            { title: 'Tetris', icon: '▦', cssClass: 'tetris', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html' },
-            { title: 'Breakout', icon: '━', cssClass: 'breakout', color: '#fbbf24', description: 'Smash through colorful bricks with precision and skill', url: 'breakout.html' },
+            { title: 'Tetris', icon: '▦', cssClass: 'tetris', color: '#818cf8', description: 'Stack falling blocks to clear lines in this timeless puzzle classic', url: 'tetris.html', isUpdated: true },
+            { title: 'Breakout', icon: '━', cssClass: 'breakout', color: '#fbbf24', description: 'Smash through colorful bricks with precision and skill', url: 'breakout.html', isUpdated: true },
             { title: 'Frogger', icon: '🐸', cssClass: 'frogger', color: '#34d399', description: 'Navigate dangerous roads and rivers to reach safety', url: 'frogger.html' },
             { title: 'Missile Command', icon: '⟟', cssClass: 'missile', color: '#f87171', description: 'Defend your cities from incoming missile attacks', url: 'missilecommand.html' },
-            { title: 'Snake', icon: '▪', cssClass: 'snake', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html' },
+            { title: 'Snake', icon: '▪', cssClass: 'snake', color: '#4ade80', description: 'Guide the snake to grow longer without hitting walls', url: 'snake.html', isUpdated: true },
             { title: 'JezzBall', icon: '◈', cssClass: 'jezzball', color: '#c084fc', description: 'Trap bouncing balls by building walls strategically', url: 'jezzball.html' },
-            { title: 'Minesweeper', icon: '⚑', cssClass: 'minesweeper', color: '#60a5fa', description: 'Clear the minefield using logic and careful deduction', url: 'minesweeper.html' },
+            { title: 'Minesweeper', icon: '⚑', cssClass: 'minesweeper', color: '#60a5fa', description: 'Clear the minefield using logic and careful deduction', url: 'minesweeper.html', isUpdated: true },
             { title: 'Lunar Lander', icon: '🚀', cssClass: 'lunarlander', color: '#93c5fd', description: 'Land safely on the moon with limited fuel', url: 'lunarlander.html' },
-            { title: 'Pong', icon: '▐', cssClass: 'pong', color: '#22c55e', description: 'Classic paddle tennis - the granddaddy of all video games', url: 'pong.html' },
-            { title: 'Space Invaders', icon: '👾', cssClass: 'space-invaders', color: '#a855f7', description: 'Defend Earth from waves of descending alien invaders', url: 'space-invaders.html', isNew: true }
+            { title: 'Pong', icon: '▐', cssClass: 'pong', color: '#22c55e', description: 'Classic paddle tennis - the granddaddy of all video games', url: 'pong.html', isNew: true },
+            { title: 'Space Invaders', icon: '👾', cssClass: 'space-invaders', color: '#a855f7', description: 'Defend Earth from waves of descending alien invaders', url: 'space-invaders.html', isNew: true },
+            { title: 'Asteroids', icon: '◇', cssClass: 'asteroids', color: '#f59e0b', description: 'Navigate through space destroying asteroids and UFOs', url: 'asteroids.html', isNew: true }
         ];
         
         // CarouselController - Manages carousel navigation and game cards
