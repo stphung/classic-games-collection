@@ -2,7 +2,7 @@
 
 🎮 **[Play the games here!](https://stphung.github.io/classic-games-collection/)**
 
-A collection of eight classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
+A collection of ten classic arcade games built with HTML5 Canvas and JavaScript. Experience nostalgic gameplay with modern design aesthetics.
 
 ## Games Included
 
@@ -101,6 +101,29 @@ Navigate your spacecraft to a safe landing on the lunar surface with limited fue
   - Watch your fuel gauge - no fuel means no thrust!
 - **Controls**: ↑/W for main thruster, ←/A to rotate left, →/D to rotate right, ESC to return home
 - **Features**: Realistic physics with gravity and momentum, multiple landing zones with score multipliers, fuel management, particle effects
+
+### ▐ Pong
+The granddaddy of all video games - classic two-player paddle tennis.
+- **How to Play**:
+  - Move your paddle up and down to hit the ball
+  - Score points when your opponent misses
+  - First to 5 points wins the game
+  - Ball speed increases with each hit
+  - Choose from 4 difficulty levels that affect AI speed and paddle size
+- **Controls**: ↑/↓ or W/S to move paddle
+- **Features**: Four difficulty levels (Easy, Normal, Hard, Insane), particle effects, dynamic ball physics
+
+### 👾 Space Invaders
+Defend Earth from waves of descending alien invaders in this arcade classic.
+- **How to Play**:
+  - Move your cannon left and right to aim
+  - Shoot the invaders before they reach Earth
+  - Use barriers for cover - they can absorb enemy fire
+  - Watch for the mystery UFO that appears for bonus points
+  - Clear all invaders to advance to the next wave
+  - Each wave moves faster than the last
+- **Controls**: ←/→ or A/D to move, Space to shoot
+- **Features**: Four difficulty levels, destructible barriers, mystery ship bonuses, progressive waves
 
 ## Features
 
